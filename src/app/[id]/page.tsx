@@ -27,8 +27,64 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Update game state from API responses (start, state, move)
+  const updateGameState = (data: GameState) => {
+    setGameState({
+      ...data,
+      currentStep: data.currentStep,
+      nextSteps: data.nextSteps,
+    })
+  }
+
+  // Handle option click
+  const handleOptionClick = async (optionIndex: number) => {
+    console.log('🎯 Option clicked:', optionIndex)
+    if (!gameState) return
+
+    // Immediately display the nextSteps[optionIndex]
+    const nextStep = gameState.nextSteps[optionIndex]
+    console.log('📋 Displaying nextStep from cache:', nextStep)
+    if (nextStep) {
+      setGameState({
+        ...gameState,
+        currentStep: nextStep,
+      })
+    }
+
+    // Call move API in background
+    console.log('🚀 Calling /api/move with choiceIndex:', optionIndex + 1)
+    try {
+      const response = await fetch('/api/move', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: id,
+          choiceIndex: optionIndex + 1, // API expects 1-indexed
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to make move')
+      }
+
+      const data = await response.json()
+      console.log('✅ Move API response received:', data)
+      // Update with actual response from API
+      updateGameState({
+        ...gameState,
+        ...data,
+      })
+      console.log('🔄 GameState updated with API response')
+    } catch (error) {
+      console.error('❌ Error making move:', error)
+    }
+  }
+
   useEffect(() => {
     const initGame = async () => {
+      console.log('🎮 Initializing game with id:', id)
       try {
         const response = await fetch('/api/init', {
           method: 'POST',
@@ -43,9 +99,11 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         }
 
         const data = await response.json()
-        setGameState(data)
+        console.log('✅ Init API response received:', data)
+        updateGameState(data)
+        console.log('🔄 Initial gameState set')
       } catch (error) {
-        console.error('Error initializing game:', error)
+        console.error('❌ Error initializing game:', error)
       } finally {
         setLoading(false)
       }
@@ -91,6 +149,10 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
             fontWeight="medium"
             _hover={{ textDecoration: 'underline' }}
             textAlign="left"
+            onClick={(e) => {
+              e.preventDefault()
+              handleOptionClick(index)
+            }}
           >
             {option}
           </Link>
