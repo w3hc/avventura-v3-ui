@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const response = await fetch('https://api.avventura.fun/state', {
       method: 'POST',
       headers: {
-        'accept': '*/*',
+        accept: '*/*',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ gameId: id }),
@@ -22,9 +22,6 @@ export async function POST(request: Request) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Error calling init API:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch game state' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to fetch game state' }, { status: 500 })
   }
 }
