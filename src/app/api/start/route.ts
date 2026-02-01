@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server'
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const { scenario } = await request.json()
+
     const response = await fetch('https://api.avventura.fun/start', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        story: 'in-the-forest',
+        story: scenario,
       }),
     })
 
