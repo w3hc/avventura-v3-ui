@@ -26,6 +26,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   const { language } = useLanguage()
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isProcessingMove, setIsProcessingMove] = useState(false)
 
   // Update game state from API responses (start, state, move)
   const updateGameState = (data: GameState) => {
@@ -39,7 +40,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   // Handle option click
   const handleOptionClick = async (optionIndex: number) => {
     console.log('🎯 Option clicked:', optionIndex)
-    if (!gameState) return
+    if (!gameState || isProcessingMove) return
 
     // Immediately display the nextSteps[optionIndex]
     const nextStep = gameState.nextSteps[optionIndex]
@@ -52,6 +53,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     }
 
     // Call move API in background
+    setIsProcessingMove(true)
     console.log('🚀 Calling /api/move with choiceIndex:', optionIndex + 1)
     try {
       const response = await fetch('/api/move', {
@@ -79,6 +81,8 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       console.log('🔄 GameState updated with API response')
     } catch (error) {
       console.error('❌ Error making move:', error)
+    } finally {
+      setIsProcessingMove(false)
     }
   }
 
@@ -130,12 +134,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
 
   return (
     <Box px={{ base: 4, md: 8 }} py={8} maxW="1200px" mx="auto">
-      <Text
-        fontSize={{ base: "xl", md: "2xl" }}
-        mb={8}
-        whiteSpace="pre-wrap"
-        textAlign="left"
-      >
+      <Text fontSize={{ base: 'xl', md: '2xl' }} mb={8} whiteSpace="pre-wrap" textAlign="left">
         {gameState.currentStep.desc}
       </Text>
 
@@ -145,11 +144,13 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
             key={index}
             href="#"
             color={brandColors.accent}
-            fontSize={{ base: "xl", md: "2xl" }}
+            fontSize={{ base: 'xl', md: '2xl' }}
             fontWeight="medium"
             _hover={{ textDecoration: 'underline' }}
             textAlign="left"
-            onClick={(e) => {
+            // opacity={isProcessingMove ? 0.5 : 1}
+            pointerEvents={isProcessingMove ? 'none' : 'auto'}
+            onClick={e => {
               e.preventDefault()
               handleOptionClick(index)
             }}
