@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const response = await fetch('https://api.avventura.fun/move', {
       method: 'POST',
       headers: {
-        'accept': '*/*',
+        accept: '*/*',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ gameId, choiceIndex }),
@@ -24,9 +24,6 @@ export async function POST(request: Request) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('❌ Error calling move API:', error)
-    return NextResponse.json(
-      { error: 'Failed to make move' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to make move' }, { status: 500 })
   }
 }

@@ -23,9 +23,6 @@ export async function POST(request: Request) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Error calling start API:', error)
-    return NextResponse.json(
-      { error: 'Failed to start adventure' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to start adventure' }, { status: 500 })
   }
 }
