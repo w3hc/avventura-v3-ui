@@ -4,9 +4,11 @@ import { VStack, Box, Text } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { brandColors } from '@/theme'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function Home() {
   const router = useRouter()
+  const { language } = useLanguage()
   const [isLoading, setIsLoading] = useState<string | null>(null)
 
   const scenarios = [
@@ -23,7 +25,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ scenario }),
+        body: JSON.stringify({ scenario, language }),
       })
       const data = await response.json()
 
@@ -38,7 +40,7 @@ export default function Home() {
   }
 
   return (
-    <Box bg={brandColors.black} minH="100vh">
+    <Box minH="100vh">
       <VStack gap={8} align="center" justify="center" minH="100vh" p={8}>
         <VStack gap={6}>
           {scenarios.map(scenario => (

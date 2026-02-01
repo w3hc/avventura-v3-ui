@@ -4,7 +4,7 @@ export async function POST(request: Request) {
   try {
     const { id } = await request.json()
 
-    const response = await fetch('https://api.avventura.fun/state', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_AVVENTURA_API_URL}/state`, {
       method: 'POST',
       headers: {
         accept: '*/*',

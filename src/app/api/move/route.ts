@@ -5,7 +5,7 @@ export async function POST(request: Request) {
     const { gameId, choiceIndex } = await request.json()
     console.log('🔵 /api/move called with:', { gameId, choiceIndex })
 
-    const response = await fetch('https://api.avventura.fun/move', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_AVVENTURA_API_URL}/move`, {
       method: 'POST',
       headers: {
         accept: '*/*',
