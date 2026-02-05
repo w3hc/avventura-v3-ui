@@ -30,31 +30,31 @@ interface TypingEffectProps {
 const TypingEffect: React.FC<TypingEffectProps> = ({ text, speed = 2, onComplete }) => {
   const [displayText, setDisplayText] = useState('')
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isComplete, setIsComplete] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const onCompleteRef = useRef(onComplete)
+  const textRef = useRef(text)
 
   // Update the ref when onComplete changes
   useEffect(() => {
     onCompleteRef.current = onComplete
   }, [onComplete])
 
-  // Reset when text changes
-  useEffect(() => {
-    setDisplayText('')
-    setCurrentIndex(0)
-    setIsComplete(false)
-  }, [text])
-
   // Handle typing animation
   useEffect(() => {
+    // Reset state when text changes
+    if (textRef.current !== text) {
+      textRef.current = text
+      setDisplayText('')
+      setCurrentIndex(0)
+      return
+    }
+
     if (currentIndex < text.length) {
       timeoutRef.current = setTimeout(() => {
         setDisplayText(prev => prev + text[currentIndex])
         setCurrentIndex(prev => prev + 1)
       }, speed)
-    } else if (currentIndex === text.length && !isComplete) {
-      setIsComplete(true)
+    } else if (currentIndex === text.length && displayText.length === text.length) {
       if (onCompleteRef.current) {
         onCompleteRef.current()
       }
@@ -65,7 +65,7 @@ const TypingEffect: React.FC<TypingEffectProps> = ({ text, speed = 2, onComplete
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [currentIndex, text.length, speed, isComplete])
+  }, [currentIndex, text, speed, displayText.length])
 
   return <span>{displayText}</span>
 }
