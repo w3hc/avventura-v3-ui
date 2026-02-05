@@ -28,33 +28,31 @@ interface TypingEffectProps {
 }
 
 const TypingEffect: React.FC<TypingEffectProps> = ({ text, speed = 2, onComplete }) => {
-  const [displayText, setDisplayText] = useState('')
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [state, setState] = useState({ displayText: '', currentIndex: 0, prevText: text })
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const onCompleteRef = useRef(onComplete)
-  const textRef = useRef(text)
 
   // Update the ref when onComplete changes
   useEffect(() => {
     onCompleteRef.current = onComplete
   }, [onComplete])
 
+  // Derive state from text changes
+  if (state.prevText !== text) {
+    setState({ displayText: '', currentIndex: 0, prevText: text })
+  }
+
   // Handle typing animation
   useEffect(() => {
-    // Reset state when text changes
-    if (textRef.current !== text) {
-      textRef.current = text
-      setDisplayText('')
-      setCurrentIndex(0)
-      return
-    }
-
-    if (currentIndex < text.length) {
+    if (state.currentIndex < text.length) {
       timeoutRef.current = setTimeout(() => {
-        setDisplayText(prev => prev + text[currentIndex])
-        setCurrentIndex(prev => prev + 1)
+        setState(prev => ({
+          ...prev,
+          displayText: prev.displayText + text[state.currentIndex],
+          currentIndex: prev.currentIndex + 1,
+        }))
       }, speed)
-    } else if (currentIndex === text.length && displayText.length === text.length) {
+    } else if (state.currentIndex === text.length && state.displayText.length === text.length) {
       if (onCompleteRef.current) {
         onCompleteRef.current()
       }
@@ -65,9 +63,9 @@ const TypingEffect: React.FC<TypingEffectProps> = ({ text, speed = 2, onComplete
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [currentIndex, text, speed, displayText.length])
+  }, [state.currentIndex, text, speed, state.displayText.length])
 
-  return <span>{displayText}</span>
+  return <span>{state.displayText}</span>
 }
 
 export default function AdventurePage({ params }: { params: Promise<{ id: string }> }) {
