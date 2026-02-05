@@ -2,7 +2,7 @@
 
 import { VStack, Box, Heading, Text, Link } from '@chakra-ui/react'
 import { useLanguage } from '@/context/LanguageContext'
-import { use, useEffect, useState } from 'react'
+import { use, useEffect, useState, useRef } from 'react'
 import { brandColors } from '@/theme'
 
 interface GameState {
@@ -21,12 +21,62 @@ interface GameState {
   }>
 }
 
+interface TypingEffectProps {
+  text: string
+  speed?: number
+  onComplete?: () => void
+}
+
+const TypingEffect: React.FC<TypingEffectProps> = ({ text, speed = 2, onComplete }) => {
+  const [displayText, setDisplayText] = useState('')
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isComplete, setIsComplete] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const onCompleteRef = useRef(onComplete)
+
+  // Update the ref when onComplete changes
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  }, [onComplete])
+
+  // Reset when text changes
+  useEffect(() => {
+    setDisplayText('')
+    setCurrentIndex(0)
+    setIsComplete(false)
+  }, [text])
+
+  // Handle typing animation
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      timeoutRef.current = setTimeout(() => {
+        setDisplayText(prev => prev + text[currentIndex])
+        setCurrentIndex(prev => prev + 1)
+      }, speed)
+    } else if (currentIndex === text.length && !isComplete) {
+      setIsComplete(true)
+      if (onCompleteRef.current) {
+        onCompleteRef.current()
+      }
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [currentIndex, text.length, speed, isComplete])
+
+  return <span>{displayText}</span>
+}
+
 export default function AdventurePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { language } = useLanguage()
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [loading, setLoading] = useState(true)
   const [isProcessingMove, setIsProcessingMove] = useState(false)
+  const [isTyping, setIsTyping] = useState(true)
 
   // Update game state from API responses (start, state, move)
   const updateGameState = (data: GameState) => {
@@ -40,7 +90,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   // Handle option click
   const handleOptionClick = async (optionIndex: number) => {
     console.log('🎯 Option clicked:', optionIndex)
-    if (!gameState || isProcessingMove) return
+    if (!gameState || isProcessingMove || isTyping) return
 
     // Immediately display the nextSteps[optionIndex]
     const nextStep = gameState.nextSteps[optionIndex]
@@ -50,6 +100,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         ...gameState,
         currentStep: nextStep,
       })
+      setIsTyping(true)
     }
 
     // Call move API in background
@@ -105,6 +156,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         const data = await response.json()
         console.log('✅ Init API response received:', data)
         updateGameState(data)
+        setIsTyping(true)
         console.log('🔄 Initial gameState set')
       } catch (error) {
         console.error('❌ Error initializing game:', error)
@@ -132,33 +184,42 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     )
   }
 
+  const handleTypingComplete = () => {
+    setIsTyping(false)
+  }
+
   return (
-    <Box px={{ base: 4, md: 8 }} py={8} maxW="1200px" mx="auto">
+    <Box px={{ base: 4, md: 8 }} py={8} pt={{ base: 8, md: 24 }} maxW="1200px" mx="auto">
       <Text fontSize={{ base: 'xl', md: '2xl' }} mb={8} whiteSpace="pre-wrap" textAlign="left">
-        {gameState.currentStep.desc}
+        <TypingEffect
+          text={gameState.currentStep.desc}
+          speed={2}
+          onComplete={handleTypingComplete}
+        />
       </Text>
 
-      <VStack gap={4} align="stretch">
-        {gameState.currentStep.options.map((option, index) => (
-          <Link
-            key={index}
-            href="#"
-            color={brandColors.accent}
-            fontSize={{ base: 'xl', md: '2xl' }}
-            fontWeight="medium"
-            _hover={{ textDecoration: 'underline' }}
-            textAlign="left"
-            // opacity={isProcessingMove ? 0.5 : 1}
-            pointerEvents={isProcessingMove ? 'none' : 'auto'}
-            onClick={e => {
-              e.preventDefault()
-              handleOptionClick(index)
-            }}
-          >
-            {option}
-          </Link>
-        ))}
-      </VStack>
+      {!isTyping && (
+        <VStack gap={4} align="stretch">
+          {gameState.currentStep.options.map((option, index) => (
+            <Link
+              key={index}
+              href="#"
+              color={brandColors.accent}
+              fontSize={{ base: 'xl', md: '2xl' }}
+              fontWeight="medium"
+              _hover={{ textDecoration: 'underline' }}
+              textAlign="left"
+              pointerEvents={isProcessingMove ? 'none' : 'auto'}
+              onClick={e => {
+                e.preventDefault()
+                handleOptionClick(index)
+              }}
+            >
+              {option}
+            </Link>
+          ))}
+        </VStack>
+      )}
     </Box>
   )
 }

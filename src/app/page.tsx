@@ -42,38 +42,43 @@ export default function Home() {
   return (
     <Box minH="100vh">
       <VStack gap={8} align="center" justify="center" minH="100vh" p={8}>
-        <VStack gap={6}>
-          {scenarios.map(scenario => (
-            <Box
-              key={scenario.id}
-              onClick={() => handleStart(scenario.id)}
-              cursor="pointer"
-              position="relative"
-              _hover={{
-                transform: 'scale(1.05)',
-                borderColor: brandColors.secondary,
-              }}
-              transition="all 0.2s ease-in-out"
-              style={{
-                perspective: '1000px',
-              }}
-              bg={brandColors.black}
-              color={brandColors.white}
-              border="2px solid"
-              borderColor={brandColors.primary}
-              px={16}
-              py={8}
-              borderRadius="1.5rem"
-              fontSize="2xl"
-              fontWeight="semibold"
-              textAlign="center"
-              minW="400px"
-              opacity={isLoading === scenario.id ? 0.7 : 1}
-            >
-              <Text>{scenario.label}</Text>
-            </Box>
-          ))}
-        </VStack>
+        {isLoading ? (
+          <Text fontSize="2xl" fontWeight="semibold" color={brandColors.white}>
+            {scenarios.find(s => s.id === isLoading)?.label}...
+          </Text>
+        ) : (
+          <VStack gap={6} width="100%" maxW="600px">
+            {scenarios.map(scenario => (
+              <Box
+                key={scenario.id}
+                onClick={() => handleStart(scenario.id)}
+                cursor="pointer"
+                position="relative"
+                _hover={{
+                  transform: 'scale(1.05)',
+                  borderColor: brandColors.secondary,
+                }}
+                transition="all 0.2s ease-in-out"
+                style={{
+                  perspective: '1000px',
+                }}
+                bg={brandColors.black}
+                color={brandColors.white}
+                border="2px solid"
+                borderColor={brandColors.primary}
+                px={16}
+                py={8}
+                borderRadius="1.5rem"
+                fontSize="2xl"
+                fontWeight="semibold"
+                textAlign="center"
+                width="100%"
+              >
+                <Text>{scenario.label}</Text>
+              </Box>
+            ))}
+          </VStack>
+        )}
       </VStack>
     </Box>
   )
