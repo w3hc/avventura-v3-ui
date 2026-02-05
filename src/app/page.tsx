@@ -64,7 +64,8 @@ export default function Home() {
         {isLoading ? (
           <VStack gap={2}>
             <Text fontSize="lg" fontWeight="semibold" color={brandColors.white}>
-              {stories.find(s => s.slug === isLoading)?.homepage_display[language]?.title || isLoading}
+              {stories.find(s => s.slug === isLoading)?.homepage_display[language]?.title ||
+                isLoading}
             </Text>
             <Text fontSize="sm" color={brandColors.white} opacity={0.7}>
               Loading...
