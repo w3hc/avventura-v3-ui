@@ -166,7 +166,11 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
       <Box minH="100vh" p={8}>
         <VStack gap={8} align="center" justify="center" minH="100vh">
           <Text color="red.400">{error}</Text>
-          <Button onClick={() => router.push('/edit')} bg={brandColors.primary} color={brandColors.white}>
+          <Button
+            onClick={() => router.push('/edit')}
+            bg={brandColors.primary}
+            color={brandColors.white}
+          >
             Back to Create
           </Button>
         </VStack>
@@ -263,7 +267,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
           <Box>
             <Checkbox
               checked={formData.is_active}
-              onCheckedChange={(e) => setFormData({ ...formData, is_active: !!e.checked })}
+              onCheckedChange={e => setFormData({ ...formData, is_active: !!e.checked })}
               disabled={isSaving}
             >
               <Text color={brandColors.white}>Active</Text>
@@ -313,7 +317,14 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
         </VStack>
 
         {story && (
-          <Box mt={8} p={4} borderRadius="md" bg={brandColors.black} borderColor={brandColors.primary} borderWidth="1px">
+          <Box
+            mt={8}
+            p={4}
+            borderRadius="md"
+            bg={brandColors.black}
+            borderColor={brandColors.primary}
+            borderWidth="1px"
+          >
             <Text fontSize="sm" color={brandColors.white} opacity={0.6}>
               Created: {new Date(story.created_at).toLocaleString()}
             </Text>
