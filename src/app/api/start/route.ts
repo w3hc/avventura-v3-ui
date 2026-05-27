@@ -4,7 +4,8 @@ export async function POST(request: Request) {
   try {
     const { scenario, language } = await request.json()
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_AVVENTURA_API_URL}/start`, {
+    const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
+    const response = await fetch(`${apiUrl}/start`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

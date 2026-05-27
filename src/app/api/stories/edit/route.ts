@@ -12,7 +12,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Updates object is required' }, { status: 400 })
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_AVVENTURA_API_URL}/stories/edit`, {
+    const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
+    const response = await fetch(`${apiUrl}/stories/edit`, {
       method: 'POST',
       headers: {
         accept: '*/*',
