@@ -8,7 +8,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_AVVENTURA_API_URL}/stories`, {
+    const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
+    const response = await fetch(`${apiUrl}/stories`, {
       method: 'POST',
       headers: {
         accept: '*/*',
