@@ -1,0 +1,338 @@
+'use client'
+
+import { VStack, Box, Text, Input, Button, Textarea, HStack } from '@chakra-ui/react'
+import { useState, useEffect, use } from 'react'
+import { useRouter } from 'next/navigation'
+import { brandColors } from '@/theme'
+import { Checkbox } from '@/components/ui/checkbox'
+import { useLanguage } from '@/context/LanguageContext'
+
+interface StoryData {
+  slug: string
+  title: string
+  content: string
+  homepage_display: unknown
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  sessions?: number
+  requests?: number
+}
+
+export default function EditStoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params)
+  const router = useRouter()
+  const { language } = useLanguage()
+  const [story, setStory] = useState<StoryData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isStartingGame, setIsStartingGame] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  // Form fields
+  const [formData, setFormData] = useState({
+    slug: '',
+    title: '',
+    content: '',
+    homepage_display: '{}',
+    is_active: true,
+  })
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const response = await fetch(`/api/stories/${slug}`)
+
+        if (!response.ok) {
+          setError('Story not found')
+          setLoading(false)
+          return
+        }
+
+        const foundStory: StoryData = await response.json()
+
+        setStory(foundStory)
+        setFormData({
+          slug: foundStory.slug,
+          title: foundStory.title,
+          content: foundStory.content,
+          homepage_display:
+            typeof foundStory.homepage_display === 'string'
+              ? foundStory.homepage_display
+              : JSON.stringify(foundStory.homepage_display, null, 2),
+          is_active: foundStory.is_active,
+        })
+      } catch (err) {
+        console.error('Failed to fetch story:', err)
+        setError('Failed to load story')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStory()
+  }, [slug])
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    setError(null)
+    setSuccessMessage(null)
+
+    try {
+      // Parse homepage_display JSON
+      let homepage_display
+      try {
+        homepage_display = JSON.parse(formData.homepage_display)
+      } catch (err) {
+        setError('Invalid JSON in homepage_display field')
+        setIsSaving(false)
+        return
+      }
+
+      const updates = {
+        slug: formData.slug,
+        title: formData.title,
+        content: formData.content,
+        homepage_display,
+        is_active: formData.is_active,
+      }
+
+      const response = await fetch('/api/stories/edit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ slug, updates }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save story')
+      }
+
+      const data = await response.json()
+      setStory(data)
+      setSuccessMessage('Story saved successfully!')
+
+      // If slug changed, redirect to new slug
+      if (formData.slug !== slug) {
+        setTimeout(() => {
+          router.push(`/edit/${formData.slug}`)
+        }, 1000)
+      }
+    } catch (err) {
+      console.error('Failed to save story:', err)
+      setError('Failed to save story. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleStartGame = async () => {
+    setIsStartingGame(true)
+    try {
+      const response = await fetch('/api/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ scenario: slug, language }),
+      })
+      const data = await response.json()
+
+      if (data.id) {
+        router.push(`/${data.id}`)
+      }
+    } catch (error) {
+      console.error('Failed to start game:', error)
+      setError('Failed to start game. Please try again.')
+    } finally {
+      setIsStartingGame(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <Box minH="100vh" p={8}>
+        <VStack gap={8} align="center" justify="center" minH="100vh">
+          <Text color={brandColors.white}>Loading...</Text>
+        </VStack>
+      </Box>
+    )
+  }
+
+  if (error && !story) {
+    return (
+      <Box minH="100vh" p={8}>
+        <VStack gap={8} align="center" justify="center" minH="100vh">
+          <Text color="red.400">{error}</Text>
+          <Button onClick={() => router.push('/edit')} bg={brandColors.primary} color={brandColors.white}>
+            Back to Create
+          </Button>
+        </VStack>
+      </Box>
+    )
+  }
+
+  return (
+    <Box minH="100vh" p={8}>
+      <VStack gap={6} align="stretch" maxW="1200px" mx="auto" pt={24}>
+        <Text fontSize="2xl" fontWeight="bold" color={brandColors.white}>
+          Edit Story: {story?.slug}
+        </Text>
+
+        <VStack gap={4} align="stretch">
+          <Box>
+            <Text fontSize="sm" mb={2} color={brandColors.white} opacity={0.8}>
+              Slug
+            </Text>
+            <Input
+              value={formData.slug}
+              onChange={e => setFormData({ ...formData, slug: e.target.value })}
+              size="lg"
+              bg={brandColors.black}
+              color={brandColors.white}
+              borderColor={brandColors.primary}
+              _hover={{ borderColor: brandColors.secondary }}
+              _focus={{ borderColor: brandColors.accent }}
+              disabled={isSaving}
+              px={4}
+            />
+          </Box>
+
+          <Box>
+            <Text fontSize="sm" mb={2} color={brandColors.white} opacity={0.8}>
+              Title
+            </Text>
+            <Input
+              value={formData.title}
+              onChange={e => setFormData({ ...formData, title: e.target.value })}
+              size="lg"
+              bg={brandColors.black}
+              color={brandColors.white}
+              borderColor={brandColors.primary}
+              _hover={{ borderColor: brandColors.secondary }}
+              _focus={{ borderColor: brandColors.accent }}
+              disabled={isSaving}
+              px={4}
+            />
+          </Box>
+
+          <Box>
+            <Text fontSize="sm" mb={2} color={brandColors.white} opacity={0.8}>
+              Content
+            </Text>
+            <Textarea
+              value={formData.content}
+              onChange={e => setFormData({ ...formData, content: e.target.value })}
+              size="lg"
+              minH="300px"
+              bg={brandColors.black}
+              color={brandColors.white}
+              borderColor={brandColors.primary}
+              _hover={{ borderColor: brandColors.secondary }}
+              _focus={{ borderColor: brandColors.accent }}
+              disabled={isSaving}
+              fontFamily="monospace"
+              px={4}
+              py={3}
+            />
+          </Box>
+
+          <Box>
+            <Text fontSize="sm" mb={2} color={brandColors.white} opacity={0.8}>
+              Homepage Display (JSON)
+            </Text>
+            <Textarea
+              value={formData.homepage_display}
+              onChange={e => setFormData({ ...formData, homepage_display: e.target.value })}
+              size="lg"
+              minH="200px"
+              bg={brandColors.black}
+              color={brandColors.white}
+              borderColor={brandColors.primary}
+              _hover={{ borderColor: brandColors.secondary }}
+              _focus={{ borderColor: brandColors.accent }}
+              disabled={isSaving}
+              fontFamily="monospace"
+              px={4}
+              py={3}
+            />
+          </Box>
+
+          <Box>
+            <Checkbox
+              checked={formData.is_active}
+              onCheckedChange={(e) => setFormData({ ...formData, is_active: !!e.checked })}
+              disabled={isSaving}
+            >
+              <Text color={brandColors.white}>Active</Text>
+            </Checkbox>
+          </Box>
+
+          {error && (
+            <Text color="red.400" fontSize="sm">
+              {error}
+            </Text>
+          )}
+
+          {successMessage && (
+            <Text color="green.400" fontSize="sm">
+              {successMessage}
+            </Text>
+          )}
+
+          <HStack gap={4}>
+            <Button
+              onClick={handleSave}
+              isLoading={isSaving}
+              loadingText="Saving..."
+              size="lg"
+              bg={brandColors.primary}
+              color={brandColors.white}
+              _hover={{ bg: brandColors.secondary }}
+              disabled={isSaving}
+              flex={1}
+            >
+              Save Changes
+            </Button>
+            <Button
+              onClick={handleStartGame}
+              isLoading={isStartingGame}
+              loadingText="Starting..."
+              size="lg"
+              bg={brandColors.accent}
+              color={brandColors.white}
+              _hover={{ bg: brandColors.secondary }}
+              disabled={isStartingGame}
+              flex={1}
+            >
+              Start New Game
+            </Button>
+          </HStack>
+        </VStack>
+
+        {story && (
+          <Box mt={8} p={4} borderRadius="md" bg={brandColors.black} borderColor={brandColors.primary} borderWidth="1px">
+            <Text fontSize="sm" color={brandColors.white} opacity={0.6}>
+              Created: {new Date(story.created_at).toLocaleString()}
+            </Text>
+            <Text fontSize="sm" color={brandColors.white} opacity={0.6}>
+              Updated: {new Date(story.updated_at).toLocaleString()}
+            </Text>
+            {story.sessions !== undefined && (
+              <Text fontSize="sm" color={brandColors.white} opacity={0.6}>
+                Sessions: {story.sessions}
+              </Text>
+            )}
+            {story.requests !== undefined && (
+              <Text fontSize="sm" color={brandColors.white} opacity={0.6}>
+                Requests: {story.requests}
+              </Text>
+            )}
+          </Box>
+        )}
+      </VStack>
+    </Box>
+  )
+}

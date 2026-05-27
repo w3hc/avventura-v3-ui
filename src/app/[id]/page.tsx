@@ -3,6 +3,7 @@
 import { VStack, Box, Heading, Text, Link } from '@chakra-ui/react'
 import { useLanguage } from '@/context/LanguageContext'
 import { use, useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { brandColors } from '@/theme'
 
 interface GameState {
@@ -70,11 +71,13 @@ const TypingEffect: React.FC<TypingEffectProps> = ({ text, speed = 2, onComplete
 
 export default function AdventurePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const router = useRouter()
   const { language } = useLanguage()
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [loading, setLoading] = useState(true)
   const [isProcessingMove, setIsProcessingMove] = useState(false)
   const [isTyping, setIsTyping] = useState(true)
+  const [isStartingGame, setIsStartingGame] = useState(false)
 
   // Update game state from API responses (start, state, move)
   const updateGameState = (data: GameState) => {
@@ -138,6 +141,46 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     const initGame = async () => {
       console.log('🎮 Initializing game with id:', id)
+
+      // Check if this is a game session ID (8 capital letters) vs a story slug
+      // Game session IDs are 8 uppercase letters, story slugs are kebab-case
+      const isGameSessionId = /^[A-Z]{8}$/.test(id)
+      const isStorySlug = !isGameSessionId
+
+      if (isStorySlug) {
+        console.log('🎯 Detected story slug, starting new game')
+        setIsStartingGame(true)
+        try {
+          const response = await fetch('/api/start', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ scenario: id, language: 'fr' }),
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to start game')
+          }
+
+          const data = await response.json()
+
+          if (data.id) {
+            // Redirect to the game session with the new ID
+            router.replace(`/${data.id}`)
+            return
+          } else {
+            throw new Error('No game ID returned')
+          }
+        } catch (error) {
+          console.error('❌ Error starting game:', error)
+          setLoading(false)
+          setIsStartingGame(false)
+          return
+        }
+      }
+
+      // Otherwise treat as game session ID
       try {
         const response = await fetch('/api/init', {
           method: 'POST',
@@ -164,12 +207,14 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     }
 
     initGame()
-  }, [id])
+  }, [id, router])
 
-  if (loading) {
+  if (loading || isStartingGame) {
     return (
       <VStack gap={8} align="center" justify="center" minH="100vh">
-        <Text>Loading...</Text>
+        <Text fontSize="lg" fontWeight="semibold" color={brandColors.white}>
+          {isStartingGame ? 'Starting your adventure...' : 'Loading...'}
+        </Text>
       </VStack>
     )
   }
