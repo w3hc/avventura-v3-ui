@@ -1,9 +1,10 @@
 'use client'
 
-import { VStack, Box, Text, Input, Button } from '@chakra-ui/react'
+import { VStack, Box, Text, Textarea, Button } from '@chakra-ui/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { brandColors } from '@/theme'
+import Spinner from '@/components/Spinner'
 
 export default function CreateStoryPage() {
   const router = useRouter()
@@ -54,11 +55,12 @@ export default function CreateStoryPage() {
         </Text>
 
         <VStack gap={4} align="stretch">
-          <Input
+          <Textarea
             placeholder="Enter a prompt for your story..."
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             size="lg"
+            minH="200px"
             bg={brandColors.black}
             color={brandColors.white}
             borderColor={brandColors.primary}
@@ -66,6 +68,7 @@ export default function CreateStoryPage() {
             _focus={{ borderColor: brandColors.accent }}
             disabled={isCreating}
             px={4}
+            py={3}
           />
 
           {error && (
@@ -76,15 +79,13 @@ export default function CreateStoryPage() {
 
           <Button
             onClick={handleCreate}
-            isLoading={isCreating}
-            loadingText="Creating..."
             size="lg"
             bg={brandColors.primary}
             color={brandColors.white}
             _hover={{ bg: brandColors.secondary }}
             disabled={isCreating}
           >
-            Create
+            {isCreating ? <Spinner size="md" /> : 'Create'}
           </Button>
         </VStack>
       </VStack>
