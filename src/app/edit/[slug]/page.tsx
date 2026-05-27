@@ -289,7 +289,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
           <HStack gap={4}>
             <Button
               onClick={handleSave}
-              isLoading={isSaving}
+              loading={isSaving}
               loadingText="Saving..."
               size="lg"
               bg={brandColors.primary}
