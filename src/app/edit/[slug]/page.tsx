@@ -302,7 +302,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
             </Button>
             <Button
               onClick={handleStartGame}
-              isLoading={isStartingGame}
+              loading={isStartingGame}
               loadingText="Starting..."
               size="lg"
               bg={brandColors.accent}
