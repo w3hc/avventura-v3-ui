@@ -4,7 +4,8 @@ export async function POST(request: Request) {
   try {
     const { id } = await request.json()
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_AVVENTURA_API_URL}/state`, {
+    const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
+    const response = await fetch(`${apiUrl}/state`, {
       method: 'POST',
       headers: {
         accept: '*/*',

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_AVVENTURA_API_URL}/stories`)
+    const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
+    const response = await fetch(`${apiUrl}/stories`)
 
     if (!response.ok) {
       throw new Error('Failed to fetch stories')
