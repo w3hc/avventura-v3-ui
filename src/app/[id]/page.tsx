@@ -5,6 +5,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { use, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { brandColors } from '@/theme'
+import Spinner from '@/components/Spinner'
 
 interface GameState {
   id: string
@@ -212,9 +213,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   if (loading || isStartingGame) {
     return (
       <VStack gap={8} align="center" justify="center" minH="100vh">
-        <Text fontSize="lg" fontWeight="semibold" color={brandColors.white}>
-          {isStartingGame ? 'Starting your adventure...' : 'Loading...'}
-        </Text>
+        <Spinner size={200} />
       </VStack>
     )
   }

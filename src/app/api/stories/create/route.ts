@@ -9,6 +9,8 @@ export async function POST(request: Request) {
     }
 
     const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
+    console.log('Creating story with API URL:', apiUrl)
+
     const response = await fetch(`${apiUrl}/stories`, {
       method: 'POST',
       headers: {
@@ -19,7 +21,9 @@ export async function POST(request: Request) {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to create story')
+      const errorText = await response.text()
+      console.error('API error response:', response.status, errorText)
+      throw new Error(`Failed to create story: ${response.status} ${errorText}`)
     }
 
     const data = await response.json()
