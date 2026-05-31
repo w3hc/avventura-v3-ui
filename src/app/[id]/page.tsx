@@ -166,7 +166,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       setTimeout(() => {
         console.log('🌟 Stopping shimmer effect')
         setShowShimmer(false)
-      }, 800)
+      }, 400)
     } catch (error) {
       clearInterval(counterInterval)
       setWaitingForNextMove(false)
@@ -281,77 +281,38 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         <>
           <style>
             {`
-              @keyframes shimmer-glow {
-                0% {
+              @keyframes shimmer {
+                0%, 100% {
                   opacity: 1;
-                  background: linear-gradient(90deg, transparent 0%, transparent 100%);
-                  background-clip: text;
-                  -webkit-background-clip: text;
+                  color: ${brandColors.accent};
                 }
                 50% {
-                  opacity: 0.5;
-                  background: linear-gradient(90deg, transparent 0%, ${brandColors.primary} 50%, transparent 100%);
-                  background-clip: text;
-                  -webkit-background-clip: text;
-                  text-shadow: 0 0 30px ${brandColors.primary}, 0 0 60px ${brandColors.primary};
-                }
-                100% {
                   opacity: 1;
-                  background: linear-gradient(90deg, transparent 0%, transparent 100%);
-                  background-clip: text;
-                  -webkit-background-clip: text;
+                  color: ${brandColors.primary};
                 }
-              }
-
-              @keyframes shimmer-sweep {
-                0% { background-position: -200% center; }
-                100% { background-position: 200% center; }
-              }
-
-              .shimmer-active {
-                background: linear-gradient(90deg, transparent 0%, ${brandColors.primary} 50%, transparent 100%);
-                background-size: 200% 100%;
-                background-clip: text;
-                -webkit-background-clip: text;
-                animation: shimmer-sweep 0.8s ease-in-out;
               }
             `}
           </style>
           <VStack gap={4} align="stretch">
             {gameState.currentStep.options.map((option, index) => (
-              <Box
+              <Link
                 key={index}
-                position="relative"
+                href="#"
+                color={brandColors.accent}
+                fontSize={{ base: 'xl', md: '2xl' }}
+                fontWeight="medium"
+                _hover={{ textDecoration: 'underline' }}
+                textAlign="left"
+                onClick={e => {
+                  e.preventDefault()
+                  handleOptionClick(index)
+                }}
                 style={{
-                  animation: showShimmer ? 'shimmer-sweep 0.8s ease-in-out' : 'none',
-                  background: showShimmer
-                    ? `linear-gradient(90deg, transparent 0%, ${brandColors.primary} 50%, transparent 100%)`
-                    : 'none',
-                  backgroundSize: '200% 100%',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
+                  animation: showShimmer ? 'shimmer 0.4s ease-in-out' : 'none',
                 }}
               >
-                <Link
-                  href="#"
-                  color={brandColors.accent}
-                  fontSize={{ base: 'xl', md: '2xl' }}
-                  fontWeight="medium"
-                  _hover={{ textDecoration: 'underline' }}
-                  textAlign="left"
-                  onClick={e => {
-                    e.preventDefault()
-                    handleOptionClick(index)
-                  }}
-                  style={{
-                    textShadow: showShimmer
-                      ? `0 0 30px ${brandColors.primary}, 0 0 60px ${brandColors.primary}`
-                      : 'none',
-                  }}
-                >
-                  {option}
-                </Link>
-              </Box>
+                {option}
+              </Link>
             ))}
           </VStack>
         </>
