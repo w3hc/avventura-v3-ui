@@ -9,6 +9,7 @@ import {
   ToastCloseTrigger,
 } from '@chakra-ui/react/toast'
 import { Stack } from '@chakra-ui/react'
+import { brandColors } from '@/theme'
 
 export const toaster = createToaster({
   placement: 'bottom',
@@ -31,6 +32,10 @@ export const Toaster = () => {
           fontSize="sm"
           borderRadius="md"
           boxShadow="lg"
+          bg="transparent"
+          color={brandColors.white}
+          border="1px solid"
+          borderColor={brandColors.primary}
         >
           <Stack gap="1" flex="1">
             {toast.title && (

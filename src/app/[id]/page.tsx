@@ -6,6 +6,8 @@ import { use, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { brandColors } from '@/theme'
 import Spinner from '@/components/Spinner'
+import { useTranslations } from '@/translations'
+import { toaster } from '@/components/ui/toaster'
 
 interface GameState {
   id: string
@@ -74,11 +76,13 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   const { id } = use(params)
   const router = useRouter()
   const { language } = useLanguage()
+  const t = useTranslations(language)
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [loading, setLoading] = useState(true)
   const [isProcessingMove, setIsProcessingMove] = useState(false)
   const [isTyping, setIsTyping] = useState(true)
   const [isStartingGame, setIsStartingGame] = useState(false)
+  const [waitingForNextMove, setWaitingForNextMove] = useState(false)
 
   // Update game state from API responses (start, state, move)
   const updateGameState = (data: GameState) => {
@@ -92,6 +96,18 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   // Handle option click
   const handleOptionClick = async (optionIndex: number) => {
     console.log('🎯 Option clicked:', optionIndex)
+
+    // If still waiting for previous move, show toast and return
+    if (waitingForNextMove) {
+      console.log('⚠️ Still waiting for previous move response - showing toast')
+      toaster.create({
+        description: t.game.waitingMessage,
+        type: 'info',
+        duration: 2000,
+      })
+      return
+    }
+
     if (!gameState || isProcessingMove || isTyping) return
 
     // Immediately display the nextSteps[optionIndex]
@@ -107,7 +123,16 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
 
     // Call move API in background
     setIsProcessingMove(true)
+    setWaitingForNextMove(true)
     console.log('🚀 Calling /api/move with choiceIndex:', optionIndex + 1)
+
+    // Start counter
+    let counter = 0
+    const counterInterval = setInterval(() => {
+      counter++
+      console.log(`Waiting for next ${counter} sec`)
+    }, 1000)
+
     try {
       const response = await fetch('/api/move', {
         method: 'POST',
@@ -125,14 +150,18 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       }
 
       const data = await response.json()
+      clearInterval(counterInterval)
       console.log('✅ Move API response received:', data)
       // Update with actual response from API
       updateGameState({
         ...gameState,
         ...data,
       })
+      setWaitingForNextMove(false)
       console.log('🔄 GameState updated with API response')
     } catch (error) {
+      clearInterval(counterInterval)
+      setWaitingForNextMove(false)
       console.error('❌ Error making move:', error)
     } finally {
       setIsProcessingMove(false)
@@ -251,7 +280,6 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
               fontWeight="medium"
               _hover={{ textDecoration: 'underline' }}
               textAlign="left"
-              pointerEvents={isProcessingMove ? 'none' : 'auto'}
               onClick={e => {
                 e.preventDefault()
                 handleOptionClick(index)
