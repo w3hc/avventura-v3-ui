@@ -1,13 +1,13 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Settings | w3pk',
+  title: 'Settings | Avventura',
   description: 'Manage your accounts, backups, and recovery options for your w3pk wallet.',
 
   openGraph: {
-    title: 'Settings | w3pk',
+    title: 'Settings | Avventura',
     description: 'Manage your accounts, backups, and recovery options for your w3pk wallet.',
-    siteName: 'Genji',
+    siteName: 'Avventura',
     images: [
       {
         url: '/huangshan.png',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'Settings | w3pk | Genji',
+    title: 'Settings | Avventura',
     description: 'Manage your accounts, backups, and recovery options for your w3pk wallet.',
     images: ['/huangshan.png'],
     creator: '@julienbrg',

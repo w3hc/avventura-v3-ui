@@ -28,14 +28,21 @@ export default function Spinner({ size = '32px' }: SpinnerProps) {
   const sizeNum = getSizeNum(size)
 
   return (
-    <Box role="status" aria-live="polite" display="inline-block">
+    <Box
+      role="status"
+      aria-live="polite"
+      display="inline-block"
+      width={`${sizeNum}px`}
+      height={`${sizeNum}px`}
+      flexShrink={0}
+    >
       <Image
         src="/loader.svg"
         alt=""
         aria-hidden="true"
         width={sizeNum}
         height={sizeNum}
-        style={{ display: 'block' }}
+        style={{ display: 'block', width: `${sizeNum}px`, height: `${sizeNum}px` }}
       />
       <span className="sr-only">Loading, please wait...</span>
     </Box>

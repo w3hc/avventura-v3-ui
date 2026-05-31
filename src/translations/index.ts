@@ -24,6 +24,9 @@ type TranslationKeys = {
     title: string
     loginRequired: string
   }
+  game: {
+    waitingMessage: string
+  }
 }
 
 // Define translations for each supported language
@@ -53,6 +56,9 @@ export const translations: Translations = {
       title: 'Settings',
       loginRequired: 'Please login to access your settings',
     },
+    game: {
+      waitingMessage: 'Just a moment, please',
+    },
   },
 
   // Mandarin Chinese
@@ -75,6 +81,9 @@ export const translations: Translations = {
     settings: {
       title: '设置',
       loginRequired: '请登录以访问您的设置',
+    },
+    game: {
+      waitingMessage: '请稍等',
     },
   },
 
@@ -99,6 +108,9 @@ export const translations: Translations = {
       title: 'सेटिंग्स',
       loginRequired: 'अपनी सेटिंग्स एक्सेस करने के लिए कृपया लॉगिन करें',
     },
+    game: {
+      waitingMessage: 'कृपया एक पल रुकें',
+    },
   },
 
   // Spanish
@@ -121,6 +133,9 @@ export const translations: Translations = {
     settings: {
       title: 'Configuración',
       loginRequired: 'Por favor inicia sesión para acceder a tu configuración',
+    },
+    game: {
+      waitingMessage: 'Un momento, por favor',
     },
   },
 
@@ -145,6 +160,9 @@ export const translations: Translations = {
       title: 'Paramètres',
       loginRequired: 'Veuillez vous connecter pour accéder à vos paramètres',
     },
+    game: {
+      waitingMessage: "Un instant, s'il vous plaît",
+    },
   },
 
   // Arabic
@@ -167,6 +185,9 @@ export const translations: Translations = {
     settings: {
       title: 'الإعدادات',
       loginRequired: 'يرجى تسجيل الدخول للوصول إلى إعداداتك',
+    },
+    game: {
+      waitingMessage: 'لحظة من فضلك',
     },
   },
 
@@ -191,6 +212,9 @@ export const translations: Translations = {
       title: 'সেটিংস',
       loginRequired: 'আপনার সেটিংস অ্যাক্সেস করতে অনুগ্রহ করে লগইন করুন',
     },
+    game: {
+      waitingMessage: 'একটু অপেক্ষা করুন',
+    },
   },
 
   // Russian
@@ -213,6 +237,9 @@ export const translations: Translations = {
     settings: {
       title: 'Настройки',
       loginRequired: 'Пожалуйста, войдите, чтобы получить доступ к настройкам',
+    },
+    game: {
+      waitingMessage: 'Минутку, пожалуйста',
     },
   },
 
@@ -237,6 +264,9 @@ export const translations: Translations = {
       title: 'Configurações',
       loginRequired: 'Por favor faça login para acessar suas configurações',
     },
+    game: {
+      waitingMessage: 'Um momento, por favor',
+    },
   },
 
   // Urdu
@@ -259,6 +289,9 @@ export const translations: Translations = {
     settings: {
       title: 'ترتیبات',
       loginRequired: 'اپنی ترتیبات تک رسائی کے لیے براہ کرم لاگ ان کریں',
+    },
+    game: {
+      waitingMessage: 'ایک لمحہ، براہ کرم',
     },
   },
 }

@@ -3,22 +3,22 @@ import { Metadata } from 'next'
 export const metadata: Metadata = {
   metadataBase: new URL('https://w3pk.w3hc.org'),
 
-  title: 'Genji',
-  description: 'Next.js Web3 starter with passkey auth',
+  title: 'Avventura',
+  description: 'The one and only Web3 text-based RPG!',
 
-  keywords: ['Genji', 'w3pk', 'WebAuthn', 'Next.js', 'Web3', 'Ethereum'],
+  keywords: ['Avventura', 'w3pk', 'WebAuthn', 'Next.js', 'Web3', 'Ethereum'],
   authors: [{ name: 'W3HC', url: 'https://github.com/w3hc' }],
 
   openGraph: {
-    title: 'Genji',
-    description: 'Next.js Web3 starter with passkey auth',
-    siteName: 'Genji',
+    title: 'Avventura',
+    description: 'The one and only Web3 text-based RPG!',
+    siteName: 'Avventura',
     images: [
       {
         url: '/huangshan.png',
         width: 1200,
         height: 630,
-        alt: 'Next.js Web3 starter with passkey auth',
+        alt: 'The one and only Web3 text-based RPG!',
       },
     ],
     locale: 'en_US',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'Genji',
+    title: 'Avventura',
     description: 'Next.js Web3 starter with passkey auth',
     images: ['/huangshan.png'],
     creator: '@julienbrg',

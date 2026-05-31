@@ -54,6 +54,11 @@ export default function CreateStoryPage() {
           Create New Story
         </Text>
 
+        <Text fontSize="md" color={brandColors.white} opacity={0.8}>
+          In what world does the story take place? What will happen? Any milestones you want players
+          to achieve? Don&apos;t worry about being rough—the assistant will edit it cleanly.
+        </Text>
+
         <VStack gap={4} align="stretch">
           <Textarea
             placeholder="Enter a prompt for your story..."

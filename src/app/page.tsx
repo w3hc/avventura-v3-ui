@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { brandColors } from '@/theme'
 import { useLanguage } from '@/context/LanguageContext'
+import Spinner from '@/components/Spinner'
 
 interface Story {
   slug: string
@@ -62,15 +63,7 @@ export default function Home() {
     <Box minH="100vh">
       <VStack gap={8} align="center" justify="center" minH="100vh" p={8}>
         {isLoading ? (
-          <VStack gap={2}>
-            <Text fontSize="lg" fontWeight="semibold" color={brandColors.white}>
-              {stories.find(s => s.slug === isLoading)?.homepage_display[language]?.title ||
-                isLoading}
-            </Text>
-            <Text fontSize="sm" color={brandColors.white} opacity={0.7}>
-              Loading...
-            </Text>
-          </VStack>
+          <Spinner size={200} />
         ) : (
           <VStack gap={4} width="100%" maxW="800px">
             {stories.map(story => (
