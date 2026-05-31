@@ -83,6 +83,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   const [isTyping, setIsTyping] = useState(true)
   const [isStartingGame, setIsStartingGame] = useState(false)
   const [waitingForNextMove, setWaitingForNextMove] = useState(false)
+  const [showShimmer, setShowShimmer] = useState(false)
 
   // Update game state from API responses (start, state, move)
   const updateGameState = (data: GameState) => {
@@ -159,6 +160,13 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       })
       setWaitingForNextMove(false)
       console.log('🔄 GameState updated with API response')
+      // Trigger shimmer on the next options that will appear
+      console.log('🌟 Triggering shimmer effect')
+      setShowShimmer(true)
+      setTimeout(() => {
+        console.log('🌟 Stopping shimmer effect')
+        setShowShimmer(false)
+      }, 800)
     } catch (error) {
       clearInterval(counterInterval)
       setWaitingForNextMove(false)
@@ -270,25 +278,83 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       </Text>
 
       {!isTyping && (
-        <VStack gap={4} align="stretch">
-          {gameState.currentStep.options.map((option, index) => (
-            <Link
-              key={index}
-              href="#"
-              color={brandColors.accent}
-              fontSize={{ base: 'xl', md: '2xl' }}
-              fontWeight="medium"
-              _hover={{ textDecoration: 'underline' }}
-              textAlign="left"
-              onClick={e => {
-                e.preventDefault()
-                handleOptionClick(index)
-              }}
-            >
-              {option}
-            </Link>
-          ))}
-        </VStack>
+        <>
+          <style>
+            {`
+              @keyframes shimmer-glow {
+                0% {
+                  opacity: 1;
+                  background: linear-gradient(90deg, transparent 0%, transparent 100%);
+                  background-clip: text;
+                  -webkit-background-clip: text;
+                }
+                50% {
+                  opacity: 0.5;
+                  background: linear-gradient(90deg, transparent 0%, ${brandColors.primary} 50%, transparent 100%);
+                  background-clip: text;
+                  -webkit-background-clip: text;
+                  text-shadow: 0 0 30px ${brandColors.primary}, 0 0 60px ${brandColors.primary};
+                }
+                100% {
+                  opacity: 1;
+                  background: linear-gradient(90deg, transparent 0%, transparent 100%);
+                  background-clip: text;
+                  -webkit-background-clip: text;
+                }
+              }
+
+              @keyframes shimmer-sweep {
+                0% { background-position: -200% center; }
+                100% { background-position: 200% center; }
+              }
+
+              .shimmer-active {
+                background: linear-gradient(90deg, transparent 0%, ${brandColors.primary} 50%, transparent 100%);
+                background-size: 200% 100%;
+                background-clip: text;
+                -webkit-background-clip: text;
+                animation: shimmer-sweep 0.8s ease-in-out;
+              }
+            `}
+          </style>
+          <VStack gap={4} align="stretch">
+            {gameState.currentStep.options.map((option, index) => (
+              <Box
+                key={index}
+                position="relative"
+                style={{
+                  animation: showShimmer ? 'shimmer-sweep 0.8s ease-in-out' : 'none',
+                  background: showShimmer
+                    ? `linear-gradient(90deg, transparent 0%, ${brandColors.primary} 50%, transparent 100%)`
+                    : 'none',
+                  backgroundSize: '200% 100%',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                }}
+              >
+                <Link
+                  href="#"
+                  color={brandColors.accent}
+                  fontSize={{ base: 'xl', md: '2xl' }}
+                  fontWeight="medium"
+                  _hover={{ textDecoration: 'underline' }}
+                  textAlign="left"
+                  onClick={e => {
+                    e.preventDefault()
+                    handleOptionClick(index)
+                  }}
+                  style={{
+                    textShadow: showShimmer
+                      ? `0 0 30px ${brandColors.primary}, 0 0 60px ${brandColors.primary}`
+                      : 'none',
+                  }}
+                >
+                  {option}
+                </Link>
+              </Box>
+            ))}
+          </VStack>
+        </>
       )}
     </Box>
   )
