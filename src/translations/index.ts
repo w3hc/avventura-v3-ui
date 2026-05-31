@@ -161,7 +161,7 @@ export const translations: Translations = {
       loginRequired: 'Veuillez vous connecter pour accéder à vos paramètres',
     },
     game: {
-      waitingMessage: 'Un instant, s\'il vous plaît',
+      waitingMessage: "Un instant, s'il vous plaît",
     },
   },
 
