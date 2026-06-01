@@ -124,7 +124,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       // Scroll to top when new content starts appearing
       window.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: 'smooth',
       })
     }
 
@@ -252,7 +252,6 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
 
     initGame()
   }, [id, router])
-
 
   if (loading || isStartingGame) {
     return (
