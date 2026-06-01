@@ -257,7 +257,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         behavior: 'smooth',
       })
     }
-  }, [gameState?.currentStep.desc])
+  }, [gameState, gameState?.currentStep.desc])
 
   if (loading || isStartingGame) {
     return (
