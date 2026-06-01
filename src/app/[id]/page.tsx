@@ -121,6 +121,11 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         currentStep: nextStep,
       })
       setIsTyping(true)
+      // Scroll to top when new content starts appearing
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      })
     }
 
     // Call move API in background
@@ -248,16 +253,6 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     initGame()
   }, [id, router])
 
-  // Auto-scroll to top when new content appears
-  useEffect(() => {
-    if (gameState && contentRef.current) {
-      // Scroll to top with smooth animation
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      })
-    }
-  }, [gameState, gameState?.currentStep.desc])
 
   if (loading || isStartingGame) {
     return (
