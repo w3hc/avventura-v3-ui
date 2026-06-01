@@ -84,6 +84,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   const [isStartingGame, setIsStartingGame] = useState(false)
   const [waitingForNextMove, setWaitingForNextMove] = useState(false)
   const [showShimmer, setShowShimmer] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   // Update game state from API responses (start, state, move)
   const updateGameState = (data: GameState) => {
@@ -247,6 +248,17 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     initGame()
   }, [id, router])
 
+  // Auto-scroll to top when new content appears
+  useEffect(() => {
+    if (gameState && contentRef.current) {
+      // Scroll to top with smooth animation
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      })
+    }
+  }, [gameState, gameState?.currentStep.desc])
+
   if (loading || isStartingGame) {
     return (
       <VStack gap={8} align="center" justify="center" minH="100vh">
@@ -268,7 +280,15 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   }
 
   return (
-    <Box px={{ base: 4, md: 8 }} py={8} pt={{ base: 8, md: 24 }} maxW="1200px" mx="auto">
+    <Box
+      ref={contentRef}
+      px={{ base: 4, md: 8 }}
+      py={8}
+      pt={{ base: 8, md: 24 }}
+      pb={{ base: 32, md: 40 }}
+      maxW="1200px"
+      mx="auto"
+    >
       <Text fontSize={{ base: 'xl', md: '2xl' }} mb={8} whiteSpace="pre-wrap" textAlign="left">
         <TypingEffect
           text={gameState.currentStep.desc}

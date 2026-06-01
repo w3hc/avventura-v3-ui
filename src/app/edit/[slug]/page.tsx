@@ -1,11 +1,22 @@
 'use client'
 
-import { VStack, Box, Text, Input, Button, Textarea, HStack } from '@chakra-ui/react'
+import {
+  VStack,
+  Box,
+  Text,
+  Input,
+  Button,
+  Textarea,
+  HStack,
+  Link,
+  IconButton,
+} from '@chakra-ui/react'
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { brandColors } from '@/theme'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useLanguage } from '@/context/LanguageContext'
+import { toaster } from '@/components/ui/toaster'
 
 interface StoryData {
   slug: string
@@ -26,7 +37,6 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
   const [story, setStory] = useState<StoryData | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [isStartingGame, setIsStartingGame] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
@@ -128,28 +138,16 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
     }
   }
 
-  const handleStartGame = async () => {
-    setIsStartingGame(true)
-    try {
-      const response = await fetch('/api/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ scenario: slug, language }),
-      })
-      const data = await response.json()
-
-      if (data.id) {
-        router.push(`/${data.id}`)
-      }
-    } catch (error) {
-      console.error('Failed to start game:', error)
-      setError('Failed to start game. Please try again.')
-    } finally {
-      setIsStartingGame(false)
-    }
+  const handleCopyUrl = (url: string) => {
+    navigator.clipboard.writeText(url)
+    toaster.create({
+      description: 'URL copied to clipboard',
+      type: 'success',
+      duration: 2000,
+    })
   }
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
   if (loading) {
     return (
@@ -181,9 +179,101 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
   return (
     <Box minH="100vh" p={8}>
       <VStack gap={6} align="stretch" maxW="1200px" mx="auto" pt={24}>
-        <Text fontSize="2xl" fontWeight="bold" color={brandColors.white}>
-          Edit Story: {story?.slug}
-        </Text>
+        <Box>
+          <Text fontSize="2xl" fontWeight="bold" color={brandColors.white} mb={3}>
+            Edit Story
+          </Text>
+          <VStack align="start" gap={1}>
+            <HStack gap={2}>
+              <Text color={brandColors.white} fontSize="sm" opacity={0.8}>
+                Play:
+              </Text>
+              <Link
+                href={`/${slug}`}
+                color={brandColors.accent}
+                fontSize="sm"
+                fontFamily="monospace"
+                onClick={e => {
+                  e.preventDefault()
+                  handleCopyUrl(`${baseUrl}/${slug}`)
+                }}
+                _hover={{
+                  textDecoration: 'underline',
+                }}
+              >
+                {baseUrl}/{slug}
+              </Link>
+              <IconButton
+                aria-label="Copy URL"
+                size="xs"
+                variant="ghost"
+                colorScheme="whiteAlpha"
+                onClick={() => handleCopyUrl(`${baseUrl}/${slug}`)}
+                _hover={{
+                  bg: brandColors.secondary,
+                }}
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </IconButton>
+            </HStack>
+            <HStack gap={2}>
+              <Text color={brandColors.white} fontSize="sm" opacity={0.8}>
+                Edit:
+              </Text>
+              <Link
+                href={`/edit/${slug}`}
+                color={brandColors.accent}
+                fontSize="sm"
+                fontFamily="monospace"
+                onClick={e => {
+                  e.preventDefault()
+                  handleCopyUrl(`${baseUrl}/edit/${slug}`)
+                }}
+                _hover={{
+                  textDecoration: 'underline',
+                }}
+              >
+                {baseUrl}/edit/{slug}
+              </Link>
+              <IconButton
+                aria-label="Copy URL"
+                size="xs"
+                variant="ghost"
+                colorScheme="whiteAlpha"
+                onClick={() => handleCopyUrl(`${baseUrl}/edit/${slug}`)}
+                _hover={{
+                  bg: brandColors.secondary,
+                }}
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </IconButton>
+            </HStack>
+          </VStack>
+        </Box>
 
         <VStack gap={4} align="stretch">
           <Box>
@@ -286,34 +376,18 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
             </Text>
           )}
 
-          <HStack gap={4}>
-            <Button
-              onClick={handleSave}
-              loading={isSaving}
-              loadingText="Saving..."
-              size="lg"
-              bg={brandColors.primary}
-              color={brandColors.white}
-              _hover={{ bg: brandColors.secondary }}
-              disabled={isSaving}
-              flex={1}
-            >
-              Save Changes
-            </Button>
-            <Button
-              onClick={handleStartGame}
-              loading={isStartingGame}
-              loadingText="Starting..."
-              size="lg"
-              bg={brandColors.accent}
-              color={brandColors.white}
-              _hover={{ bg: brandColors.secondary }}
-              disabled={isStartingGame}
-              flex={1}
-            >
-              Start New Game
-            </Button>
-          </HStack>
+          <Button
+            onClick={handleSave}
+            loading={isSaving}
+            loadingText="Saving..."
+            size="lg"
+            bg={brandColors.primary}
+            color={brandColors.white}
+            _hover={{ bg: brandColors.secondary }}
+            disabled={isSaving}
+          >
+            Save Changes
+          </Button>
         </VStack>
 
         {story && (
