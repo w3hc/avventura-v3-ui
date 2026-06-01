@@ -1,6 +1,16 @@
 'use client'
 
-import { VStack, Box, Text, Input, Button, Textarea, HStack, Link, IconButton } from '@chakra-ui/react'
+import {
+  VStack,
+  Box,
+  Text,
+  Input,
+  Button,
+  Textarea,
+  HStack,
+  Link,
+  IconButton,
+} from '@chakra-ui/react'
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { brandColors } from '@/theme'
@@ -183,7 +193,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
                 color={brandColors.accent}
                 fontSize="sm"
                 fontFamily="monospace"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault()
                   handleCopyUrl(`${baseUrl}/${slug}`)
                 }}
@@ -227,7 +237,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
                 color={brandColors.accent}
                 fontSize="sm"
                 fontFamily="monospace"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault()
                   handleCopyUrl(`${baseUrl}/edit/${slug}`)
                 }}

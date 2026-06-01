@@ -119,7 +119,7 @@ export default function Home() {
                       color={brandColors.accent}
                       textAlign="left"
                       cursor="pointer"
-                      onClick={(e) => handleCopyUrl(e, story.slug)}
+                      onClick={e => handleCopyUrl(e, story.slug)}
                       _hover={{
                         textDecoration: 'underline',
                       }}
@@ -131,7 +131,7 @@ export default function Home() {
                       size="sm"
                       variant="ghost"
                       colorScheme="whiteAlpha"
-                      onClick={(e) => handleCopyUrl(e, story.slug)}
+                      onClick={e => handleCopyUrl(e, story.slug)}
                       _hover={{
                         bg: brandColors.secondary,
                       }}
