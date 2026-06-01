@@ -254,7 +254,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       // Scroll to top with smooth animation
       window.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: 'smooth',
       })
     }
   }, [gameState?.currentStep.desc])
@@ -280,7 +280,15 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   }
 
   return (
-    <Box ref={contentRef} px={{ base: 4, md: 8 }} py={8} pt={{ base: 8, md: 24 }} pb={{ base: 32, md: 40 }} maxW="1200px" mx="auto">
+    <Box
+      ref={contentRef}
+      px={{ base: 4, md: 8 }}
+      py={8}
+      pt={{ base: 8, md: 24 }}
+      pb={{ base: 32, md: 40 }}
+      maxW="1200px"
+      mx="auto"
+    >
       <Text fontSize={{ base: 'xl', md: '2xl' }} mb={8} whiteSpace="pre-wrap" textAlign="left">
         <TypingEffect
           text={gameState.currentStep.desc}

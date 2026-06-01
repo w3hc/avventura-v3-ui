@@ -1,11 +1,12 @@
 'use client'
 
-import { VStack, Box, Text } from '@chakra-ui/react'
+import { VStack, Box, Text, HStack, IconButton } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { brandColors } from '@/theme'
 import { useLanguage } from '@/context/LanguageContext'
 import Spinner from '@/components/Spinner'
+import { toaster } from '@/components/ui/toaster'
 
 interface Story {
   slug: string
@@ -23,6 +24,7 @@ export default function Home() {
   const { language } = useLanguage()
   const [isLoading, setIsLoading] = useState<string | null>(null)
   const [stories, setStories] = useState<Story[]>([])
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
   useEffect(() => {
     const fetchStories = async () => {
@@ -59,6 +61,17 @@ export default function Home() {
     }
   }
 
+  const handleCopyUrl = (e: React.MouseEvent, slug: string) => {
+    e.stopPropagation()
+    const url = `${baseUrl}/${slug}`
+    navigator.clipboard.writeText(url)
+    toaster.create({
+      description: 'URL copied to clipboard',
+      type: 'success',
+      duration: 2000,
+    })
+  }
+
   return (
     <Box minH="100vh">
       <VStack gap={8} align="center" justify="center" minH="100vh" p={8}>
@@ -87,13 +100,57 @@ export default function Home() {
                 borderRadius="lg"
                 width="100%"
               >
-                <VStack align="start" gap={2}>
+                <VStack align="start" gap={2} width="100%">
                   <Text fontSize="lg" fontWeight="semibold">
                     {story.homepage_display[language]?.title || story.title}
                   </Text>
                   <Text fontSize="sm" opacity={0.8} lineHeight="1.5">
                     {story.homepage_display[language]?.description || ''}
                   </Text>
+                  <HStack width="100%" mt={2} gap={2}>
+                    <Text
+                      as="button"
+                      fontSize="xs"
+                      fontFamily="monospace"
+                      flex={1}
+                      overflow="hidden"
+                      textOverflow="ellipsis"
+                      whiteSpace="nowrap"
+                      color={brandColors.accent}
+                      textAlign="left"
+                      cursor="pointer"
+                      onClick={(e) => handleCopyUrl(e, story.slug)}
+                      _hover={{
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      {baseUrl}/{story.slug}
+                    </Text>
+                    <IconButton
+                      aria-label="Copy URL"
+                      size="sm"
+                      variant="ghost"
+                      colorScheme="whiteAlpha"
+                      onClick={(e) => handleCopyUrl(e, story.slug)}
+                      _hover={{
+                        bg: brandColors.secondary,
+                      }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </IconButton>
+                  </HStack>
                 </VStack>
               </Box>
             ))}
