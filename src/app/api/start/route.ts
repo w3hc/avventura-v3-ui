@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+export const maxDuration = 300
+
 export async function POST(request: Request) {
   try {
     const { scenario, language } = await request.json()
@@ -14,6 +16,7 @@ export async function POST(request: Request) {
         story: scenario,
         language: language || 'fr',
       }),
+      signal: AbortSignal.timeout(300000),
     })
 
     if (!response.ok) {
