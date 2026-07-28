@@ -84,13 +84,15 @@ export default function CreateStoryPage() {
 
           <Button
             onClick={handleCreate}
+            loading={isCreating}
+            spinner={<Spinner size="200px" />}
             size="lg"
-            bg={brandColors.primary}
+            bg={isCreating ? brandColors.black : brandColors.primary}
             color={brandColors.white}
-            _hover={{ bg: brandColors.secondary }}
+            _hover={{ bg: isCreating ? brandColors.black : brandColors.secondary }}
             disabled={isCreating}
           >
-            {isCreating ? <Spinner size="md" /> : 'Create'}
+            Create
           </Button>
         </VStack>
       </VStack>

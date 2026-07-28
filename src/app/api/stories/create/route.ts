@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
 
-export const maxDuration = 300
-
 export async function POST(request: Request) {
   try {
     const { prompt } = await request.json()
@@ -20,7 +18,6 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ prompt }),
-      signal: AbortSignal.timeout(300000),
     })
 
     if (!response.ok) {

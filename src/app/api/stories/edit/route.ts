@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
 
-export const maxDuration = 300
-
 export async function POST(request: Request) {
   try {
     const { slug, updates } = await request.json()
@@ -22,7 +20,6 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ slug, updates }),
-      signal: AbortSignal.timeout(300000),
     })
 
     if (!response.ok) {

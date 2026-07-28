@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
-import { join } from 'path'
 
 interface StoryData {
   slug: string
@@ -18,16 +16,18 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   try {
     const { slug } = await params
 
-    // Read directly from the stories.json file in the backend
-    const storiesPath = join(process.cwd(), '..', 'avventura-v3', 'stories', 'stories.json')
-    const storiesData = readFileSync(storiesPath, 'utf-8')
-    const stories: StoryData[] = JSON.parse(storiesData)
+    const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
+    const response = await fetch(`${apiUrl}/stories/${slug}`)
 
-    const story = stories.find(s => s.slug === slug)
-
-    if (!story) {
+    if (response.status === 404) {
       return NextResponse.json({ error: 'Story not found' }, { status: 404 })
     }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch story')
+    }
+
+    const story: StoryData = await response.json()
 
     return NextResponse.json(story)
   } catch (error) {
