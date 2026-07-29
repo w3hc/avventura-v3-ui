@@ -4,7 +4,7 @@ export const maxDuration = 300
 
 export async function POST(request: Request) {
   try {
-    const { scenario, language } = await request.json()
+    const { scenario, language, players } = await request.json()
 
     const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
     const response = await fetch(`${apiUrl}/start`, {
@@ -15,6 +15,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         story: scenario,
         language: language || 'fr',
+        players,
       }),
       signal: AbortSignal.timeout(300000),
     })
