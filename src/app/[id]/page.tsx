@@ -110,6 +110,15 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       const data = await response.json()
 
       if (data.id) {
+        // Cache the full response so the redirect below doesn't have to
+        // re-fetch the state we just got back (avoids a read-after-write
+        // race with the backend right after game creation).
+        try {
+          sessionStorage.setItem(`avventuraGame:${data.id}`, JSON.stringify(data))
+        } catch {
+          // sessionStorage unavailable (e.g. private browsing) - fine,
+          // the game page will just fall back to /api/init
+        }
         router.replace(`/${data.id}`)
       } else {
         throw new Error('No game ID returned')
@@ -233,7 +242,26 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         return
       }
 
-      // Otherwise treat as game session ID
+      // Otherwise treat as game session ID.
+      // If we just created this game, use the cached /api/start response
+      // instead of re-fetching state right away.
+      try {
+        const cached = sessionStorage.getItem(`avventuraGame:${id}`)
+        if (cached) {
+          sessionStorage.removeItem(`avventuraGame:${id}`)
+          const data = JSON.parse(cached)
+          if (data.currentStep && data.currentStep.options) {
+            console.log('✅ Using cached game state from /api/start')
+            updateGameState(data)
+            setIsTyping(true)
+            setLoading(false)
+            return
+          }
+        }
+      } catch {
+        // Fall through to /api/init below
+      }
+
       try {
         const response = await fetch('/api/init', {
           method: 'POST',

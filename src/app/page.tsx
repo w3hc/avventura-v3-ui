@@ -58,6 +58,11 @@ export default function Home() {
       const data = await response.json()
 
       if (data.id) {
+        try {
+          sessionStorage.setItem(`avventuraGame:${data.id}`, JSON.stringify(data))
+        } catch {
+          // sessionStorage unavailable - the game page will fall back to /api/init
+        }
         router.push(`/${data.id}`)
       }
     } catch (error) {
