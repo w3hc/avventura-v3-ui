@@ -7,6 +7,7 @@ import { brandColors } from '@/theme'
 import { useLanguage } from '@/context/LanguageContext'
 import Spinner from '@/components/Spinner'
 import { toaster } from '@/components/ui/toaster'
+import StorySetupModal, { StorySetupData } from '@/components/StorySetupModal'
 
 interface Story {
   slug: string
@@ -21,9 +22,10 @@ interface Story {
 
 export default function Home() {
   const router = useRouter()
-  const { language } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const [isLoading, setIsLoading] = useState<string | null>(null)
   const [stories, setStories] = useState<Story[]>([])
+  const [pendingScenario, setPendingScenario] = useState<string | null>(null)
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
   useEffect(() => {
@@ -39,7 +41,11 @@ export default function Home() {
     fetchStories()
   }, [])
 
-  const handleStart = async (scenario: string) => {
+  const handleStart = async (
+    scenario: string,
+    setupLanguage: string,
+    players: StorySetupData['players']
+  ) => {
     setIsLoading(scenario)
     try {
       const response = await fetch('/api/start', {
@@ -47,7 +53,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ scenario, language }),
+        body: JSON.stringify({ scenario, language: setupLanguage, players }),
       })
       const data = await response.json()
 
@@ -59,6 +65,16 @@ export default function Home() {
     } finally {
       setIsLoading(null)
     }
+  }
+
+  const handleStorySetupSubmit = (setup: StorySetupData) => {
+    localStorage.setItem('avventuraStorySetup', JSON.stringify(setup))
+    setLanguage(setup.language)
+
+    if (pendingScenario) {
+      handleStart(pendingScenario, setup.language, setup.players)
+    }
+    setPendingScenario(null)
   }
 
   const handleCopyUrl = (e: React.MouseEvent, slug: string) => {
@@ -82,7 +98,7 @@ export default function Home() {
             {stories.map(story => (
               <Box
                 key={story.slug}
-                onClick={() => handleStart(story.slug)}
+                onClick={() => setPendingScenario(story.slug)}
                 cursor="pointer"
                 position="relative"
                 _hover={{
@@ -157,6 +173,11 @@ export default function Home() {
           </VStack>
         )}
       </VStack>
+      <StorySetupModal
+        isOpen={pendingScenario !== null}
+        onClose={() => setPendingScenario(null)}
+        onSubmit={handleStorySetupSubmit}
+      />
     </Box>
   )
 }

@@ -8,6 +8,7 @@ import { brandColors } from '@/theme'
 import Spinner from '@/components/Spinner'
 import { useTranslations } from '@/translations'
 import { toaster } from '@/components/ui/toaster'
+import StorySetupModal, { StorySetupData } from '@/components/StorySetupModal'
 
 interface GameState {
   id: string
@@ -75,7 +76,7 @@ const TypingEffect: React.FC<TypingEffectProps> = ({ text, speed = 2, onComplete
 export default function AdventurePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
-  const { language } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const t = useTranslations(language)
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [loading, setLoading] = useState(true)
@@ -84,7 +85,41 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   const [isStartingGame, setIsStartingGame] = useState(false)
   const [waitingForNextMove, setWaitingForNextMove] = useState(false)
   const [showShimmer, setShowShimmer] = useState(false)
+  const [showSetupModal, setShowSetupModal] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
+
+  const startGameWithSetup = async (setup: StorySetupData) => {
+    console.log('🎯 Starting new game with story setup')
+    localStorage.setItem('avventuraStorySetup', JSON.stringify(setup))
+    setLanguage(setup.language)
+    setShowSetupModal(false)
+    setIsStartingGame(true)
+    try {
+      const response = await fetch('/api/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ scenario: id, language: setup.language, players: setup.players }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to start game')
+      }
+
+      const data = await response.json()
+
+      if (data.id) {
+        router.replace(`/${data.id}`)
+      } else {
+        throw new Error('No game ID returned')
+      }
+    } catch (error) {
+      console.error('❌ Error starting game:', error)
+      setLoading(false)
+      setIsStartingGame(false)
+    }
+  }
 
   // Update game state from API responses (start, state, move)
   const updateGameState = (data: GameState) => {
@@ -192,36 +227,10 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       const isStorySlug = !isGameSessionId
 
       if (isStorySlug) {
-        console.log('🎯 Detected story slug, starting new game')
-        setIsStartingGame(true)
-        try {
-          const response = await fetch('/api/start', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ scenario: id, language: 'fr' }),
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to start game')
-          }
-
-          const data = await response.json()
-
-          if (data.id) {
-            // Redirect to the game session with the new ID
-            router.replace(`/${data.id}`)
-            return
-          } else {
-            throw new Error('No game ID returned')
-          }
-        } catch (error) {
-          console.error('❌ Error starting game:', error)
-          setLoading(false)
-          setIsStartingGame(false)
-          return
-        }
+        console.log('🎯 Detected story slug, prompting for story setup')
+        setLoading(false)
+        setShowSetupModal(true)
+        return
       }
 
       // Otherwise treat as game session ID
@@ -252,6 +261,16 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
 
     initGame()
   }, [id, router])
+
+  if (showSetupModal) {
+    return (
+      <StorySetupModal
+        isOpen={showSetupModal}
+        onClose={() => router.push('/')}
+        onSubmit={startGameWithSetup}
+      />
+    )
+  }
 
   if (loading || isStartingGame) {
     return (
