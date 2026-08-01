@@ -125,8 +125,13 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       }
     } catch (error) {
       console.error('❌ Error starting game:', error)
-      setLoading(false)
+      toaster.create({
+        description: 'Failed to start the adventure. Please try again.',
+        type: 'error',
+        duration: 4000,
+      })
       setIsStartingGame(false)
+      setShowSetupModal(true)
     }
   }
 
