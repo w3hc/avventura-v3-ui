@@ -126,7 +126,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     } catch (error) {
       console.error('❌ Error starting game:', error)
       toaster.create({
-        description: 'Failed to start the adventure. Please try again.',
+        description: t.game.failedToStart,
         type: 'error',
         duration: 4000,
       })
@@ -316,7 +316,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   if (!gameState) {
     return (
       <VStack gap={8} align="center" justify="center" minH="100vh">
-        <Text>Failed to load game state</Text>
+        <Text>{t.game.failedToLoadGameState}</Text>
       </VStack>
     )
   }
