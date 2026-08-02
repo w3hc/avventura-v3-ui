@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-export const maxDuration = 300
+export const maxDuration = 600
 
 export async function POST(request: Request) {
   try {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
         language: language || 'fr',
         players,
       }),
-      signal: AbortSignal.timeout(300000),
+      signal: AbortSignal.timeout(600000),
     })
 
     if (!response.ok) {
