@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   Box,
   Heading,
@@ -91,7 +91,6 @@ const SettingsPage = () => {
   const [restoreUsername, setRestoreUsername] = useState('')
   const [needsUsernameForRestore, setNeedsUsernameForRestore] = useState(false)
   const [isRestoreUsernameInvalid, setIsRestoreUsernameInvalid] = useState(false)
-  const [accounts, setAccounts] = useState<StoredAccount[]>([])
   const [accountToDelete, setAccountToDelete] = useState<StoredAccount | null>(null)
   const { open: isOpen, onOpen, onClose } = useDisclosure()
 
@@ -370,36 +369,18 @@ const SettingsPage = () => {
     }
   }
 
-  const loadAccounts = useCallback(() => {
-    try {
-      const storedAccounts: StoredAccount[] = []
-
-      // Only show the current logged-in user
-      if (user) {
-        storedAccounts.push({
-          username: user.username,
-          ethereumAddress: user.ethereumAddress,
-          id: user.id,
-          displayName: user.displayName,
-        })
-      }
-
-      setAccounts(storedAccounts)
-    } catch (error) {
-      console.error('Error loading accounts:', error)
-    }
+  // Only show the current logged-in user
+  const accounts = useMemo<StoredAccount[]>(() => {
+    if (!user) return []
+    return [
+      {
+        username: user.username,
+        ethereumAddress: user.ethereumAddress,
+        id: user.id,
+        displayName: user.displayName,
+      },
+    ]
   }, [user])
-
-  useEffect(() => {
-    loadAccounts()
-  }, [loadAccounts])
-
-  useEffect(() => {
-    const isValid = validateUsername(registerUsername)
-    if (isValid) {
-      setIsRegisterUsernameInvalid(false)
-    }
-  }, [registerUsername])
 
   useEffect(() => {
     const loadAddressesAndStatus = async () => {
@@ -455,18 +436,16 @@ const SettingsPage = () => {
           setIsCheckingStatus(false)
         }
       }
+
+      if (getSocialRecoveryConfig) {
+        const config = getSocialRecoveryConfig()
+        setSocialRecoveryConfig(config)
+      }
     }
 
     loadAddressesAndStatus()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user])
-
-  useEffect(() => {
-    if (isAuthenticated && getSocialRecoveryConfig) {
-      const config = getSocialRecoveryConfig()
-      setSocialRecoveryConfig(config)
-    }
-  }, [isAuthenticated, getSocialRecoveryConfig])
 
   const handleDeleteAccount = (account: StoredAccount) => {
     setAccountToDelete(account)
@@ -521,8 +500,6 @@ const SettingsPage = () => {
             logout()
           }, 2000)
         }
-
-        loadAccounts()
       }
     } catch (error) {
       console.error('Error deleting account:', error)
@@ -1151,7 +1128,13 @@ const SettingsPage = () => {
                           isRegisterUsernameInvalid && registerUsername.trim() ? true : undefined
                         }
                         value={registerUsername}
-                        onChange={e => setRegisterUsername(e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value
+                          setRegisterUsername(value)
+                          if (validateUsername(value)) {
+                            setIsRegisterUsernameInvalid(false)
+                          }
+                        }}
                         placeholder="Enter your username"
                         pl={3}
                         onKeyDown={e => {

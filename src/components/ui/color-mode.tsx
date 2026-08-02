@@ -8,6 +8,8 @@ import type { ThemeProviderProps } from 'next-themes'
 import * as React from 'react'
 import { LuMoon, LuSun } from 'react-icons/lu'
 
+const emptySubscribe = () => () => {}
+
 const ClientOnly = ({
   children,
   fallback,
@@ -15,8 +17,11 @@ const ClientOnly = ({
   children: React.ReactNode
   fallback?: React.ReactNode
 }) => {
-  const [mounted, setMounted] = React.useState(false)
-  React.useEffect(() => setMounted(true), [])
+  const mounted = React.useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
   return mounted ? children : fallback || null
 }
 

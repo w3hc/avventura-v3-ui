@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Text, Box, Flex, CloseButton } from '@chakra-ui/react'
 import { Dialog, Portal } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -26,17 +26,9 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 }) => {
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isPasswordStrong, setIsPasswordStrong] = useState(false)
   const [passwordTouched, setPasswordTouched] = useState(false)
 
-  // Validate password strength in real-time
-  useEffect(() => {
-    if (password) {
-      setIsPasswordStrong(isStrongPassword(password))
-    } else {
-      setIsPasswordStrong(false)
-    }
-  }, [password])
+  const isPasswordStrong = password ? isStrongPassword(password) : false
 
   const handleSubmit = async () => {
     if (!password.trim()) {

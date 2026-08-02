@@ -15,6 +15,7 @@ import React, {
   useMemo,
   useCallback,
   useEffect,
+  useSyncExternalStore,
 } from 'react'
 import { createWeb3Passkey } from 'w3pk'
 import { toaster } from '@/components/ui/toaster'
@@ -230,7 +231,11 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<W3pkUser | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
 
   const isUserCancelledError = useCallback((error: unknown): boolean => {
     if (error && typeof error === 'object' && 'name' in error && 'message' in error) {
@@ -243,10 +248,6 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
       )
     }
     return false
-  }, [])
-
-  useEffect(() => {
-    setIsMounted(true)
   }, [])
 
   const handleAuthStateChanged = useCallback((isAuth: boolean, w3pkUser?: unknown) => {
