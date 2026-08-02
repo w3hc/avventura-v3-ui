@@ -17,6 +17,7 @@ import { brandColors } from '@/theme'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useLanguage } from '@/context/LanguageContext'
 import { toaster } from '@/components/ui/toaster'
+import { useTranslations } from '@/translations'
 
 interface StoryData {
   slug: string
@@ -34,6 +35,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
   const { slug } = use(params)
   const router = useRouter()
   const { language } = useLanguage()
+  const t = useTranslations(language)
   const [story, setStory] = useState<StoryData | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -55,7 +57,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
         const response = await fetch(`/api/stories/${slug}`)
 
         if (!response.ok) {
-          setError('Story not found')
+          setError(t.editStory.storyNotFound)
           setLoading(false)
           return
         }
@@ -75,13 +77,15 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
         })
       } catch (err) {
         console.error('Failed to fetch story:', err)
-        setError('Failed to load story')
+        setError(t.editStory.failedToLoadStory)
       } finally {
         setLoading(false)
       }
     }
 
     fetchStory()
+    // Only re-fetch when the slug changes, not on language switches mid-fetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug])
 
   const handleSave = async () => {
@@ -95,7 +99,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
       try {
         homepage_display = JSON.parse(formData.homepage_display)
       } catch (err) {
-        setError('Invalid JSON in homepage_display field')
+        setError(t.editStory.invalidJson)
         setIsSaving(false)
         return
       }
@@ -122,7 +126,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
 
       const data = await response.json()
       setStory(data)
-      setSuccessMessage('Story saved successfully!')
+      setSuccessMessage(t.editStory.savedSuccessfully)
 
       // If slug changed, redirect to new slug
       if (formData.slug !== slug) {
@@ -132,7 +136,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
       }
     } catch (err) {
       console.error('Failed to save story:', err)
-      setError('Failed to save story. Please try again.')
+      setError(t.editStory.failedToSave)
     } finally {
       setIsSaving(false)
     }
@@ -141,7 +145,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
   const handleCopyUrl = (url: string) => {
     navigator.clipboard.writeText(url)
     toaster.create({
-      description: 'URL copied to clipboard',
+      description: t.common.urlCopied,
       type: 'success',
       duration: 2000,
     })
@@ -153,7 +157,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
     return (
       <Box minH="100vh" p={8}>
         <VStack gap={8} align="center" justify="center" minH="100vh">
-          <Text color={brandColors.white}>Loading...</Text>
+          <Text color={brandColors.white}>{t.common.loading}</Text>
         </VStack>
       </Box>
     )
@@ -169,7 +173,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
             bg={brandColors.primary}
             color={brandColors.white}
           >
-            Back to Create
+            {t.editStory.backToCreate}
           </Button>
         </VStack>
       </Box>
@@ -181,12 +185,12 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
       <VStack gap={6} align="stretch" maxW="1200px" mx="auto" pt={24}>
         <Box>
           <Text fontSize="2xl" fontWeight="bold" color={brandColors.white} mb={3}>
-            Edit Story
+            {t.editStory.title}
           </Text>
           <VStack align="start" gap={1}>
             <HStack gap={2}>
               <Text color={brandColors.white} fontSize="sm" opacity={0.8}>
-                Play:
+                {t.editStory.playLabel}
               </Text>
               <Link
                 href={`/${slug}`}
@@ -204,7 +208,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
                 {baseUrl}/{slug}
               </Link>
               <IconButton
-                aria-label="Copy URL"
+                aria-label={t.common.copyUrlAriaLabel}
                 size="xs"
                 variant="ghost"
                 colorScheme="whiteAlpha"
@@ -230,7 +234,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
             </HStack>
             <HStack gap={2}>
               <Text color={brandColors.white} fontSize="sm" opacity={0.8}>
-                Edit:
+                {t.editStory.editLabel}
               </Text>
               <Link
                 href={`/edit/${slug}`}
@@ -248,7 +252,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
                 {baseUrl}/edit/{slug}
               </Link>
               <IconButton
-                aria-label="Copy URL"
+                aria-label={t.common.copyUrlAriaLabel}
                 size="xs"
                 variant="ghost"
                 colorScheme="whiteAlpha"
@@ -278,7 +282,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
         <VStack gap={4} align="stretch">
           <Box>
             <Text fontSize="sm" mb={2} color={brandColors.white} opacity={0.8}>
-              Slug
+              {t.editStory.slugLabel}
             </Text>
             <Input
               value={formData.slug}
@@ -296,7 +300,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
 
           <Box>
             <Text fontSize="sm" mb={2} color={brandColors.white} opacity={0.8}>
-              Title
+              {t.editStory.titleLabel}
             </Text>
             <Input
               value={formData.title}
@@ -314,7 +318,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
 
           <Box>
             <Text fontSize="sm" mb={2} color={brandColors.white} opacity={0.8}>
-              Content
+              {t.editStory.contentLabel}
             </Text>
             <Textarea
               value={formData.content}
@@ -335,7 +339,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
 
           <Box>
             <Text fontSize="sm" mb={2} color={brandColors.white} opacity={0.8}>
-              Homepage Display (JSON)
+              {t.editStory.homepageDisplayLabel}
             </Text>
             <Textarea
               value={formData.homepage_display}
@@ -360,7 +364,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
               onCheckedChange={e => setFormData({ ...formData, is_active: !!e.checked })}
               disabled={isSaving}
             >
-              <Text color={brandColors.white}>Active</Text>
+              <Text color={brandColors.white}>{t.editStory.activeLabel}</Text>
             </Checkbox>
           </Box>
 
@@ -379,14 +383,14 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
           <Button
             onClick={handleSave}
             loading={isSaving}
-            loadingText="Saving..."
+            loadingText={t.editStory.savingText}
             size="lg"
             bg={brandColors.primary}
             color={brandColors.white}
             _hover={{ bg: brandColors.secondary }}
             disabled={isSaving}
           >
-            Save Changes
+            {t.editStory.saveChanges}
           </Button>
         </VStack>
 
@@ -400,19 +404,23 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
             borderWidth="1px"
           >
             <Text fontSize="sm" color={brandColors.white} opacity={0.6}>
-              Created: {new Date(story.created_at).toLocaleString()}
+              {t.editStory.createdLabel}
+              {new Date(story.created_at).toLocaleString()}
             </Text>
             <Text fontSize="sm" color={brandColors.white} opacity={0.6}>
-              Updated: {new Date(story.updated_at).toLocaleString()}
+              {t.editStory.updatedLabel}
+              {new Date(story.updated_at).toLocaleString()}
             </Text>
             {story.sessions !== undefined && (
               <Text fontSize="sm" color={brandColors.white} opacity={0.6}>
-                Sessions: {story.sessions}
+                {t.editStory.sessionsLabel}
+                {story.sessions}
               </Text>
             )}
             {story.requests !== undefined && (
               <Text fontSize="sm" color={brandColors.white} opacity={0.6}>
-                Requests: {story.requests}
+                {t.editStory.requestsLabel}
+                {story.requests}
               </Text>
             )}
           </Box>

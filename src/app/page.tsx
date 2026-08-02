@@ -8,6 +8,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import Spinner from '@/components/Spinner'
 import { toaster } from '@/components/ui/toaster'
 import StorySetupModal, { StorySetupData } from '@/components/StorySetupModal'
+import { useTranslations } from '@/translations'
 
 interface Story {
   slug: string
@@ -23,6 +24,7 @@ interface Story {
 export default function Home() {
   const router = useRouter()
   const { language, setLanguage } = useLanguage()
+  const t = useTranslations(language)
   const [isLoading, setIsLoading] = useState<string | null>(null)
   const [stories, setStories] = useState<Story[]>([])
   const [pendingScenario, setPendingScenario] = useState<string | null>(null)
@@ -71,7 +73,7 @@ export default function Home() {
     } catch (error) {
       console.error('Failed to start:', error)
       toaster.create({
-        description: 'Failed to start the adventure. Please try again.',
+        description: t.game.failedToStart,
         type: 'error',
         duration: 4000,
       })
@@ -94,7 +96,7 @@ export default function Home() {
     const url = `${baseUrl}/${slug}`
     navigator.clipboard.writeText(url)
     toaster.create({
-      description: 'URL copied to clipboard',
+      description: t.common.urlCopied,
       type: 'success',
       duration: 2000,
     })
@@ -155,7 +157,7 @@ export default function Home() {
                       {baseUrl}/{story.slug}
                     </Text>
                     <IconButton
-                      aria-label="Copy URL"
+                      aria-label={t.common.copyUrlAriaLabel}
                       size="sm"
                       variant="ghost"
                       colorScheme="whiteAlpha"
