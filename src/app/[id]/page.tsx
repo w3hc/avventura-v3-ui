@@ -8,22 +8,21 @@ import { brandColors } from '@/theme'
 import Spinner from '@/components/Spinner'
 import { useTranslations } from '@/translations'
 import { toaster } from '@/components/ui/toaster'
-import StorySetupModal, { StorySetupData } from '@/components/StorySetupModal'
+import StorySetupModal, { StorySetupData, Difficulty } from '@/components/StorySetupModal'
+
+interface Step {
+  desc: string
+  options: string[]
+  action: 'death' | 'victory' | (string & {})
+}
 
 interface GameState {
   id: string
   story: string
   previously: string
-  currentStep: {
-    desc: string
-    options: string[]
-    action: string
-  }
-  nextSteps: Array<{
-    desc: string
-    options: string[]
-    action: string
-  }>
+  currentStep: Step
+  nextSteps: Step[]
+  difficulty?: Difficulty
 }
 
 interface TypingEffectProps {
@@ -326,6 +325,12 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     )
   }
 
+  const difficultyLabels: Record<Difficulty, string> = {
+    easy: t.storySetup.difficultyEasy,
+    hard: t.storySetup.difficultyHard,
+    'super-hard': t.storySetup.difficultySuperHard,
+  }
+
   const handleTypingComplete = () => {
     setIsTyping(false)
   }
@@ -340,6 +345,12 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       maxW="1200px"
       mx="auto"
     >
+      {gameState.difficulty && (
+        <Text fontSize="sm" color="gray.500" mb={4} textTransform="uppercase" letterSpacing="wide">
+          {t.storySetup.difficultyLabel}: {difficultyLabels[gameState.difficulty]}
+        </Text>
+      )}
+
       <Text fontSize={{ base: 'xl', md: '2xl' }} mb={8} whiteSpace="pre-wrap" textAlign="left">
         <TypingEffect
           text={gameState.currentStep.desc}
