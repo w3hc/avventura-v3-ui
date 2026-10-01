@@ -100,7 +100,12 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ scenario: id, language: setup.language, players: setup.players }),
+        body: JSON.stringify({
+          scenario: id,
+          language: setup.language,
+          players: setup.players,
+          difficulty: setup.difficulty,
+        }),
       })
 
       if (!response.ok) {
