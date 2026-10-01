@@ -14,6 +14,7 @@ import { toaster } from '@/components/ui/toaster'
 import { brandColors } from '@/theme'
 
 export type Difficulty = 'easy' | 'hard' | 'super-hard'
+export type TextLength = 'normal' | 'short'
 export type GameMode = 'solo' | 'family' | 'multi' | 'web3'
 
 export interface Player {
@@ -25,6 +26,7 @@ export interface StorySetupData {
   players: Player[]
   duration: number
   difficulty: Difficulty
+  textLength: TextLength
   language: Language
   mode: GameMode
 }
@@ -51,6 +53,7 @@ const StorySetupModal: React.FC<StorySetupModalProps> = ({
   )
   const [duration, setDuration] = useState(String(initialSetup?.duration ?? 20))
   const [difficulty, setDifficulty] = useState<Difficulty>(initialSetup?.difficulty ?? 'easy')
+  const [textLength, setTextLength] = useState<TextLength>(initialSetup?.textLength ?? 'normal')
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(
     initialSetup?.language ?? language
   )
@@ -62,6 +65,7 @@ const StorySetupModal: React.FC<StorySetupModalProps> = ({
     setPlayers([emptyPlayer()])
     setDuration('20')
     setDifficulty('easy')
+    setTextLength('normal')
     setSelectedLanguage(language)
     setMode('family')
   }
@@ -113,6 +117,7 @@ const StorySetupModal: React.FC<StorySetupModalProps> = ({
       players: validPlayers,
       duration: durationValue,
       difficulty,
+      textLength,
       language: selectedLanguage,
       mode,
     })
@@ -124,6 +129,11 @@ const StorySetupModal: React.FC<StorySetupModalProps> = ({
     { value: 'easy', label: t.storySetup.difficultyEasy },
     { value: 'hard', label: t.storySetup.difficultyHard },
     { value: 'super-hard', label: t.storySetup.difficultySuperHard },
+  ]
+
+  const textLengthOptions: { value: TextLength; label: string }[] = [
+    { value: 'normal', label: t.storySetup.textLengthNormal },
+    { value: 'short', label: t.storySetup.textLengthShort },
   ]
 
   const modeOptions: { value: GameMode; label: string; disabled?: boolean }[] = [
@@ -197,6 +207,22 @@ const StorySetupModal: React.FC<StorySetupModalProps> = ({
                         variant={difficulty === option.value ? 'solid' : 'outline'}
                         bg={difficulty === option.value ? brandColors.accent : undefined}
                         onClick={() => setDifficulty(option.value)}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </SimpleGrid>
+                </Field>
+
+                <Field label={t.storySetup.textLengthLabel}>
+                  <SimpleGrid columns={2} gap={2} width="100%">
+                    {textLengthOptions.map(option => (
+                      <Button
+                        key={option.value}
+                        size="sm"
+                        variant={textLength === option.value ? 'solid' : 'outline'}
+                        bg={textLength === option.value ? brandColors.accent : undefined}
+                        onClick={() => setTextLength(option.value)}
                       >
                         {option.label}
                       </Button>
