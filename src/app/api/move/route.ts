@@ -15,6 +15,11 @@ export async function POST(request: Request) {
       body: JSON.stringify({ gameId, choiceIndex }),
     })
 
+    if (response.status === 400) {
+      const body = await response.json().catch(() => ({}))
+      return NextResponse.json({ error: body.message ?? 'Bad request' }, { status: 400 })
+    }
+
     if (!response.ok) {
       throw new Error('Failed to make move')
     }

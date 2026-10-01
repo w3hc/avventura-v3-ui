@@ -152,6 +152,27 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     })
   }
 
+  // The game already ended server-side (e.g. stale tab): show the real ending
+  const showFinalState = async () => {
+    setWaitingForNextMove(false)
+    try {
+      const response = await fetch('/api/init', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to fetch game state')
+      }
+      updateGameState(await response.json())
+      setIsTyping(true)
+    } catch (error) {
+      console.error('❌ Error fetching final state:', error)
+    }
+  }
+
   // Handle option click
   const handleOptionClick = async (optionIndex: number) => {
     console.log('🎯 Option clicked:', optionIndex)
@@ -208,6 +229,15 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
           choiceIndex: optionIndex + 1, // API expects 1-indexed
         }),
       })
+
+      if (response.status === 400) {
+        const { error } = await response.json()
+        if (error === 'Game is over') {
+          clearInterval(counterInterval)
+          await showFinalState()
+          return
+        }
+      }
 
       if (!response.ok) {
         throw new Error('Failed to make move')
