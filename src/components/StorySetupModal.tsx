@@ -116,11 +116,11 @@ const StorySetupModal: React.FC<StorySetupModalProps> = ({ isOpen, onClose, onSu
     { value: 'super-hard', label: t.storySetup.difficultySuperHard },
   ]
 
-  const modeOptions: { value: GameMode; label: string }[] = [
-    { value: 'solo', label: t.storySetup.modeSolo },
+  const modeOptions: { value: GameMode; label: string; disabled?: boolean }[] = [
+    { value: 'solo', label: t.storySetup.modeSolo, disabled: true },
     { value: 'family', label: t.storySetup.modeFamily },
-    { value: 'multi', label: t.storySetup.modeMulti },
-    { value: 'web3', label: t.storySetup.modeWeb3 },
+    { value: 'multi', label: t.storySetup.modeMulti, disabled: true },
+    { value: 'web3', label: t.storySetup.modeWeb3, disabled: true },
   ]
 
   return (
@@ -172,6 +172,7 @@ const StorySetupModal: React.FC<StorySetupModalProps> = ({ isOpen, onClose, onSu
                     onValueChange={e => setDuration(e.value)}
                     min={1}
                     width="100%"
+                    disabled
                   >
                     <NumberInput.Field placeholder={t.storySetup.durationPlaceholder} />
                   </NumberInput.Root>
@@ -201,6 +202,7 @@ const StorySetupModal: React.FC<StorySetupModalProps> = ({ isOpen, onClose, onSu
                         size="sm"
                         variant={mode === option.value ? 'solid' : 'outline'}
                         bg={mode === option.value ? brandColors.accent : undefined}
+                        disabled={option.disabled}
                         onClick={() => setMode(option.value)}
                       >
                         {option.label}
