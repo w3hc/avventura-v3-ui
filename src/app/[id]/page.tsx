@@ -107,6 +107,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
           language: setup.language,
           players: setup.players,
           difficulty: setup.difficulty,
+          textLength: setup.textLength,
         }),
       })
 

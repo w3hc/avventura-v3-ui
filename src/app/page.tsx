@@ -47,7 +47,8 @@ export default function Home() {
     scenario: string,
     setupLanguage: string,
     players: StorySetupData['players'],
-    difficulty: StorySetupData['difficulty']
+    difficulty: StorySetupData['difficulty'],
+    textLength: StorySetupData['textLength']
   ) => {
     setIsLoading(scenario)
     try {
@@ -56,7 +57,13 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ scenario, language: setupLanguage, players, difficulty }),
+        body: JSON.stringify({
+          scenario,
+          language: setupLanguage,
+          players,
+          difficulty,
+          textLength,
+        }),
       })
       const data = await response.json()
 
@@ -87,7 +94,13 @@ export default function Home() {
     setLanguage(setup.language)
 
     if (pendingScenario) {
-      handleStart(pendingScenario, setup.language, setup.players, setup.difficulty)
+      handleStart(
+        pendingScenario,
+        setup.language,
+        setup.players,
+        setup.difficulty,
+        setup.textLength
+      )
     }
     setPendingScenario(null)
   }
