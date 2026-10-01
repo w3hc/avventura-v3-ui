@@ -46,7 +46,8 @@ export default function Home() {
   const handleStart = async (
     scenario: string,
     setupLanguage: string,
-    players: StorySetupData['players']
+    players: StorySetupData['players'],
+    difficulty: StorySetupData['difficulty']
   ) => {
     setIsLoading(scenario)
     try {
@@ -55,7 +56,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ scenario, language: setupLanguage, players }),
+        body: JSON.stringify({ scenario, language: setupLanguage, players, difficulty }),
       })
       const data = await response.json()
 
@@ -86,7 +87,7 @@ export default function Home() {
     setLanguage(setup.language)
 
     if (pendingScenario) {
-      handleStart(pendingScenario, setup.language, setup.players)
+      handleStart(pendingScenario, setup.language, setup.players, setup.difficulty)
     }
     setPendingScenario(null)
   }

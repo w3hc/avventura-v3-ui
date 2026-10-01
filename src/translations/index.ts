@@ -33,6 +33,9 @@ type TranslationKeys = {
     waitingMessage: string
     failedToStart: string
     failedToLoadGameState: string
+    gameOverTitle: string
+    victoryTitle: string
+    playAgain: string
   }
   storySetup: {
     title: string
@@ -160,6 +163,9 @@ export const translations: Translations = {
       waitingMessage: 'Just a moment, please',
       failedToStart: 'Failed to start the adventure. Please try again.',
       failedToLoadGameState: 'Failed to load game state',
+      gameOverTitle: 'Game over',
+      victoryTitle: 'Victory!',
+      playAgain: 'Play again',
     },
     storySetup: {
       title: 'Before you begin',
@@ -284,6 +290,9 @@ export const translations: Translations = {
       waitingMessage: '请稍等',
       failedToStart: '开始冒险失败，请重试。',
       failedToLoadGameState: '加载游戏状态失败',
+      gameOverTitle: '游戏结束',
+      victoryTitle: '胜利！',
+      playAgain: '再玩一次',
     },
     storySetup: {
       title: '开始之前',
@@ -408,6 +417,9 @@ export const translations: Translations = {
       waitingMessage: 'कृपया एक पल रुकें',
       failedToStart: 'साहसिक कार्य शुरू करने में विफल। कृपया पुनः प्रयास करें।',
       failedToLoadGameState: 'गेम की स्थिति लोड करने में विफल',
+      gameOverTitle: 'खेल समाप्त',
+      victoryTitle: 'विजय!',
+      playAgain: 'फिर से खेलें',
     },
     storySetup: {
       title: 'शुरू करने से पहले',
@@ -533,6 +545,9 @@ export const translations: Translations = {
       waitingMessage: 'Un momento, por favor',
       failedToStart: 'No se pudo iniciar la aventura. Por favor, inténtalo de nuevo.',
       failedToLoadGameState: 'No se pudo cargar el estado del juego',
+      gameOverTitle: 'Fin del juego',
+      victoryTitle: '¡Victoria!',
+      playAgain: 'Jugar de nuevo',
     },
     storySetup: {
       title: 'Antes de empezar',
@@ -659,6 +674,9 @@ export const translations: Translations = {
       waitingMessage: "Un instant, s'il vous plaît",
       failedToStart: "Échec du démarrage de l'aventure. Veuillez réessayer.",
       failedToLoadGameState: "Échec du chargement de l'état du jeu",
+      gameOverTitle: 'Partie terminée',
+      victoryTitle: 'Victoire !',
+      playAgain: 'Rejouer',
     },
     storySetup: {
       title: 'Avant de commencer',
@@ -785,6 +803,9 @@ export const translations: Translations = {
       waitingMessage: 'لحظة من فضلك',
       failedToStart: 'فشل بدء المغامرة. يرجى المحاولة مرة أخرى.',
       failedToLoadGameState: 'فشل تحميل حالة اللعبة',
+      gameOverTitle: 'انتهت اللعبة',
+      victoryTitle: 'النصر!',
+      playAgain: 'العب مرة أخرى',
     },
     storySetup: {
       title: 'قبل أن تبدأ',
@@ -909,6 +930,9 @@ export const translations: Translations = {
       waitingMessage: 'একটু অপেক্ষা করুন',
       failedToStart: 'অভিযান শুরু করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।',
       failedToLoadGameState: 'গেমের অবস্থা লোড করা যায়নি',
+      gameOverTitle: 'খেলা শেষ',
+      victoryTitle: 'বিজয়!',
+      playAgain: 'আবার খেলুন',
     },
     storySetup: {
       title: 'শুরু করার আগে',
@@ -1035,6 +1059,9 @@ export const translations: Translations = {
       waitingMessage: 'Минутку, пожалуйста',
       failedToStart: 'Не удалось начать приключение. Попробуйте ещё раз.',
       failedToLoadGameState: 'Не удалось загрузить состояние игры',
+      gameOverTitle: 'Игра окончена',
+      victoryTitle: 'Победа!',
+      playAgain: 'Играть снова',
     },
     storySetup: {
       title: 'Прежде чем начать',
@@ -1160,6 +1187,9 @@ export const translations: Translations = {
       waitingMessage: 'Um momento, por favor',
       failedToStart: 'Falha ao iniciar a aventura. Por favor, tente novamente.',
       failedToLoadGameState: 'Falha ao carregar o estado do jogo',
+      gameOverTitle: 'Fim de jogo',
+      victoryTitle: 'Vitória!',
+      playAgain: 'Jogar novamente',
     },
     storySetup: {
       title: 'Antes de começar',
@@ -1286,6 +1316,9 @@ export const translations: Translations = {
       waitingMessage: 'ایک لمحہ، براہ کرم',
       failedToStart: 'مہم شروع کرنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔',
       failedToLoadGameState: 'گیم کی حالت لوڈ کرنے میں ناکامی',
+      gameOverTitle: 'کھیل ختم',
+      victoryTitle: 'فتح!',
+      playAgain: 'دوبارہ کھیلیں',
     },
     storySetup: {
       title: 'شروع کرنے سے پہلے',

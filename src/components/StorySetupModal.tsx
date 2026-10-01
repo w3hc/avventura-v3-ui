@@ -33,18 +33,28 @@ interface StorySetupModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: StorySetupData) => void
+  initialSetup?: StorySetupData
 }
 
 const emptyPlayer = (): Player => ({ name: '', info: '' })
 
-const StorySetupModal: React.FC<StorySetupModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const StorySetupModal: React.FC<StorySetupModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialSetup,
+}) => {
   const { language } = useLanguage()
 
-  const [players, setPlayers] = useState<Player[]>([emptyPlayer()])
-  const [duration, setDuration] = useState('20')
-  const [difficulty, setDifficulty] = useState<Difficulty>('easy')
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>(language)
-  const [mode, setMode] = useState<GameMode>('family')
+  const [players, setPlayers] = useState<Player[]>(
+    initialSetup?.players.length ? initialSetup.players : [emptyPlayer()]
+  )
+  const [duration, setDuration] = useState(String(initialSetup?.duration ?? 20))
+  const [difficulty, setDifficulty] = useState<Difficulty>(initialSetup?.difficulty ?? 'easy')
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(
+    initialSetup?.language ?? language
+  )
+  const [mode, setMode] = useState<GameMode>(initialSetup?.mode ?? 'family')
 
   const t = useTranslations(selectedLanguage)
 

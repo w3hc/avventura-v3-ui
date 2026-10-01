@@ -1,6 +1,7 @@
 'use client'
 
 import { VStack, Box, Heading, Text, Link } from '@chakra-ui/react'
+import { Button } from '@/components/ui/button'
 import { useLanguage } from '@/context/LanguageContext'
 import { use, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -10,21 +11,21 @@ import { useTranslations } from '@/translations'
 import { toaster } from '@/components/ui/toaster'
 import StorySetupModal, { StorySetupData } from '@/components/StorySetupModal'
 
+interface Step {
+  desc: string
+  options: string[]
+  action: 'death' | 'victory' | (string & {})
+}
+
 interface GameState {
   id: string
   story: string
   previously: string
-  currentStep: {
-    desc: string
-    options: string[]
-    action: string
-  }
-  nextSteps: Array<{
-    desc: string
-    options: string[]
-    action: string
-  }>
+  currentStep: Step
+  nextSteps: Step[]
 }
+
+const isEnding = (step: Step) => step.action === 'death' || step.action === 'victory'
 
 interface TypingEffectProps {
   text: string
@@ -86,6 +87,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
   const [waitingForNextMove, setWaitingForNextMove] = useState(false)
   const [showShimmer, setShowShimmer] = useState(false)
   const [showSetupModal, setShowSetupModal] = useState(false)
+  const [previousSetup, setPreviousSetup] = useState<StorySetupData | undefined>()
   const contentRef = useRef<HTMLDivElement>(null)
 
   const startGameWithSetup = async (setup: StorySetupData) => {
@@ -100,7 +102,12 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ scenario: id, language: setup.language, players: setup.players }),
+        body: JSON.stringify({
+          scenario: gameState?.story ?? id,
+          language: setup.language,
+          players: setup.players,
+          difficulty: setup.difficulty,
+        }),
       })
 
       if (!response.ok) {
@@ -144,6 +151,27 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     })
   }
 
+  // The game already ended server-side (e.g. stale tab): show the real ending
+  const showFinalState = async () => {
+    setWaitingForNextMove(false)
+    try {
+      const response = await fetch('/api/init', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to fetch game state')
+      }
+      updateGameState(await response.json())
+      setIsTyping(true)
+    } catch (error) {
+      console.error('❌ Error fetching final state:', error)
+    }
+  }
+
   // Handle option click
   const handleOptionClick = async (optionIndex: number) => {
     console.log('🎯 Option clicked:', optionIndex)
@@ -159,7 +187,7 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
       return
     }
 
-    if (!gameState || isProcessingMove || isTyping) return
+    if (!gameState || isProcessingMove || isTyping || isEnding(gameState.currentStep)) return
 
     // Immediately display the nextSteps[optionIndex]
     const nextStep = gameState.nextSteps[optionIndex]
@@ -200,6 +228,15 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
           choiceIndex: optionIndex + 1, // API expects 1-indexed
         }),
       })
+
+      if (response.status === 400) {
+        const { error } = await response.json()
+        if (error === 'Game is over') {
+          clearInterval(counterInterval)
+          await showFinalState()
+          return
+        }
+      }
 
       if (!response.ok) {
         throw new Error('Failed to make move')
@@ -299,8 +336,9 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     return (
       <StorySetupModal
         isOpen={showSetupModal}
-        onClose={() => router.push('/')}
+        onClose={() => (gameState ? setShowSetupModal(false) : router.push('/'))}
         onSubmit={startGameWithSetup}
+        initialSetup={previousSetup}
       />
     )
   }
@@ -325,6 +363,18 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
     setIsTyping(false)
   }
 
+  const handlePlayAgain = () => {
+    try {
+      const stored = localStorage.getItem('avventuraStorySetup')
+      setPreviousSetup(stored ? JSON.parse(stored) : undefined)
+    } catch {
+      setPreviousSetup(undefined)
+    }
+    setShowSetupModal(true)
+  }
+
+  const ending = isEnding(gameState.currentStep)
+
   return (
     <Box
       ref={contentRef}
@@ -343,7 +393,20 @@ export default function AdventurePage({ params }: { params: Promise<{ id: string
         />
       </Text>
 
-      {!isTyping && (
+      {!isTyping && ending && (
+        <VStack gap={6} align="flex-start">
+          <Heading size={{ base: '2xl', md: '3xl' }} color={brandColors.accent}>
+            {gameState.currentStep.action === 'victory'
+              ? t.game.victoryTitle
+              : t.game.gameOverTitle}
+          </Heading>
+          <Button onClick={handlePlayAgain} bg={brandColors.accent} color="white">
+            {t.game.playAgain}
+          </Button>
+        </VStack>
+      )}
+
+      {!isTyping && !ending && (
         <>
           <style>
             {`
