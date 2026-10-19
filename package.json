@@ -1,6 +1,7 @@
 {
   "name": "avventura-ui",
   "version": "0.1.0",
+  "templateVersion": "3.2.0",
   "description": "Web3 social RPG",
   "main": "index.js",
   "scripts": {
