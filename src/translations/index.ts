@@ -366,6 +366,9 @@ type TranslationKeys = {
     usernameRequiredDescription: string
     registrationFailedTitle: string
     registrationFailedDefaultDescription: string
+    noAccountFoundTitle: string
+    noAccountFoundDescription: string
+    alreadyRegisteredLink: string
   }
   passwordModal: {
     passwordLabel: string
@@ -844,6 +847,9 @@ export const translations: Translations = {
       usernameRequiredDescription: 'Please enter a username to register.',
       registrationFailedTitle: 'Registration Failed',
       registrationFailedDefaultDescription: 'Unable to complete registration. Please try again.',
+      noAccountFoundTitle: 'No Account Found',
+      noAccountFoundDescription: 'No passkey found. Please register to create a new account.',
+      alreadyRegisteredLink: 'I already registered on another device',
     },
     passwordModal: {
       passwordLabel: 'Password',
@@ -1300,6 +1306,9 @@ export const translations: Translations = {
       usernameRequiredDescription: '请输入用户名以完成注册。',
       registrationFailedTitle: '注册失败',
       registrationFailedDefaultDescription: '无法完成注册，请重试。',
+      noAccountFoundTitle: '未找到账户',
+      noAccountFoundDescription: '未找到通行密钥。请注册以创建新账户。',
+      alreadyRegisteredLink: '我已在其他设备上注册过',
     },
     passwordModal: {
       passwordLabel: '密码',
@@ -1783,6 +1792,9 @@ export const translations: Translations = {
       usernameRequiredDescription: 'पंजीकरण के लिए कृपया एक उपयोगकर्ता नाम दर्ज करें।',
       registrationFailedTitle: 'पंजीकरण विफल',
       registrationFailedDefaultDescription: 'पंजीकरण पूरा करने में असमर्थ। कृपया पुनः प्रयास करें।',
+      noAccountFoundTitle: 'कोई खाता नहीं मिला',
+      noAccountFoundDescription: 'कोई पासकी नहीं मिली। नया खाता बनाने के लिए कृपया रजिस्टर करें।',
+      alreadyRegisteredLink: 'मैंने पहले ही किसी अन्य डिवाइस पर पंजीकरण कर लिया है',
     },
     passwordModal: {
       passwordLabel: 'पासवर्ड',
@@ -2283,6 +2295,10 @@ export const translations: Translations = {
       registrationFailedTitle: 'Registro fallido',
       registrationFailedDefaultDescription:
         'No se pudo completar el registro. Por favor, inténtalo de nuevo.',
+      noAccountFoundTitle: 'Cuenta no encontrada',
+      noAccountFoundDescription:
+        'No se encontró ninguna clave de acceso. Por favor regístrate para crear una nueva cuenta.',
+      alreadyRegisteredLink: 'Ya me registré en otro dispositivo',
     },
     passwordModal: {
       passwordLabel: 'Contraseña',
@@ -2786,6 +2802,10 @@ export const translations: Translations = {
       registrationFailedTitle: "Échec de l'inscription",
       registrationFailedDefaultDescription:
         "Impossible de terminer l'inscription. Veuillez réessayer.",
+      noAccountFoundTitle: 'Aucun compte trouvé',
+      noAccountFoundDescription:
+        "Aucune clé d'accès trouvée. Veuillez vous inscrire pour créer un nouveau compte.",
+      alreadyRegisteredLink: 'Je suis déjà inscrit sur un autre appareil',
     },
     passwordModal: {
       passwordLabel: 'Mot de passe',
@@ -3260,6 +3280,9 @@ export const translations: Translations = {
       usernameRequiredDescription: 'يرجى إدخال اسم مستخدم للتسجيل.',
       registrationFailedTitle: 'فشل التسجيل',
       registrationFailedDefaultDescription: 'تعذر إكمال التسجيل. يرجى المحاولة مرة أخرى.',
+      noAccountFoundTitle: 'لم يتم العثور على حساب',
+      noAccountFoundDescription: 'لم يتم العثور على مفتاح مرور. يرجى التسجيل لإنشاء حساب جديد.',
+      alreadyRegisteredLink: 'لقد قمت بالتسجيل بالفعل على جهاز آخر',
     },
     passwordModal: {
       passwordLabel: 'كلمة المرور',
@@ -3754,6 +3777,10 @@ export const translations: Translations = {
       registrationFailedTitle: 'নিবন্ধন ব্যর্থ হয়েছে',
       registrationFailedDefaultDescription:
         'নিবন্ধন সম্পন্ন করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      noAccountFoundTitle: 'কোনো অ্যাকাউন্ট পাওয়া যায়নি',
+      noAccountFoundDescription:
+        'কোনো পাসকী পাওয়া যায়নি। নতুন অ্যাকাউন্ট তৈরি করতে অনুগ্রহ করে নিবন্ধন করুন।',
+      alreadyRegisteredLink: 'আমি ইতিমধ্যে অন্য ডিভাইসে নিবন্ধিত হয়েছি',
     },
     passwordModal: {
       passwordLabel: 'পাসওয়ার্ড',
@@ -4250,6 +4277,10 @@ export const translations: Translations = {
       usernameRequiredDescription: 'Пожалуйста, введите имя пользователя для регистрации.',
       registrationFailedTitle: 'Ошибка регистрации',
       registrationFailedDefaultDescription: 'Не удалось завершить регистрацию. Попробуйте ещё раз.',
+      noAccountFoundTitle: 'Аккаунт не найден',
+      noAccountFoundDescription:
+        'Ключ доступа не найден. Пожалуйста, зарегистрируйтесь, чтобы создать новый аккаунт.',
+      alreadyRegisteredLink: 'Я уже зарегистрирован на другом устройстве',
     },
     passwordModal: {
       passwordLabel: 'Пароль',
@@ -4749,6 +4780,10 @@ export const translations: Translations = {
       registrationFailedTitle: 'Falha no registro',
       registrationFailedDefaultDescription:
         'Não foi possível concluir o registro. Por favor, tente novamente.',
+      noAccountFoundTitle: 'Conta não encontrada',
+      noAccountFoundDescription:
+        'Nenhuma chave de acesso encontrada. Por favor, registre-se para criar uma nova conta.',
+      alreadyRegisteredLink: 'Já me registrei em outro dispositivo',
     },
     passwordModal: {
       passwordLabel: 'Senha',
@@ -5237,6 +5272,10 @@ export const translations: Translations = {
       registrationFailedTitle: 'رجسٹریشن ناکام ہوگئی',
       registrationFailedDefaultDescription:
         'رجسٹریشن مکمل کرنے سے قاصر۔ براہ کرم دوبارہ کوشش کریں۔',
+      noAccountFoundTitle: 'کوئی اکاؤنٹ نہیں ملا',
+      noAccountFoundDescription:
+        'کوئی پاس کی نہیں ملی۔ نیا اکاؤنٹ بنانے کے لیے براہ کرم رجسٹر کریں۔',
+      alreadyRegisteredLink: 'میں پہلے ہی دوسرے ڈیوائس پر رجسٹر ہو چکا ہوں',
     },
     passwordModal: {
       passwordLabel: 'پاس ورڈ',
