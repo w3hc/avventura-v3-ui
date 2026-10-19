@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://w3pk.w3hc.org'),
+  metadataBase: new URL('https://avventura.fun'),
 
   title: 'Avventura',
   description: 'The one and only Web3 text-based RPG!',
