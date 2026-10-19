@@ -56,13 +56,10 @@ import { brandColors } from '@/theme'
 import { BuildVerification } from '@/components/BuildVerification'
 import {
   inspectLocalStorage,
-  inspectIndexedDB,
   formatValue,
   maskSensitiveData,
   clearLocalStorageItem,
-  clearIndexedDBRecord,
   type LocalStorageItem,
-  type IndexedDBInfo,
 } from '../../../src/utils/storageInspection'
 import { QRCodeSVG } from 'qrcode.react'
 import {
@@ -99,11 +96,8 @@ const SettingsPage = () => {
   const { open: isOpen, onOpen, onClose } = useDisclosure()
 
   const [localStorageData, setLocalStorageData] = useState<LocalStorageItem[]>([])
-  const [indexedDBData, setIndexedDBData] = useState<IndexedDBInfo[]>([])
   const [isInspectingLocalStorage, setIsInspectingLocalStorage] = useState(false)
-  const [isInspectingIndexedDB, setIsInspectingIndexedDB] = useState(false)
   const [showLocalStorageModal, setShowLocalStorageModal] = useState(false)
-  const [showIndexedDBModal, setShowIndexedDBModal] = useState(false)
 
   const [index0Address, setIndex0Address] = useState<string>('')
   const [mainAddress, setMainAddress] = useState<string>('')
@@ -342,32 +336,6 @@ const SettingsPage = () => {
     }
   }
 
-  const handleInspectIndexedDB = async () => {
-    setIsInspectingIndexedDB(true)
-    try {
-      const data = await inspectIndexedDB()
-      setIndexedDBData(data)
-
-      const totalRecords = data.reduce((sum, db) => sum + db.records.length, 0)
-      toaster.create({
-        title: 'IndexedDB Inspected',
-        description: `Found ${data.length} database(s) with ${totalRecords} record(s). Scroll down to see results.`,
-        type: 'success',
-        duration: 3000,
-      })
-    } catch (error) {
-      console.error('Error inspecting IndexedDB:', error)
-      toaster.create({
-        title: 'Error',
-        description: 'Failed to inspect IndexedDB',
-        type: 'error',
-        duration: 3000,
-      })
-    } finally {
-      setIsInspectingIndexedDB(false)
-    }
-  }
-
   const handleClearLocalStorageItem = async (key: string) => {
     const success = clearLocalStorageItem(key)
     if (success) {
@@ -384,38 +352,6 @@ const SettingsPage = () => {
       toaster.create({
         title: 'Error',
         description: `Failed to clear "${key}"`,
-        type: 'error',
-        duration: 3000,
-      })
-    }
-  }
-
-  const handleClearIndexedDBRecord = async (dbName: string, storeName: string, key: string) => {
-    const success = await clearIndexedDBRecord(dbName, storeName, key)
-    if (success) {
-      const updatedData = indexedDBData.map(db => {
-        if (db.name === dbName) {
-          return {
-            ...db,
-            records: db.records.filter(
-              record => !(record.store === storeName && record.key === key)
-            ),
-          }
-        }
-        return db
-      })
-      setIndexedDBData(updatedData)
-
-      toaster.create({
-        title: 'Record Cleared',
-        description: `Removed record from ${dbName}/${storeName}`,
-        type: 'success',
-        duration: 2000,
-      })
-    } else {
-      toaster.create({
-        title: 'Error',
-        description: 'Failed to clear record',
         type: 'error',
         duration: 3000,
       })
@@ -1075,17 +1011,6 @@ const SettingsPage = () => {
                 <Icon as={FiHardDrive} mr={2} />
                 Inspect LocalStorage
               </Button>
-              <Button
-                onClick={handleInspectIndexedDB}
-                loading={isInspectingIndexedDB}
-                loadingText="Inspecting..."
-                variant="outline"
-                colorPalette="purple"
-                size="sm"
-              >
-                <Icon as={FiDatabase} mr={2} />
-                Inspect IndexedDB
-              </Button>
             </SimpleGrid>
           </Box>
 
@@ -1295,86 +1220,6 @@ const SettingsPage = () => {
                         <Text fontSize="xs" color="gray.500" fontFamily="monospace">
                           {item.value}
                         </Text>
-                      )}
-                    </VStack>
-                  </Box>
-                ))}
-              </VStack>
-            </Box>
-          )}
-
-          {indexedDBData.length > 0 && (
-            <Box bg="gray.900" p={6} borderRadius="lg" border="1px solid" borderColor="purple.600">
-              <HStack mb={4} justify="space-between">
-                <HStack>
-                  <Icon as={FiDatabase} color={brandColors.primary} boxSize={6} />
-                  <Heading size="md">IndexedDB Results</Heading>
-                </HStack>
-                <Badge colorPalette="purple">{indexedDBData.length} database(s)</Badge>
-              </HStack>
-              <VStack align="stretch" gap={4}>
-                {indexedDBData.map((db, dbIndex) => (
-                  <Box
-                    key={dbIndex}
-                    bg="gray.950"
-                    p={4}
-                    borderRadius="md"
-                    border="1px solid"
-                    borderColor="purple.700"
-                  >
-                    <VStack align="stretch" gap={3}>
-                      <HStack justify="space-between">
-                        <Text fontSize="md" fontWeight="bold" color="white">
-                          {db.name}
-                        </Text>
-                        <Badge colorPalette="purple" fontSize="xs">
-                          v{db.version}
-                        </Badge>
-                      </HStack>
-
-                      <Text fontSize="xs" color="gray.400">
-                        Stores: {db.stores.join(', ')}
-                      </Text>
-
-                      <Text fontSize="xs" color="gray.400">
-                        Records: {db.records.length}
-                      </Text>
-
-                      {db.records.length > 0 && (
-                        <VStack align="stretch" gap={2} mt={2}>
-                          {db.records.map((record, recordIndex) => (
-                            <Box
-                              key={recordIndex}
-                              bg="black"
-                              p={3}
-                              borderRadius="md"
-                              border="1px solid"
-                              borderColor="gray.900"
-                            >
-                              <HStack justify="space-between" mb={2}>
-                                <Text fontSize="xs" color="gray.400">
-                                  Store: {record.store} | Key: {record.key}
-                                </Text>
-                                <IconButton
-                                  aria-label="Clear record"
-                                  size="xs"
-                                  colorPalette="red"
-                                  variant="ghost"
-                                  onClick={() =>
-                                    handleClearIndexedDBRecord(db.name, record.store, record.key)
-                                  }
-                                >
-                                  <MdDelete />
-                                </IconButton>
-                              </HStack>
-                              <Box overflowX="auto">
-                                <CodeBlock>
-                                  {formatValue(maskSensitiveData(record.key, record.value))}
-                                </CodeBlock>
-                              </Box>
-                            </Box>
-                          ))}
-                        </VStack>
                       )}
                     </VStack>
                   </Box>
@@ -2004,50 +1849,15 @@ const SettingsPage = () => {
       const storageKey = `w3pk_wallet_sync_${user.ethereumAddress}`
       localStorage.setItem(storageKey, JSON.stringify(syncRecord))
 
-      // Save to IndexedDB
-      const dbName = 'w3pk-wallet-sync'
-      const request = indexedDB.open(dbName, 1)
+      toaster.create({
+        title: 'Wallet Linked Successfully!',
+        description: `Linked wallet ${parsedQRData.ethereumAddress.slice(0, 6)}...${parsedQRData.ethereumAddress.slice(-4)} to your passkey account`,
+        type: 'success',
+        duration: 5000,
+      })
 
-      request.onerror = () => {
-        throw new Error('Failed to open IndexedDB')
-      }
-
-      request.onupgradeneeded = event => {
-        const db = (event.target as IDBOpenDBRequest).result
-        if (!db.objectStoreNames.contains('walletLinks')) {
-          db.createObjectStore('walletLinks', { keyPath: 'passkeyAddress' })
-        }
-      }
-
-      request.onsuccess = event => {
-        const db = (event.target as IDBOpenDBRequest).result
-        const transaction = db.transaction(['walletLinks'], 'readwrite')
-        const store = transaction.objectStore('walletLinks')
-
-        const dbRecord = {
-          passkeyAddress: user.ethereumAddress,
-          ...syncRecord,
-        }
-
-        store.put(dbRecord)
-
-        transaction.oncomplete = () => {
-          toaster.create({
-            title: 'Wallet Linked Successfully!',
-            description: `Linked wallet ${parsedQRData.ethereumAddress.slice(0, 6)}...${parsedQRData.ethereumAddress.slice(-4)} to your passkey account`,
-            type: 'success',
-            duration: 5000,
-          })
-
-          // Clear the pasted data
-          setPastedQRData('')
-          setParsedQRData(null)
-        }
-
-        transaction.onerror = () => {
-          throw new Error('Failed to save to IndexedDB')
-        }
-      }
+      setPastedQRData('')
+      setParsedQRData(null)
     } catch (error) {
       console.error('Error saving QR data:', error)
       toaster.create({
@@ -3321,9 +3131,9 @@ const SettingsPage = () => {
                           <Box p={3} bg="blue.900/90" borderRadius="md">
                             <Text fontSize="xs" color="gray.300">
                               <strong>What happens when you link:</strong> This will save the wallet
-                              addresses to both localStorage and IndexedDB, creating a persistent
-                              link between your passkey account and this HD wallet. You can use this
-                              to verify or sync wallet data across devices.
+                              addresses to localStorage, creating a persistent link between your
+                              passkey account and this HD wallet. You can use this to verify or sync
+                              wallet data across devices.
                             </Text>
                           </Box>
                         </>
@@ -3357,8 +3167,8 @@ const SettingsPage = () => {
                   </Text>
                   <Text>
                     <strong>What Gets Stored:</strong> Only public wallet addresses are stored in
-                    localStorage and IndexedDB. Your private keys and recovery phrase remain secure
-                    and are never transmitted or stored through this sync mechanism.
+                    localStorage. Your private keys and recovery phrase remain secure and are never
+                    transmitted or stored through this sync mechanism.
                   </Text>
                 </VStack>
               </Box>
@@ -3826,101 +3636,6 @@ const SettingsPage = () => {
               </Dialog.Body>
               <Dialog.Footer gap={3} pt={6}>
                 <Button onClick={() => setShowLocalStorageModal(false)}>Close</Button>
-              </Dialog.Footer>
-              <Dialog.CloseTrigger asChild>
-                <CloseButton size="sm" />
-              </Dialog.CloseTrigger>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
-
-      <Dialog.Root
-        open={showIndexedDBModal}
-        onOpenChange={(e: { open: boolean }) => (e.open ? null : setShowIndexedDBModal(false))}
-        size="xl"
-      >
-        <Portal>
-          <Dialog.Backdrop />
-          <Dialog.Positioner>
-            <Dialog.Content p={6}>
-              <Dialog.Header>
-                <Dialog.Title>
-                  <HStack>
-                    <Icon as={FiDatabase} />
-                    <Text>IndexedDB Inspection</Text>
-                  </HStack>
-                </Dialog.Title>
-              </Dialog.Header>
-              <Dialog.Body pt={4}>
-                <VStack align="stretch" gap={4}>
-                  <Text fontSize="sm" color="gray.400">
-                    Found {indexedDBData.length} database(s)
-                  </Text>
-
-                  {indexedDBData.length === 0 ? (
-                    <Box bg="gray.900" p={4} borderRadius="md" textAlign="center">
-                      <Text color="gray.500">No w3pk-related databases found</Text>
-                    </Box>
-                  ) : (
-                    indexedDBData.map((db, dbIndex) => (
-                      <Box
-                        key={dbIndex}
-                        bg="gray.900"
-                        p={4}
-                        borderRadius="md"
-                        border="1px solid"
-                        borderColor="purple.600"
-                      >
-                        <VStack align="stretch" gap={3}>
-                          <HStack justify="space-between">
-                            <Text fontSize="md" fontWeight="bold" color="white">
-                              {db.name}
-                            </Text>
-                            <Badge colorPalette="purple" fontSize="xs">
-                              v{db.version}
-                            </Badge>
-                          </HStack>
-
-                          <Text fontSize="xs" color="gray.400">
-                            Stores: {db.stores.join(', ')}
-                          </Text>
-
-                          <Text fontSize="xs" color="gray.400">
-                            Records: {db.records.length}
-                          </Text>
-
-                          {db.records.length > 0 && (
-                            <VStack align="stretch" gap={2} mt={2}>
-                              {db.records.map((record, recordIndex) => (
-                                <Box
-                                  key={recordIndex}
-                                  bg="gray.950"
-                                  p={3}
-                                  borderRadius="md"
-                                  border="1px solid"
-                                  borderColor="gray.800"
-                                >
-                                  <Text fontSize="xs" color="gray.400" mb={2}>
-                                    Store: {record.store} | Key: {record.key}
-                                  </Text>
-                                  <Box overflowX="auto">
-                                    <CodeBlock>
-                                      {formatValue(maskSensitiveData(record.key, record.value))}
-                                    </CodeBlock>
-                                  </Box>
-                                </Box>
-                              ))}
-                            </VStack>
-                          )}
-                        </VStack>
-                      </Box>
-                    ))
-                  )}
-                </VStack>
-              </Dialog.Body>
-              <Dialog.Footer gap={3} pt={6}>
-                <Button onClick={() => setShowIndexedDBModal(false)}>Close</Button>
               </Dialog.Footer>
               <Dialog.CloseTrigger asChild>
                 <CloseButton size="sm" />
