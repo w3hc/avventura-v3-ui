@@ -5,6 +5,7 @@ import { Box, Container } from '@chakra-ui/react'
 import { metadata } from './metadata'
 import { LanguageProvider } from '@/context/LanguageContext'
 import { Toaster } from '@/components/ui/toaster'
+import BackupStep from '@/components/BackupStep'
 import { brandColors } from '@/theme'
 import LayoutClient from './layout-client'
 
@@ -41,6 +42,7 @@ export default function RootLayout({
                 </Box>
               </LayoutClient>
             </Box>
+            <BackupStep />
             <Toaster />
           </LanguageProvider>
         </ContextProvider>

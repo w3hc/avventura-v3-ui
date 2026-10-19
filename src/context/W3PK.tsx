@@ -25,6 +25,7 @@ import {
   SocialRecoveryManager,
 } from 'w3pk'
 import { toaster } from '@/components/ui/toaster'
+import { hasEvictionRisk } from '@/utils/evictionRisk'
 
 type SecurityMode = 'PRIMARY' | 'STRICT' | 'STANDARD' | 'YOLO'
 
@@ -189,6 +190,13 @@ interface W3pkType {
    * failing, so the caller should offer registration directly.
    */
   hasLocalCredentials: () => Promise<boolean>
+  /**
+   * The "Back up your wallet" step. It opens, blocking, after a registration
+   * without a backup, only where the browser can wipe the wallet (Safari)
+   */
+  backupPrompt: { open: boolean }
+  /** Record that the user chose to go on without a backup, and close the step */
+  skipBackup: () => void
 }
 
 const W3PK = createContext<W3pkType | null>(null)
@@ -267,6 +275,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
   const [user, setUser] = useState<W3pkUser | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [backupPrompt, setBackupPrompt] = useState({ open: false })
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -368,6 +377,11 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     checkExistingAuth()
   }, [isMounted, w3pk, handleAuthStateChanged])
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!isAuthenticated) setBackupPrompt({ open: false })
+  }, [isAuthenticated])
+
   const register = async (username: string): Promise<void> => {
     try {
       setIsLoading(true)
@@ -386,9 +400,13 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         )
       )
 
-      await Promise.race([registrationPromise, timeoutPromise])
+      const result = await Promise.race([registrationPromise, timeoutPromise])
 
       console.log('[W3PK] Registration successful')
+
+      if (!result.hasBackup && hasEvictionRisk(w3pk.storagePersisted)) {
+        setBackupPrompt({ open: true })
+      }
 
       toaster.create({
         title: 'Done! 🎉',
@@ -722,6 +740,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     try {
       setIsLoading(true)
       const result = await runWithAuthRetry(() => w3pk.createBackupFile('password', password))
+      setBackupPrompt({ open: false })
       return result.blob
     } catch (error) {
       if (!isUserCancelledError(error)) {
@@ -1041,6 +1060,13 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     }
   }
 
+  const skipBackup = (): void => {
+    if (user) {
+      localStorage.setItem(`genji_backup_skipped_${user.ethereumAddress}`, new Date().toISOString())
+    }
+    setBackupPrompt({ open: false })
+  }
+
   return (
     <W3PK.Provider
       value={{
@@ -1068,6 +1094,8 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         setPersistentSessionDuration,
         hasPersistentSession,
         hasLocalCredentials,
+        backupPrompt,
+        skipBackup,
       }}
     >
       {children}
