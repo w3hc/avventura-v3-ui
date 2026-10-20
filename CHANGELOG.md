@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Project `.claude/CLAUDE.md` describing the production host (Ubuntu VPS on Infomaniak, https://avventura.fun) and the API used in production (`https://api.avventura.fun/`) and locally (`http://localhost:3000`, from `../avventura-v3`) ([#42](https://github.com/w3hc/avventura-v3-ui/pull/42))
 - Safari backup step after registration: when the browser can wipe the wallet, a blocking "Back up your wallet" dialog offers a password-protected backup file ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
 - HTTP security headers on every route: Content-Security-Policy, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` and `Strict-Transport-Security` ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
 - `pnpm-workspace.yaml` with a 3-day minimum release age for new dependency versions, and `pnpm.overrides` forcing patched transitive dependencies ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
