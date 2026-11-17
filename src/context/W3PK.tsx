@@ -20,13 +20,23 @@ import {
   createWeb3Passkey,
   getCurrentBuildHash,
   verifyBuildHash,
-  // AI Inspection feature (disabled)
-  // inspect,
-  // inspectNow,
-  SocialRecoveryManager,
+  AddressChangeError,
+  PrfUnsupportedError,
+  SyncRequiredError,
+  UserVerificationRequiredError,
+  WalletMissingError,
+  WeakPasswordError,
 } from 'w3pk'
+import type { GuardianShare } from 'w3pk'
+import { useRouter } from 'next/navigation'
 import { toaster } from '@/components/ui/toaster'
-import { hasEvictionRisk } from '@/utils/evictionRisk'
+import { getAuthenticatorCapabilities } from '@/utils/browserDetection'
+
+declare global {
+  interface Window {
+    __genjiReady?: boolean
+  }
+}
 
 type SecurityMode = 'PRIMARY' | 'STRICT' | 'STANDARD' | 'YOLO'
 
@@ -51,12 +61,11 @@ interface BackupStatus {
   passkeySync?: PasskeySync
   recoveryPhrase?: RecoveryPhrase
   backupExists?: boolean
+  evictionRisk: boolean
 }
 
 interface W3pkUser {
-  id: string
   username: string
-  displayName: string
   ethereumAddress: string
   credentialId: string
 }
@@ -67,29 +76,10 @@ interface DerivedWallet {
   publicKey?: string
 }
 
-interface Guardian {
-  id: string
-  name: string
-  email?: string
-  phone?: string
-  shareEncrypted: string
-  status: 'pending' | 'active' | 'revoked'
-  addedAt: string
-  lastVerified?: string
-}
-
 interface GuardianInvite {
-  guardianId: string
-  shareCode: string
-  explainer: string
-}
-
-interface SocialRecoveryConfig {
-  threshold: number
-  totalGuardians: number
-  guardians: Guardian[]
-  createdAt: string
-  ethereumAddress: string
+  shareJson: string
+  shareDocument: string
+  filename: string
 }
 
 interface StealthAddressResult {
@@ -113,7 +103,6 @@ type SignMessageOptions = {
   mode?: SecurityMode
   tag?: string
   requireAuth?: boolean
-  origin?: string
   signingMethod?: 'EIP191' | 'SIWE' | 'EIP712' | 'rawHash'
   eip712Domain?: object
   eip712Types?: object
@@ -124,7 +113,6 @@ type TxOptions = {
   mode?: SecurityMode
   tag?: string
   requireAuth?: boolean
-  origin?: string
   rpcUrl?: string
 }
 
@@ -149,31 +137,30 @@ interface W3pkType {
   deriveWallet: (
     mode?: string,
     tag?: string,
-    options?: { requireAuth?: boolean; origin?: string }
+    options?: { requireAuth?: boolean }
   ) => Promise<DerivedWallet>
   getAddress: (mode?: string, tag?: string) => Promise<string>
   getBackupStatus: () => Promise<BackupStatus>
   createBackup: (password: string) => Promise<Blob>
-  restoreFromBackup: (
+  exportForSync: (password?: string) => Promise<{ blob: Blob; filename: string; qrCode?: string }>
+  importFromSync: (syncData: string) => Promise<{ ethereumAddress: string }>
+  syncWalletWithPasskey: (
     backupData: string,
-    password: string
-  ) => Promise<{ mnemonic: string; ethereumAddress: string }>
+    password?: string
+  ) => Promise<{ ethereumAddress: string }>
+  restoreFromBackup: (backupData: string, password: string) => Promise<{ ethereumAddress: string }>
   registerWithBackupFile: (
     backupData: string,
     password: string,
     username: string
   ) => Promise<{ address: string; username: string }>
   setupSocialRecovery: (
-    guardians: { name: string; email?: string; phone?: string }[],
+    guardians: { name: string; email?: string }[],
     threshold: number,
     password?: string
-  ) => Promise<Guardian[]>
-  getSocialRecoveryConfig: () => SocialRecoveryConfig | null
-  generateGuardianInvite: (guardian: Guardian) => Promise<GuardianInvite>
-  recoverFromGuardians: (
-    shareData: string[]
-  ) => Promise<{ backupFileJson: string; ethereumAddress: string }>
-  clearSocialRecoveryConfig: () => void
+  ) => Promise<GuardianShare[]>
+  generateGuardianInvite: (share: GuardianShare) => Promise<GuardianInvite>
+  recoverFromGuardians: (shares: string[], password: string) => Promise<{ ethereumAddress: string }>
   getStealthKeys: () => Promise<any>
   generateStealthAddressFor: (recipientMetaAddress: string) => Promise<StealthAddressResult>
   /** Update the "Remember Me" window; applies at the next real (prompted) login */
@@ -231,6 +218,54 @@ export function isUserCancelledError(error: unknown): boolean {
   return false
 }
 
+function hasNotAllowedName(value: unknown): boolean {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'name' in value &&
+    value.name === 'NotAllowedError'
+  )
+}
+
+// WebAuthn reports a timeout and a cancel alike as NotAllowedError: on a
+// device with no built-in authenticator it usually means nothing answered.
+// w3pk wraps it in a RegistrationError that keeps it as originalError.
+async function isNoAuthenticatorError(error: unknown): Promise<boolean> {
+  const isNotAllowed =
+    hasNotAllowedName(error) ||
+    (typeof error === 'object' &&
+      error !== null &&
+      'originalError' in error &&
+      hasNotAllowedName(error.originalError))
+  if (!isNotAllowed) return false
+  const { platformAuthenticator } = await getAuthenticatorCapabilities()
+  return !platformAuthenticator
+}
+
+function showNoAuthenticatorToast() {
+  toaster.create({
+    title: 'No Authenticator Responded',
+    description:
+      'No authenticator responded on this device. Use a security key or your phone if this browser offers it, or open this page in another browser.',
+    type: 'error',
+    duration: 8000,
+  })
+}
+
+// A restore that would replace the device's wallet with another address
+// throws AddressChangeError; ask before running it again with the change allowed
+async function withAddressChangeConfirm<T>(
+  restore: (options: { allowAddressChange?: boolean }) => Promise<T>
+): Promise<T> {
+  try {
+    return await restore({})
+  } catch (error) {
+    if (!(error instanceof AddressChangeError)) throw error
+    if (!window.confirm(`${error.message}\n\nReplace ${error.currentAddress}?`)) throw error
+    return restore({ allowAddressChange: true })
+  }
+}
+
 export function isRequestPendingError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : ''
   return message.includes('request is already pending')
@@ -272,6 +307,7 @@ function hasStoredPersistentSession(): boolean {
 }
 
 export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
+  const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<W3pkUser | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -279,17 +315,21 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
   const [backupPrompt, setBackupPrompt] = useState({ open: false })
 
   useEffect(() => {
+    // Stops the startup watchdog in the root layout's compat script
+    window.__genjiReady = true
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true)
+    // Left by w3pk < 0.11: it held every guardian share together on the device
+    try {
+      localStorage.removeItem('w3pk_social_recovery')
+    } catch {}
   }, [])
 
   const handleAuthStateChanged = useCallback((isAuth: boolean, w3pkUser?: unknown) => {
     if (isAuth && w3pkUser && typeof w3pkUser === 'object') {
       const userObj = w3pkUser as Record<string, string>
       const userData: W3pkUser = {
-        id: userObj.id,
         username: userObj.username,
-        displayName: userObj.displayName,
         ethereumAddress: userObj.ethereumAddress,
         credentialId: userObj.credentialId,
       }
@@ -314,6 +354,8 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
       createWeb3Passkey({
         stealthAddresses: {},
         onAuthStateChanged: handleAuthStateChanged,
+        // An assertion without user verification still throws UserVerificationRequiredError
+        userVerification: 'preferred',
         sessionDuration: 24, // 24 hours session duration
         persistentSession: {
           enabled: true,
@@ -335,9 +377,6 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         ...w3pk,
         getCurrentBuildHash,
         verifyBuildHash,
-        // AI Inspection feature (disabled)
-        // inspect,
-        // inspectNow,
       }
     }
   }, [w3pk])
@@ -406,7 +445,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
 
       console.log('[W3PK] Registration successful')
 
-      if (!result.hasBackup && hasEvictionRisk(w3pk.storagePersisted)) {
+      if (!result.hasBackup && result.evictionRisk) {
         setBackupPrompt({ open: true })
       }
 
@@ -419,6 +458,22 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
       })
     } catch (error) {
       console.error('[W3PK] Registration failed:', error)
+
+      if (error instanceof PrfUnsupportedError) {
+        toaster.create({
+          title: 'Passkey Not Supported',
+          description:
+            "This passkey provider doesn't support the WebAuthn PRF extension, which is needed to encrypt your wallet. Nothing was created: try another browser or password manager.",
+          type: 'error',
+          duration: 10000,
+        })
+        throw error
+      }
+
+      if (await isNoAuthenticatorError(error)) {
+        showNoAuthenticatorToast()
+        throw error
+      }
 
       const errorDetails =
         error instanceof Error ? `${error.name}: ${error.message}` : JSON.stringify(error)
@@ -442,7 +497,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
 
       const result = await w3pk.login()
       const hasWallet = w3pk.isAuthenticated
-      const displayName = result.displayName || result.username || 'Anon'
+      const displayName = result.username || 'Anon'
 
       console.log('[W3PK] Login successful:', { hasWallet, displayName })
 
@@ -456,6 +511,44 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
       })
     } catch (error) {
       console.error('[W3PK] Login failed:', error)
+
+      // The passkey works, but this device has no wallet for it: send the
+      // user to sync it from another device, or restore a backup
+      if (error instanceof SyncRequiredError || error instanceof WalletMissingError) {
+        toaster.create({
+          title: 'Wallet Not on This Device',
+          description:
+            error instanceof SyncRequiredError
+              ? 'Your passkey synced here, but your wallet did not. Import a sync file from your other device, or restore a backup.'
+              : 'This browser cleared your wallet. Import a sync file from another device, or restore a backup.',
+          type: 'warning',
+          duration: 8000,
+        })
+        router.push('/settings#sync-import')
+        throw error
+      }
+
+      if (error instanceof UserVerificationRequiredError) {
+        toaster.create({
+          title: 'Verification Required',
+          description:
+            'Your passkey signed in without verifying you (PIN, fingerprint or face). Try again and confirm it is you when asked.',
+          type: 'error',
+          duration: 8000,
+        })
+        throw error
+      }
+
+      if (error instanceof PrfUnsupportedError) {
+        toaster.create({
+          title: 'Passkey Not Supported',
+          description:
+            "This passkey provider doesn't support the WebAuthn PRF extension, which is needed to unlock your wallet. Try another browser or password manager.",
+          type: 'error',
+          duration: 8000,
+        })
+        throw error
+      }
 
       // Silence cancellations, "no passkey on this device" (the Header handles
       // it by offering registration), and duplicate concurrent login attempts —
@@ -646,11 +739,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
   }
 
   const deriveWallet = useCallback(
-    (
-      mode?: string,
-      tag?: string,
-      options?: { requireAuth?: boolean; origin?: string }
-    ): Promise<DerivedWallet> =>
+    (mode?: string, tag?: string, options?: { requireAuth?: boolean }): Promise<DerivedWallet> =>
       callWithAuthRetry(() => w3pk.deriveWallet(mode as any, tag as any, options), {
         retryOn: 'Failed to derive wallet',
         authPrompt: 'Please authenticate to derive addresses',
@@ -741,7 +830,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
 
     try {
       setIsLoading(true)
-      const result = await runWithAuthRetry(() => w3pk.createBackupFile('password', password))
+      const result = await runWithAuthRetry(() => w3pk.createBackupFile(password))
       setBackupPrompt({ open: false })
       return result.blob
     } catch (error) {
@@ -759,14 +848,72 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     }
   }
 
+  /**
+   * Throws PrfUnsupportedError where the authenticator has no PRF:
+   * call again with a password to get a password sync file
+   */
+  const exportForSync = async (
+    password?: string
+  ): Promise<{ blob: Blob; filename: string; qrCode?: string }> => {
+    if (!isAuthenticated || !user) {
+      throw new Error('User not authenticated. Cannot export for sync.')
+    }
+
+    try {
+      setIsLoading(true)
+      const result = await runWithAuthRetry(() => w3pk.exportForSync(password))
+      setBackupPrompt({ open: false })
+      return result
+    } catch (error) {
+      if (!isUserCancelledError(error) && !(error instanceof PrfUnsupportedError)) {
+        toaster.create({
+          title: 'Sync Export Failed',
+          description: error instanceof Error ? error.message : 'Failed to export for sync',
+          type: 'error',
+          duration: 5000,
+        })
+      }
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Both start a session on success; callers handle errors, since
+  // SyncBootstrapError reasons need their own messages
+  const importFromSync = async (syncData: string): Promise<{ ethereumAddress: string }> => {
+    try {
+      setIsLoading(true)
+      return await withAddressChangeConfirm(options => w3pk.importFromSync(syncData, options))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const syncWalletWithPasskey = async (
+    backupData: string,
+    password?: string
+  ): Promise<{ ethereumAddress: string }> => {
+    try {
+      setIsLoading(true)
+      return await withAddressChangeConfirm(options =>
+        w3pk.syncWalletWithPasskey(backupData, password, options)
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const restoreFromBackup = async (
     backupData: string,
     password: string
-  ): Promise<{ mnemonic: string; ethereumAddress: string }> => {
+  ): Promise<{ ethereumAddress: string }> => {
     try {
       setIsLoading(true)
 
-      const result = await w3pk.restoreFromBackupFile(backupData, password)
+      const result = await withAddressChangeConfirm(options =>
+        w3pk.restoreFromBackupFile(backupData, password, options)
+      )
 
       toaster.create({
         title: 'Backup Restored Successfully!',
@@ -830,14 +977,14 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     }
   }
 
-  // Social recovery now uses the w3pk library's SocialRecoveryManager
-  // which splits backup files instead of mnemonics for better security
+  // Guardian shares are never stored on the device: setup returns them
+  // once, and the guardians keep them
 
   const setupSocialRecovery = async (
-    guardians: { name: string; email?: string; phone?: string }[],
+    guardians: { name: string; email?: string }[],
     threshold: number,
     password?: string
-  ): Promise<Guardian[]> => {
+  ): Promise<GuardianShare[]> => {
     if (!isAuthenticated || !user) {
       throw new Error('User not authenticated. Cannot setup social recovery.')
     }
@@ -860,16 +1007,10 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         throw new Error('Password is required for social recovery setup')
       }
 
-      // Create password-encrypted backup file
-      const backupBlob = await w3pk.createBackupFile('password', backupPassword)
-      const backupJson = await backupBlob.blob.text()
-
-      // Use w3pk's SocialRecoveryManager to split the backup file
-      const guardianObjects = await new SocialRecoveryManager().setupSocialRecovery(
-        backupJson,
-        user.ethereumAddress,
+      const { guardianShares } = await w3pk.setupSocialRecovery(
         guardians,
-        threshold
+        threshold,
+        backupPassword
       )
 
       toaster.create({
@@ -879,13 +1020,17 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         duration: 5000,
       })
 
-      return guardianObjects
+      return guardianShares
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to setup social recovery'
+        error instanceof WeakPasswordError
+          ? error.feedback.join(' ')
+          : error instanceof Error
+            ? error.message
+            : 'Failed to setup social recovery'
 
       toaster.create({
-        title: 'Setup Failed',
+        title: error instanceof WeakPasswordError ? 'Weak Password' : 'Setup Failed',
         description: errorMessage,
         type: 'error',
         duration: 5000,
@@ -896,28 +1041,24 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     }
   }
 
-  const getSocialRecoveryConfig = (): SocialRecoveryConfig | null => {
-    try {
-      return new SocialRecoveryManager().getSocialRecoveryConfig()
-    } catch {
-      return null
-    }
-  }
-
-  const generateGuardianInvite = async (guardian: Guardian): Promise<GuardianInvite> => {
+  const generateGuardianInvite = async (share: GuardianShare): Promise<GuardianInvite> => {
     try {
       setIsLoading(true)
 
-      const invite = await new SocialRecoveryManager().generateGuardianInvite(guardian)
+      const invite = await w3pk.generateGuardianInvite(share)
 
       toaster.create({
         title: 'Guardian Invitation Generated',
-        description: `Invitation ready for ${guardian.name}`,
+        description: `Invitation ready for ${share.guardianName}`,
         type: 'success',
         duration: 3000,
       })
 
-      return invite
+      return {
+        shareJson: await invite.downloadBlob.text(),
+        shareDocument: invite.shareDocument,
+        filename: invite.filename,
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to generate guardian invite'
@@ -934,26 +1075,16 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     }
   }
 
+  // Logged out, the recovered wallet stays in memory until register()
   const recoverFromGuardians = async (
-    shareData: string[]
-  ): Promise<{ backupFileJson: string; ethereumAddress: string }> => {
+    shares: string[],
+    password: string
+  ): Promise<{ ethereumAddress: string }> => {
     try {
       setIsLoading(true)
-
-      const { backupFileJson, ethereumAddress } =
-        await new SocialRecoveryManager().recoverFromGuardians(shareData)
-
-      toaster.create({
-        title: 'Backup File Recovered!',
-        description: `Successfully recovered encrypted backup file for ${ethereumAddress.slice(0, 6)}...${ethereumAddress.slice(-4)}. You can now restore your wallet with the password you set during setup.`,
-        type: 'success',
-        duration: 8000,
-      })
-
-      return {
-        backupFileJson,
-        ethereumAddress,
-      }
+      return await withAddressChangeConfirm(options =>
+        w3pk.recoverFromGuardians(shares, password, options)
+      )
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to recover from guardians'
@@ -967,32 +1098,6 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
       throw error
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const clearSocialRecoveryConfig = (): void => {
-    try {
-      // Clear from localStorage (both old and new format)
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.removeItem('w3pk_social_recovery')
-
-        toaster.create({
-          title: 'Social Recovery Config Cleared',
-          description: 'Guardian shares removed from local storage',
-          type: 'success',
-          duration: 3000,
-        })
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to clear social recovery config'
-
-      toaster.create({
-        title: 'Clear Failed',
-        description: errorMessage,
-        type: 'error',
-        duration: 3000,
-      })
     }
   }
 
@@ -1084,13 +1189,14 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         getAddress,
         getBackupStatus,
         createBackup,
+        exportForSync,
+        importFromSync,
+        syncWalletWithPasskey,
         restoreFromBackup,
         registerWithBackupFile,
         setupSocialRecovery,
-        getSocialRecoveryConfig,
         generateGuardianInvite,
         recoverFromGuardians,
-        clearSocialRecoveryConfig,
         getStealthKeys,
         generateStealthAddressFor,
         setPersistentSessionDuration,

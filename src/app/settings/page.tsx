@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-// AI Inspection feature (disabled)
-// import { inspect } from 'w3pk'
 import {
   Box,
   Heading,
@@ -39,21 +37,28 @@ import {
   FiUsers,
   FiKey,
   FiDownload,
-  FiDatabase,
   FiHardDrive,
   FiUpload,
   FiClock,
   FiUserPlus,
 } from 'react-icons/fi'
-import { useW3PK } from '@/context/W3PK'
+import { AuthenticationError, PrfUnsupportedError, SyncBootstrapError } from 'w3pk'
+import type { GuardianShare } from 'w3pk'
+import { useW3PK, isUserCancelledError } from '@/context/W3PK'
 import { useTranslation } from '@/hooks/useTranslation'
 import Spinner from '@/components/Spinner'
 import PasswordModal from '@/components/PasswordModal'
+import SyncImport from '@/components/SyncImport'
+import { buildSyncLink, fitsInQrCode, takePendingSyncLink } from '@/utils/syncLink'
 import { CodeBlock } from '@/components/CodeBlock'
-// AI Inspection feature (disabled) - only used to render the security report
-// import ReactMarkdown from 'react-markdown'
-// import remarkGfm from 'remark-gfm'
-import { detectBrowser, isWebAuthnAvailable } from '@/utils/browserDetection'
+import {
+  detectBrowser,
+  getAuthenticatorCapabilities,
+  getAuthenticatorHint,
+  isWebAuthnAvailable,
+  type AuthenticatorCapabilities,
+  type AuthenticatorTier,
+} from '@/utils/browserDetection'
 import { brandColors } from '@/theme'
 import { BuildVerification } from '@/components/BuildVerification'
 import {
@@ -77,14 +82,14 @@ import {
 interface StoredAccount {
   username: string
   ethereumAddress: string
-  id: string
-  displayName?: string
 }
 
 const SettingsPage = () => {
   const t = useTranslation()
+  const [initialTab] = useState(() => (takePendingSyncLink() ? 'sync' : 'accounts'))
   const [backupStatus, setBackupStatus] = useState<string | null>(null)
   const [isCheckingStatus, setIsCheckingStatus] = useState(false)
+  const [evictionRisk, setEvictionRisk] = useState(false)
   const [isCreatingBackup, setIsCreatingBackup] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showRestorePasswordModal, setShowRestorePasswordModal] = useState(false)
@@ -105,10 +110,14 @@ const SettingsPage = () => {
   const [mainAddress, setMainAddress] = useState<string>('')
   const [openbarAddress, setOpenbarAddress] = useState<string>('')
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false)
-  const [qrCodeData, setQrCodeData] = useState<string>('')
-  const [showQRCode, setShowQRCode] = useState(false)
-  const [pastedQRData, setPastedQRData] = useState<string>('')
-  const [parsedQRData, setParsedQRData] = useState<any>(null)
+  const [isExportingSync, setIsExportingSync] = useState(false)
+  const [syncLink, setSyncLink] = useState<string | null>(null)
+  const [showSyncPasswordModal, setShowSyncPasswordModal] = useState(false)
+  const [capabilities, setCapabilities] = useState<AuthenticatorCapabilities | null>(null)
+
+  useEffect(() => {
+    getAuthenticatorCapabilities().then(setCapabilities)
+  }, [])
 
   // Persistent session duration state
   const [persistentSessionDays, setPersistentSessionDays] = useState<number>(() => {
@@ -160,9 +169,15 @@ const SettingsPage = () => {
   const [guardianEmail, setGuardianEmail] = useState<string>('')
   const [guardiansList, setGuardiansList] = useState<Array<{ name: string; email?: string }>>([])
   const [threshold, setThreshold] = useState<number>(3)
-  const [socialRecoveryConfig, setSocialRecoveryConfig] = useState<any>(null)
-  const [selectedGuardianForInvite, setSelectedGuardianForInvite] = useState<any>(null)
-  const [guardianInvite, setGuardianInvite] = useState<any>(null)
+  const [guardianShares, setGuardianShares] = useState<GuardianShare[]>([])
+  const [selectedGuardianForInvite, setSelectedGuardianForInvite] = useState<GuardianShare | null>(
+    null
+  )
+  const [guardianInvite, setGuardianInvite] = useState<{
+    shareJson: string
+    shareDocument: string
+    filename: string
+  } | null>(null)
 
   // Recovery state
   const [recoveryShares, setRecoveryShares] = useState<string[]>([])
@@ -180,19 +195,13 @@ const SettingsPage = () => {
   const [isRegistering, setIsRegistering] = useState(false)
   const [isRegisterUsernameInvalid, setIsRegisterUsernameInvalid] = useState(false)
 
-  // AI Inspection feature (disabled)
-  // const [isInspecting, setIsInspecting] = useState(false)
-  // const [securityReport, setSecurityReport] = useState<{
-  //   report: string
-  //   analyzedFiles: string[]
-  //   appUrl: string
-  // } | null>(null)
-
   const {
     isAuthenticated,
     user,
     getBackupStatus,
     createBackup,
+    exportForSync,
+    syncWalletWithPasskey,
     restoreFromBackup,
     registerWithBackupFile,
     login,
@@ -200,10 +209,8 @@ const SettingsPage = () => {
     register,
     deriveWallet,
     setupSocialRecovery,
-    getSocialRecoveryConfig,
     generateGuardianInvite,
     recoverFromGuardians,
-    clearSocialRecoveryConfig,
     setPersistentSessionDuration,
     hasPersistentSession,
   } = useW3PK()
@@ -369,8 +376,6 @@ const SettingsPage = () => {
         storedAccounts.push({
           username: user.username,
           ethereumAddress: user.ethereumAddress,
-          id: user.id,
-          displayName: user.displayName,
         })
       }
 
@@ -431,8 +436,9 @@ const SettingsPage = () => {
           ) {
             const scoreValue = statusObject.securityScore.total
             const scoreLevel = statusObject.securityScore.level || 'unknown'
-            const statusString = `Security Score: ${scoreValue}/100 (Level: ${scoreLevel})`
+            const statusString = `Security Score: ${scoreValue}/70 (Level: ${scoreLevel})`
             setBackupStatus(statusString)
+            setEvictionRisk(statusObject.evictionRisk)
           }
         } catch (error) {
           console.error('Error loading backup status:', error)
@@ -451,13 +457,6 @@ const SettingsPage = () => {
     loadAddressesAndStatus()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user])
-
-  useEffect(() => {
-    if (!isAuthenticated || !getSocialRecoveryConfig) return
-    const config = getSocialRecoveryConfig()
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSocialRecoveryConfig(config)
-  }, [isAuthenticated, getSocialRecoveryConfig])
 
   const handleDeleteAccount = (account: StoredAccount) => {
     setAccountToDelete(account)
@@ -478,8 +477,7 @@ const SettingsPage = () => {
             if (value) {
               if (
                 value.includes(accountToDelete.ethereumAddress) ||
-                value.includes(accountToDelete.username) ||
-                value.includes(accountToDelete.id)
+                value.includes(accountToDelete.username)
               ) {
                 keysToRemove.push(key)
               }
@@ -596,8 +594,37 @@ const SettingsPage = () => {
         }
       } catch (e) {}
 
-      // If NOT authenticated, prompt for username to register with backup file
       if (!isAuthenticated) {
+        // Restore into a passkey that already synced to this device; when
+        // there is none, or the backup can't name it, register a new one
+        try {
+          const result = await syncWalletWithPasskey(backupToRestore, password)
+          toaster.create({
+            title: t.settings.walletRestoredTitle,
+            description: t.settings.walletRestoredDescription(
+              `${result.ethereumAddress.slice(0, 6)}...${result.ethereumAddress.slice(-4)}`
+            ),
+            type: 'success',
+            duration: 5000,
+          })
+          setSelectedBackupFile(null)
+          return
+        } catch (error) {
+          if (
+            !(error instanceof SyncBootstrapError) &&
+            !(error instanceof AuthenticationError) &&
+            !isUserCancelledError(error)
+          ) {
+            toaster.create({
+              title: t.settings.syncImportErrorTitle,
+              description: (error as Error).message || t.settings.unexpectedErrorDescription,
+              type: 'error',
+              duration: 5000,
+            })
+            return
+          }
+        }
+
         setNeedsUsernameForRestore(true)
         setIsRestoring(false)
 
@@ -683,84 +710,29 @@ const SettingsPage = () => {
     setSelectedBackupFile(null)
   }
 
-  // AI Inspection feature (disabled)
-  // const handleInspect = async () => {
-  //   setIsInspecting(true)
-  //   console.log('🔍 W3PK Security Inspection Starting...')
-
-  //   try {
-  //     const result = await inspect({
-  //       focusMode: 'transactions',
-  //     })
-
-  //     console.log('✅ Security report generated')
-  //     console.log(`Analyzed ${result.analyzedFiles.length} files from ${result.appUrl}`)
-
-  //     // Store report and display on page
-  //     setSecurityReport(result)
-
-  //     // Also log to console
-  //     try {
-  //       const parsed = JSON.parse(result.report)
-  //       console.log('📋 SECURITY REPORT')
-  //       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
-  //       console.log(parsed.output || result.report)
-  //       console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  //     } catch {
-  //       console.log('📋 SECURITY REPORT')
-  //       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
-  //       console.log(result.report)
-  //       console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  //     }
-
-  //     toaster.create({
-  //       title: t.settings.securityReportGeneratedTitle,
-  //       description: t.settings.securityReportGeneratedDescription,
-  //       type: 'success',
-  //       duration: 5000,
-  //     })
-  //   } catch (error: any) {
-  //     console.error('❌ Inspection failed:', error)
-  //     toaster.create({
-  //       title: t.settings.inspectionFailedTitle,
-  //       description: t.settings.inspectionFailedDescription,
-  //       type: 'error',
-  //       duration: 8000,
-  //     })
-  //   } finally {
-  //     setIsInspecting(false)
-  //   }
-  // }
-
-  // // Expose inspect to window for console access
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     ;(window as any).w3pk = {
-  //       ...(window as any).w3pk,
-  //       inspect: async () => {
-  //         console.log('🔍 W3PK Security Inspection Starting...')
-  //         const result = await inspect({ focusMode: 'transactions' })
-  //         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  //         console.log('📋 SECURITY REPORT')
-  //         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
-  //         console.log(result.report)
-  //         console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  //         console.log(`✅ Analyzed ${result.analyzedFiles.length} files`)
-  //         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  //         return result
-  //       },
-  //     }
-  //   }
-  // }, [])
-
   if (!isAuthenticated || !getBackupStatus || !createBackup) {
     const browserInfo = detectBrowser()
     const webAuthnAvailable = isWebAuthnAvailable()
+    const hint =
+      capabilities && capabilities.tier !== 'unsupported' && getAuthenticatorHint(capabilities)
 
-    let alertStatus: 'info' | 'warning' | 'error' = 'warning'
-    if (browserInfo.warningLevel === 'error') alertStatus = 'error'
-    else if (browserInfo.warningLevel === 'warning') alertStatus = 'warning'
-    else if (browserInfo.warningLevel === 'info') alertStatus = 'info'
+    const tierBadge: Record<AuthenticatorTier, { palette: string; label: string }> = {
+      full: { palette: 'green', label: t.settings.fullySupported },
+      'hybrid-only': { palette: 'blue', label: t.settings.tierHybridOnly },
+      'security-key-only': { palette: 'yellow', label: t.settings.tierSecurityKeyOnly },
+      unsupported: { palette: 'red', label: t.settings.notSupported },
+    }
+
+    const capabilityRows = capabilities
+      ? [
+          {
+            label: t.settings.platformAuthenticatorLabel,
+            value: capabilities.platformAuthenticator,
+          },
+          { label: t.settings.hybridTransportLabel, value: capabilities.hybridTransport },
+          { label: t.settings.prfLabel, value: capabilities.prf },
+        ]
+      : []
 
     return (
       <>
@@ -812,48 +784,47 @@ const SettingsPage = () => {
                   {webAuthnAvailable ? t.settings.available : t.settings.notAvailable}
                 </Badge>
               </HStack>
-              <HStack justify="space-between">
-                <Text fontSize="sm" color="gray.400">
-                  {t.settings.compatibilityLabel}
-                </Text>
-                <Badge
-                  colorPalette={
-                    browserInfo.isSupported && !browserInfo.hasKnownIssues
-                      ? 'green'
-                      : browserInfo.hasKnownIssues
-                        ? 'yellow'
-                        : 'red'
-                  }
-                >
-                  {browserInfo.isSupported && !browserInfo.hasKnownIssues
-                    ? t.settings.fullySupported
-                    : browserInfo.hasKnownIssues
-                      ? t.settings.knownIssues
-                      : t.settings.notSupported}
-                </Badge>
-              </HStack>
+              {capabilityRows.map(({ label, value }) => (
+                <HStack key={label} justify="space-between">
+                  <Text fontSize="sm" color="gray.400">
+                    {label}
+                  </Text>
+                  <Badge colorPalette={value === 'unknown' ? 'gray' : value ? 'green' : 'red'}>
+                    {value === 'unknown'
+                      ? t.settings.capabilityUnknown
+                      : value
+                        ? t.settings.available
+                        : t.settings.notAvailable}
+                  </Badge>
+                </HStack>
+              ))}
+              {capabilities && (
+                <HStack justify="space-between">
+                  <Text fontSize="sm" color="gray.400">
+                    {t.settings.compatibilityLabel}
+                  </Text>
+                  <Badge colorPalette={tierBadge[capabilities.tier].palette}>
+                    {tierBadge[capabilities.tier].label}
+                  </Badge>
+                </HStack>
+              )}
             </VStack>
           </Box>
 
-          {browserInfo.recommendation && (
-            <Box
-              p={4}
-              bg={
-                alertStatus === 'error'
-                  ? 'red.900/90'
-                  : alertStatus === 'warning'
-                    ? 'yellow.900/90'
-                    : 'blue.900/90'
-              }
-              borderRadius="lg"
-            >
+          {(hint || capabilities?.prf === false) && (
+            <Box p={4} bg="yellow.900/90" borderRadius="lg">
+              <VStack align="stretch" gap={2} fontSize="sm">
+                {hint && <Text>{t.header[hint]}</Text>}
+                {capabilities?.prf === false && <Text>{t.header.prfUnsupportedWarning}</Text>}
+              </VStack>
+            </Box>
+          )}
+
+          {browserInfo.hasKnownIssues && browserInfo.recommendation && (
+            <Box p={4} bg="yellow.900/90" borderRadius="lg">
               <Box fontSize="sm">
                 <Text fontWeight="bold" mb={1}>
-                  {alertStatus === 'error'
-                    ? t.settings.browserNotSupportedTitle
-                    : alertStatus === 'warning'
-                      ? t.settings.knownIssuesTitle
-                      : t.settings.recommendationTitle}
+                  {t.settings.knownIssuesTitle}
                 </Text>
                 <Text fontSize="sm">{browserInfo.recommendation}</Text>
               </Box>
@@ -922,6 +893,8 @@ const SettingsPage = () => {
           )}
 
           <BuildVerification />
+
+          <SyncImport />
 
           {/* Restore from Backup - Available without authentication */}
           <Box
@@ -1003,154 +976,6 @@ const SettingsPage = () => {
               </Button>
             </SimpleGrid>
           </Box>
-
-          {/* AI Inspection feature (disabled)
-          <Box bg="gray.900" p={6} borderRadius="lg" border="2px solid" borderColor="purple.500">
-            {!securityReport ? (
-              <>
-                <Text fontSize="sm" color="gray.400" mb={4}>
-                  {t.settings.inspectSecurityDescriptionSmall}
-                </Text>
-                <Button
-                  bg="purple.500"
-                  color="white"
-                  _hover={{ bg: 'purple.600' }}
-                  onClick={handleInspect}
-                  disabled={isInspecting}
-                  size="sm"
-                  width="full"
-                >
-                  {isInspecting ? (
-                    <HStack>
-                      <Spinner size="sm" />
-                      <Text>{t.settings.inspectingText}</Text>
-                    </HStack>
-                  ) : (
-                    <HStack>
-                      <Icon as={FiShield} />
-                      <Text>{t.settings.inspectSecurityButton}</Text>
-                    </HStack>
-                  )}
-                </Button>
-                <Text fontSize="xs" color="gray.500" mt={3}>
-                  {t.settings.consoleCommandLabel}{' '}
-                  <Code colorPalette="purple" fontSize="xs">
-                    await w3pk.inspect()
-                  </Code>
-                </Text>
-              </>
-            ) : (
-              <VStack align="stretch" gap={4}>
-                <HStack justify="space-between">
-                  <Text fontSize="sm" color="gray.400">
-                    <strong>{t.settings.filesAnalyzedLabel}</strong>{' '}
-                    {securityReport.analyzedFiles.length}
-                  </Text>
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    colorPalette="purple"
-                    onClick={() => setSecurityReport(null)}
-                  >
-                    {t.settings.clearReportButton}
-                  </Button>
-                </HStack>
-
-                <Box
-                  bg="gray.950"
-                  p={4}
-                  borderRadius="md"
-                  border="1px solid"
-                  borderColor="gray.700"
-                  maxH="600px"
-                  overflowY="auto"
-                >
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      h1: ({ children }: any) => (
-                        <Text fontSize="2xl" fontWeight="bold" mb={3} color="white">
-                          {children}
-                        </Text>
-                      ),
-                      h2: ({ children }: any) => (
-                        <Text fontSize="xl" fontWeight="bold" mt={4} mb={2} color="blue.300">
-                          {children}
-                        </Text>
-                      ),
-                      h3: ({ children }: any) => (
-                        <Text fontSize="lg" fontWeight="semibold" mt={3} mb={2} color="purple.300">
-                          {children}
-                        </Text>
-                      ),
-                      h4: ({ children }: any) => (
-                        <Text fontSize="md" fontWeight="semibold" mt={2} mb={1} color="purple.200">
-                          {children}
-                        </Text>
-                      ),
-                      p: ({ children }: any) => (
-                        <Box mb={2} color="gray.300" lineHeight="tall" fontSize="sm">
-                          {children}
-                        </Box>
-                      ),
-                      pre: ({ children }: any) => (
-                        <Box
-                          as="pre"
-                          bg="black"
-                          p={3}
-                          borderRadius="md"
-                          overflowX="auto"
-                          mb={3}
-                          fontSize="xs"
-                        >
-                          {children}
-                        </Box>
-                      ),
-                      code: ({ inline, children }: any) => {
-                        if (inline) {
-                          return (
-                            <Code colorPalette="purple" fontSize="xs" px={1}>
-                              {children}
-                            </Code>
-                          )
-                        }
-                        return (
-                          <Text as="code" color="green.300" fontFamily="mono" display="block">
-                            {children}
-                          </Text>
-                        )
-                      },
-                      ul: ({ children }: any) => (
-                        <Box as="ul" pl={5} mb={2} color="gray.300" fontSize="sm">
-                          {children}
-                        </Box>
-                      ),
-                      li: ({ children }: any) => (
-                        <Text as="li" mb={1} color="gray.300" fontSize="sm">
-                          {children}
-                        </Text>
-                      ),
-                      strong: ({ children }: any) => (
-                        <Text as="strong" fontWeight="bold" color="blue.200">
-                          {children}
-                        </Text>
-                      ),
-                    }}
-                  >
-                    {(() => {
-                      try {
-                        const parsed = JSON.parse(securityReport.report)
-                        return parsed.output || securityReport.report
-                      } catch {
-                        return securityReport.report
-                      }
-                    })()}
-                  </ReactMarkdown>
-                </Box>
-              </VStack>
-            )}
-          </Box>
-          */}
 
           {localStorageData.length > 0 && (
             <Box bg="gray.900" p={6} borderRadius="lg" border="1px solid" borderColor="purple.600">
@@ -1425,8 +1250,9 @@ const SettingsPage = () => {
       ) {
         const scoreValue = statusObject.securityScore.total
         const scoreLevel = statusObject.securityScore.level || 'unknown'
-        const statusString = `Security Score: ${scoreValue}/100 (Level: ${scoreLevel})`
+        const statusString = `Security Score: ${scoreValue}/70 (Level: ${scoreLevel})`
         setBackupStatus(statusString)
+        setEvictionRisk(statusObject.evictionRisk)
       } else {
         setBackupStatus('Error: Unexpected status data format.')
       }
@@ -1517,35 +1343,39 @@ const SettingsPage = () => {
     setShowPasswordModal(false)
   }
 
-  const handleGenerateQRCode = () => {
-    if (!user) return
-
-    const syncData = {
-      username: user.username,
-      ethereumAddress: user.ethereumAddress,
-      index0Address,
-      mainAddress,
-      openbarAddress,
-      timestamp: new Date().toISOString(),
-    }
-
-    setQrCodeData(JSON.stringify(syncData))
-    setShowQRCode(true)
-  }
-
-  const handlePasteQRData = (value: string) => {
-    setPastedQRData(value)
-
-    if (!value.trim()) {
-      setParsedQRData(null)
-      return
-    }
-
+  const handleExportForSync = async (password?: string) => {
+    setShowSyncPasswordModal(false)
+    setIsExportingSync(true)
     try {
-      const parsed = JSON.parse(value)
-      setParsedQRData(parsed)
+      const { blob, filename } = await exportForSync(password)
+
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+
+      // A password file is easy to brute-force from a photo of its QR code
+      if (password) {
+        setSyncLink(null)
+      } else {
+        const link = buildSyncLink(await blob.text(), window.location.origin)
+        setSyncLink(fitsInQrCode(link) ? link : null)
+      }
+      toaster.create({
+        title: t.settings.syncExportedTitle,
+        description: password ? t.settings.syncExportedPasswordDescription : undefined,
+        type: 'success',
+        duration: 5000,
+      })
     } catch (error) {
-      setParsedQRData({ error: 'Invalid JSON format' })
+      if (error instanceof PrfUnsupportedError) {
+        setShowSyncPasswordModal(true)
+      }
+    } finally {
+      setIsExportingSync(false)
     }
   }
 
@@ -1594,9 +1424,7 @@ const SettingsPage = () => {
     }
 
     try {
-      const guardians = await setupSocialRecovery(guardiansList, threshold)
-      const config = getSocialRecoveryConfig()
-      setSocialRecoveryConfig(config)
+      setGuardianShares(await setupSocialRecovery(guardiansList, threshold))
 
       toaster.create({
         title: t.settings.socialRecoveryConfiguredTitle,
@@ -1612,10 +1440,10 @@ const SettingsPage = () => {
     }
   }
 
-  const handleGenerateInvite = async (guardian: any) => {
+  const handleGenerateInvite = async (share: GuardianShare) => {
     try {
-      const invite = await generateGuardianInvite(guardian)
-      setSelectedGuardianForInvite(guardian)
+      const invite = await generateGuardianInvite(share)
+      setSelectedGuardianForInvite(share)
       setGuardianInvite(invite)
     } catch (error) {
       console.error('Error generating guardian invite:', error)
@@ -1625,20 +1453,15 @@ const SettingsPage = () => {
   const handleDownloadInvite = () => {
     if (!guardianInvite) return
 
-    const blob = new Blob([guardianInvite.explainer + '\n\n' + guardianInvite.shareCode], {
+    const blob = new Blob([guardianInvite.shareDocument + '\n\n' + guardianInvite.shareJson], {
       type: 'text/plain',
     })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = `guardian-invite-${selectedGuardianForInvite?.name || 'guardian'}.txt`
+    link.download = guardianInvite.filename.replace(/\.json$/, '.txt')
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-  }
-
-  const handleClearSocialRecovery = () => {
-    clearSocialRecoveryConfig()
-    setSocialRecoveryConfig(null)
   }
 
   const handleAddRecoveryShare = () => {
@@ -1655,15 +1478,13 @@ const SettingsPage = () => {
     try {
       // Validate JSON format
       const parsed = JSON.parse(currentShareInput)
-      if (!parsed.share || !parsed.guardianId) {
+      if (parsed.type !== 'w3pk-guardian-share' || !parsed.shareData) {
         throw new Error('Invalid share format')
       }
 
-      // Check for duplicates
-      const isDuplicate = recoveryShares.some(share => {
-        const existingParsed = JSON.parse(share)
-        return existingParsed.guardianId === parsed.guardianId
-      })
+      const isDuplicate = recoveryShares.some(
+        share => JSON.parse(share).shareIndex === parsed.shareIndex
+      )
 
       if (isDuplicate) {
         toaster.create({
@@ -1713,10 +1534,6 @@ const SettingsPage = () => {
 
     setIsRecovering(true)
     try {
-      // Step 1: Recover the encrypted backup file from guardian shares
-      const { backupFileJson, ethereumAddress } = await recoverFromGuardians(recoveryShares)
-
-      // Step 2: Prompt for password to decrypt the backup file
       const password = window.prompt(t.settings.recoveryPasswordPrompt)
 
       if (!password) {
@@ -1730,32 +1547,30 @@ const SettingsPage = () => {
         return
       }
 
-      // Step 3: Prompt for username for the new passkey registration
-      const username = window.prompt(
-        t.settings.recoveryUsernamePrompt(
-          `${ethereumAddress.slice(0, 6)}...${ethereumAddress.slice(-4)}`
-        )
-      )
+      const { ethereumAddress } = await recoverFromGuardians(recoveryShares, password)
+      const shortAddress = `${ethereumAddress.slice(0, 6)}...${ethereumAddress.slice(-4)}`
 
-      if (!username) {
-        toaster.create({
-          title: t.header.usernameRequiredTitle,
-          description: t.settings.usernameRequiredRecoveryDescription,
-          type: 'error',
-          duration: 3000,
-        })
-        setIsRecovering(false)
-        return
+      // Logged out, the wallet is in memory until a new passkey secures it
+      if (!isAuthenticated) {
+        const username = window.prompt(t.settings.recoveryUsernamePrompt(shortAddress))
+
+        if (!username) {
+          toaster.create({
+            title: t.header.usernameRequiredTitle,
+            description: t.settings.usernameRequiredRecoveryDescription,
+            type: 'error',
+            duration: 3000,
+          })
+          setIsRecovering(false)
+          return
+        }
+
+        await register(username.trim())
       }
-
-      // Step 4: Register with the recovered backup file
-      const result = await registerWithBackupFile(backupFileJson, password, username)
 
       toaster.create({
         title: t.settings.walletRecoveredTitle,
-        description: t.settings.walletRecoveredDescription(
-          `${result.address.slice(0, 6)}...${result.address.slice(-4)}`
-        ),
+        description: t.settings.walletRecoveredDescription(shortAddress),
         type: 'success',
         duration: 8000,
       })
@@ -1766,7 +1581,7 @@ const SettingsPage = () => {
       setShowRecoverySection(false)
     } catch (error) {
       console.error('Recovery error:', error)
-      // Error toast already shown in recoverFromGuardians or registerWithBackupFile
+      // Error toast already shown in recoverFromGuardians or register
     } finally {
       setIsRecovering(false)
     }
@@ -1811,61 +1626,6 @@ const SettingsPage = () => {
     fileInput.click()
   }
 
-  const handleSaveQRDataToStorage = async () => {
-    if (!parsedQRData || parsedQRData.error || !user) {
-      toaster.create({
-        title: t.settings.cannotSaveTitle,
-        description: t.settings.cannotSaveDescription,
-        type: 'error',
-        duration: 3000,
-      })
-      return
-    }
-
-    try {
-      // Create a wallet sync record
-      const syncRecord = {
-        passkeyUser: {
-          username: user.username,
-          ethereumAddress: user.ethereumAddress,
-        },
-        linkedWallet: {
-          username: parsedQRData.username,
-          ethereumAddress: parsedQRData.ethereumAddress,
-          index0Address: parsedQRData.index0Address,
-          mainAddress: parsedQRData.mainAddress,
-          openbarAddress: parsedQRData.openbarAddress,
-        },
-        linkedAt: new Date().toISOString(),
-        syncedFrom: parsedQRData.timestamp,
-      }
-
-      // Save to localStorage
-      const storageKey = `w3pk_wallet_sync_${user.ethereumAddress}`
-      localStorage.setItem(storageKey, JSON.stringify(syncRecord))
-
-      toaster.create({
-        title: t.settings.walletLinkedTitle,
-        description: t.settings.walletLinkedDescription(
-          `${parsedQRData.ethereumAddress.slice(0, 6)}...${parsedQRData.ethereumAddress.slice(-4)}`
-        ),
-        type: 'success',
-        duration: 5000,
-      })
-
-      setPastedQRData('')
-      setParsedQRData(null)
-    } catch (error) {
-      console.error('Error saving QR data:', error)
-      toaster.create({
-        title: t.settings.errorSavingLinkTitle,
-        description: (error as Error).message || t.settings.failedSaveSyncData,
-        type: 'error',
-        duration: 5000,
-      })
-    }
-  }
-
   return (
     <>
       <VStack gap={8} align="stretch" py={20}>
@@ -1878,7 +1638,7 @@ const SettingsPage = () => {
           </Text>
         </Box>
 
-        <TabsRoot colorPalette="gray" variant="plain" size="md" defaultValue="accounts">
+        <TabsRoot colorPalette="gray" variant="plain" size="md" defaultValue={initialTab}>
           <TabsList
             bg="transparent"
             p={0}
@@ -2051,7 +1811,7 @@ const SettingsPage = () => {
                       <Box flex={1} minW={0}>
                         <HStack mb={3}>
                           <Text fontSize="lg" fontWeight="bold" color="white">
-                            {account.displayName || account.username}
+                            {account.username}
                           </Text>
                           {user?.ethereumAddress === account.ethereumAddress && (
                             <Badge colorPalette="purple">{t.settings.currentBadge}</Badge>
@@ -2200,7 +1960,7 @@ const SettingsPage = () => {
                       {t.settings.loggedInAsLabel}
                     </Text>
                     <Text fontSize="sm" fontWeight="bold" color="white">
-                      {user?.displayName || user?.username}
+                      {user?.username}
                     </Text>
                   </HStack>
 
@@ -2266,6 +2026,11 @@ const SettingsPage = () => {
                 ) : (
                   <Text color="gray.300" fontSize="lg">
                     {backupStatus || t.settings.loadingText}
+                  </Text>
+                )}
+                {evictionRisk && (
+                  <Text color="orange.300" fontSize="sm" mt={3}>
+                    {t.settings.evictionRiskWarning}
                   </Text>
                 )}
               </Box>
@@ -2393,7 +2158,7 @@ const SettingsPage = () => {
               </Box>
 
               <SimpleGrid columns={{ base: 1 }} gap={6}>
-                {!socialRecoveryConfig ? (
+                {guardianShares.length === 0 ? (
                   <>
                     {/* Setup Social Recovery */}
                     <Box
@@ -2755,16 +2520,16 @@ const SettingsPage = () => {
                       </HStack>
                       <Text fontSize="sm" color="gray.400" mb={4}>
                         {t.settings.activeDescription(
-                          socialRecoveryConfig.threshold,
-                          socialRecoveryConfig.totalGuardians
+                          guardianShares[0].threshold,
+                          guardianShares.length
                         )}
                       </Text>
 
                       {/* Guardians List */}
                       <VStack align="stretch" gap={3} mb={4}>
-                        {socialRecoveryConfig.guardians.map((guardian: any, index: number) => (
+                        {guardianShares.map(share => (
                           <Box
-                            key={guardian.id}
+                            key={share.guardianId}
                             p={4}
                             bg="gray.950"
                             borderRadius="md"
@@ -2772,33 +2537,12 @@ const SettingsPage = () => {
                             borderColor="gray.800"
                           >
                             <HStack justify="space-between" mb={2}>
-                              <Box>
-                                <HStack>
-                                  <Text fontSize="sm" fontWeight="bold">
-                                    {guardian.name}
-                                  </Text>
-                                  <Badge
-                                    colorPalette={
-                                      guardian.status === 'active'
-                                        ? 'green'
-                                        : guardian.status === 'pending'
-                                          ? 'yellow'
-                                          : 'gray'
-                                    }
-                                    fontSize="xs"
-                                  >
-                                    {guardian.status}
-                                  </Badge>
-                                </HStack>
-                                {guardian.email && (
-                                  <Text fontSize="xs" color="gray.400">
-                                    {guardian.email}
-                                  </Text>
-                                )}
-                              </Box>
+                              <Text fontSize="sm" fontWeight="bold">
+                                {share.guardianName}
+                              </Text>
                               <Button
                                 size="xs"
-                                onClick={() => handleGenerateInvite(guardian)}
+                                onClick={() => handleGenerateInvite(share)}
                                 colorPalette="purple"
                                 px={4}
                                 flexShrink={0}
@@ -2810,22 +2554,10 @@ const SettingsPage = () => {
                         ))}
                       </VStack>
 
-                      {/* Clear Local Storage Button */}
                       <Box p={4} bg="blue.900/90" borderRadius="lg">
-                        <VStack gap={3} align="stretch">
-                          <Text fontSize="sm" color="gray.300">
-                            {t.settings.removeConfigQuestion}
-                          </Text>
-                          <Button
-                            onClick={handleClearSocialRecovery}
-                            colorPalette="red"
-                            variant="outline"
-                            width="full"
-                            size="sm"
-                          >
-                            {t.settings.removeConfigButton}
-                          </Button>
-                        </VStack>
+                        <Text fontSize="sm" color="gray.300">
+                          {t.settings.sharesNotStoredNotice}
+                        </Text>
                       </Box>
                     </Box>
 
@@ -2856,7 +2588,7 @@ const SettingsPage = () => {
                           mb={4}
                         >
                           <QRCodeSVG
-                            value={guardianInvite.shareCode}
+                            value={guardianInvite.shareJson}
                             size={256}
                             level="H"
                             marginSize={4}
@@ -2876,7 +2608,9 @@ const SettingsPage = () => {
                             {t.settings.downloadInviteButton}
                           </Button>
                           <Text fontSize="xs" color="gray.400" textAlign="center">
-                            {t.settings.sendInviteText(selectedGuardianForInvite?.name)}
+                            {t.settings.sendInviteText(
+                              selectedGuardianForInvite?.guardianName ?? ''
+                            )}
                           </Text>
                         </VStack>
                       </Box>
@@ -2898,221 +2632,77 @@ const SettingsPage = () => {
                 </Text>
               </Box>
 
-              {/* QR Code Section */}
+              {/* Sync Export Section */}
               <Box bg="gray.900" p={6} borderRadius="lg" border="1px solid" borderColor="gray.700">
-                <HStack mb={4} justify="space-between">
-                  <HStack>
-                    <Icon as={FiKey} color={brandColors.primary} boxSize={6} />
-                    <Heading size="md">{t.settings.qrHeading}</Heading>
-                  </HStack>
+                <HStack mb={4}>
+                  <Icon as={FiKey} color={brandColors.primary} boxSize={6} />
+                  <Heading size="md">{t.settings.syncExportHeading}</Heading>
                 </HStack>
                 <Text fontSize="sm" color="gray.400" mb={4}>
-                  {t.settings.qrDescription}
+                  {t.settings.syncExportDescription}
                 </Text>
 
-                {!showQRCode ? (
+                <VStack gap={4} align="stretch">
                   <Button
                     bg={brandColors.primary}
                     color="white"
                     _hover={{ bg: brandColors.secondary }}
-                    onClick={handleGenerateQRCode}
-                    disabled={!index0Address || !mainAddress}
+                    onClick={() => handleExportForSync()}
+                    loading={isExportingSync}
                     width="full"
                   >
-                    {t.settings.generateQrButton}
+                    {t.settings.syncExportButton}
                   </Button>
-                ) : (
-                  <VStack gap={4} align="stretch">
-                    <Box
-                      display="flex"
-                      justifyContent="center"
-                      alignItems="center"
-                      p={4}
-                      bg="white"
-                      borderRadius="lg"
-                      width="fit-content"
-                      mx="auto"
-                    >
-                      <QRCodeSVG value={qrCodeData} size={256} level="H" marginSize={4} />
-                    </Box>
-                    <Box p={4} bg="yellow.900/90" borderRadius="md">
-                      <Text fontSize="xs" color="gray.300">
-                        {t.settings.qrNote}
-                      </Text>
-                    </Box>
-                    <Button variant="outline" onClick={() => setShowQRCode(false)} width="full">
-                      {t.settings.hideQrButton}
-                    </Button>
-                  </VStack>
-                )}
-              </Box>
 
-              {/* Paste QR Data Section */}
-              <Box bg="gray.900" p={6} borderRadius="lg" border="1px solid" borderColor="gray.700">
-                <HStack mb={4}>
-                  <Icon as={FiCloud} color={brandColors.primary} boxSize={6} />
-                  <Heading size="md">{t.settings.verifyHeading}</Heading>
-                </HStack>
-                <Text fontSize="sm" color="gray.400" mb={4}>
-                  {t.settings.verifyDescription}
-                </Text>
-
-                <VStack gap={4} align="stretch">
-                  <Textarea
-                    placeholder={t.settings.verifyPlaceholder}
-                    value={pastedQRData}
-                    onChange={e => handlePasteQRData(e.target.value)}
-                    minH="120px"
-                    fontFamily="monospace"
-                    fontSize="sm"
-                    bg="gray.950"
-                    borderColor="gray.700"
-                    _focus={{ borderColor: brandColors.primary }}
-                    p={3}
-                  />
-
-                  {parsedQRData && (
-                    <VStack gap={3} align="stretch">
+                  {syncLink && (
+                    <>
                       <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
                         p={4}
-                        bg={parsedQRData.error ? 'red.900/90' : 'gray.950'}
-                        borderRadius="md"
-                        border="1px solid"
-                        borderColor={parsedQRData.error ? 'red.700' : 'gray.800'}
+                        bg="white"
+                        borderRadius="lg"
+                        width="fit-content"
+                        mx="auto"
                       >
-                        {parsedQRData.error ? (
-                          <Text fontSize="sm" color="red.300">
-                            <strong>{t.settings.errorLabel}</strong> {parsedQRData.error}
-                          </Text>
-                        ) : (
-                          <VStack align="stretch" gap={2}>
-                            <Text fontSize="sm" fontWeight="bold" color="white" mb={2}>
-                              {t.settings.parsedDataLabel}
-                            </Text>
-                            {parsedQRData.username && (
-                              <HStack>
-                                <Text fontSize="xs" color="gray.400" width="140px">
-                                  {t.settings.usernameFieldLabel}
-                                </Text>
-                                <Text fontSize="xs" color="white" fontWeight="medium">
-                                  {parsedQRData.username}
-                                </Text>
-                              </HStack>
-                            )}
-                            {parsedQRData.ethereumAddress && (
-                              <HStack>
-                                <Text fontSize="xs" color="gray.400" width="140px">
-                                  {t.settings.ethAddressLabel}
-                                </Text>
-                                <Code
-                                  fontSize="xs"
-                                  bg="gray.900"
-                                  color="gray.300"
-                                  p={1}
-                                  borderRadius="sm"
-                                >
-                                  {parsedQRData.ethereumAddress}
-                                </Code>
-                              </HStack>
-                            )}
-                            {parsedQRData.index0Address && (
-                              <HStack>
-                                <Text fontSize="xs" color="gray.400" width="140px">
-                                  {t.settings.index0FieldLabel}
-                                </Text>
-                                <Code
-                                  fontSize="xs"
-                                  bg="gray.900"
-                                  color="gray.300"
-                                  p={1}
-                                  borderRadius="sm"
-                                >
-                                  {parsedQRData.index0Address}
-                                </Code>
-                              </HStack>
-                            )}
-                            {parsedQRData.mainAddress && (
-                              <HStack>
-                                <Text fontSize="xs" color="gray.400" width="140px">
-                                  {t.settings.mainTaggedLabel}
-                                </Text>
-                                <Code
-                                  fontSize="xs"
-                                  bg="gray.900"
-                                  color="gray.300"
-                                  p={1}
-                                  borderRadius="sm"
-                                >
-                                  {parsedQRData.mainAddress}
-                                </Code>
-                              </HStack>
-                            )}
-                            {parsedQRData.openbarAddress && (
-                              <HStack>
-                                <Text fontSize="xs" color="gray.400" width="140px">
-                                  {t.settings.openbarTaggedLabel}
-                                </Text>
-                                <Code
-                                  fontSize="xs"
-                                  bg="gray.900"
-                                  color="gray.300"
-                                  p={1}
-                                  borderRadius="sm"
-                                >
-                                  {parsedQRData.openbarAddress}
-                                </Code>
-                              </HStack>
-                            )}
-                            {parsedQRData.timestamp && (
-                              <HStack>
-                                <Text fontSize="xs" color="gray.400" width="140px">
-                                  {t.settings.generatedLabel}
-                                </Text>
-                                <Text fontSize="xs" color="gray.300">
-                                  {new Date(parsedQRData.timestamp).toLocaleString()}
-                                </Text>
-                              </HStack>
-                            )}
-                          </VStack>
-                        )}
+                        <QRCodeSVG
+                          value={syncLink}
+                          size={320}
+                          level="L"
+                          marginSize={4}
+                          title={t.settings.syncQrAlt}
+                        />
                       </Box>
-
-                      {!parsedQRData.error && (
-                        <>
-                          <Button
-                            bg={brandColors.primary}
-                            color="white"
-                            _hover={{ bg: brandColors.secondary }}
-                            onClick={handleSaveQRDataToStorage}
-                            width="full"
-                          >
-                            <Icon as={FiDatabase} mr={2} />
-                            {t.settings.linkWalletButton}
-                          </Button>
-
-                          <Box p={3} bg="blue.900/90" borderRadius="md">
-                            <Text fontSize="xs" color="gray.300">
-                              {t.settings.linkExplanation}
-                            </Text>
-                          </Box>
-                        </>
-                      )}
-                    </VStack>
+                      <Text fontSize="sm" color="gray.400" textAlign="center">
+                        {t.settings.syncQrHint}
+                      </Text>
+                      <Button variant="outline" onClick={() => setSyncLink(null)} width="full">
+                        {t.settings.hideQrButton}
+                      </Button>
+                    </>
                   )}
+
+                  <Box p={4} bg="yellow.900/90" borderRadius="md">
+                    <Text fontSize="xs" color="gray.300">
+                      {t.settings.syncExportNote}
+                    </Text>
+                  </Box>
                 </VStack>
               </Box>
 
-              {/* How QR Code Sync Works */}
+              <SyncImport />
+
+              {/* How Device Sync Works */}
               <Box bg="gray.900" p={6} borderRadius="lg" border="1px solid" borderColor="gray.700">
                 <HStack mb={4}>
                   <Icon as={FiShield} color={brandColors.primary} boxSize={6} />
-                  <Heading size="md">{t.settings.howQrWorksHeading}</Heading>
+                  <Heading size="md">{t.settings.syncHowHeading}</Heading>
                 </HStack>
                 <VStack align="stretch" gap={3} fontSize="sm" color="gray.400">
-                  <Text>{t.settings.qrStep1}</Text>
-                  <Text>{t.settings.qrStep2}</Text>
-                  <Text>{t.settings.qrStep3}</Text>
-                  <Text>{t.settings.whatGetsStored}</Text>
+                  <Text>{t.settings.syncStep1}</Text>
+                  <Text>{t.settings.syncStep2}</Text>
+                  <Text>{t.settings.syncStep3}</Text>
                 </VStack>
               </Box>
 
@@ -3184,147 +2774,6 @@ const SettingsPage = () => {
             </VStack>
           </TabsContent>
         </TabsRoot>
-
-        {/* AI Inspection feature (disabled)
-        <Box
-          mt={12}
-          bg="gray.900"
-          p={8}
-          borderRadius="lg"
-          border="2px solid"
-          borderColor="purple.500"
-        >
-          {!securityReport ? (
-            <Box textAlign="center">
-              <HStack justify="center" mb={4}>
-                <Icon as={FiShield} color="purple.400" boxSize={8} />
-                <Heading size="lg">{t.settings.inspectionHeadingBig}</Heading>
-              </HStack>
-              <Text color="gray.400" mb={6} maxW="2xl" mx="auto">
-                {t.settings.inspectSecurityDescriptionBig}
-              </Text>
-              <Button
-                bg="purple.500"
-                color="white"
-                _hover={{ bg: 'purple.600' }}
-                onClick={handleInspect}
-                disabled={isInspecting}
-                size="lg"
-                px={8}
-              >
-                {isInspecting ? (
-                  <HStack>
-                    <Spinner size="sm" />
-                    <Text>{t.settings.inspectingText}</Text>
-                  </HStack>
-                ) : (
-                  <HStack>
-                    <Icon as={FiShield} />
-                    <Text>{t.settings.inspectNowButton}</Text>
-                  </HStack>
-                )}
-              </Button>
-              <Text fontSize="sm" color="gray.500" mt={4}>
-                {t.settings.consoleHintText}
-              </Text>
-            </Box>
-          ) : (
-            <VStack align="stretch" gap={4}>
-              <HStack justify="space-between">
-                <HStack>
-                  <Icon as={FiShield} color="purple.400" boxSize={6} />
-                  <Heading size="lg">{t.settings.securityReportHeading}</Heading>
-                </HStack>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  colorPalette="purple"
-                  onClick={() => setSecurityReport(null)}
-                >
-                  {t.settings.clearReportButton}
-                </Button>
-              </HStack>
-
-              <Text fontSize="sm" color="gray.400">
-                <strong>{t.settings.filesAnalyzedLabel}</strong>{' '}
-                {securityReport.analyzedFiles.length} | <strong>{t.settings.appUrlLabel}</strong>{' '}
-                {securityReport.appUrl}
-              </Text>
-
-              <Box
-                bg="gray.950"
-                p={6}
-                borderRadius="md"
-                border="1px solid"
-                borderColor="gray.700"
-                maxH="600px"
-                overflowY="auto"
-              >
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    h1: ({ children }: any) => (
-                      <Text fontSize="2xl" fontWeight="bold" mb={3} color="white">
-                        {children}
-                      </Text>
-                    ),
-                    h2: ({ children }: any) => (
-                      <Text fontSize="xl" fontWeight="bold" mt={4} mb={2} color="blue.300">
-                        {children}
-                      </Text>
-                    ),
-                    h3: ({ children }: any) => (
-                      <Text fontSize="lg" fontWeight="semibold" mt={3} mb={2} color="purple.300">
-                        {children}
-                      </Text>
-                    ),
-                    h4: ({ children }: any) => (
-                      <Text fontSize="md" fontWeight="semibold" mt={2} mb={1} color="purple.200">
-                        {children}
-                      </Text>
-                    ),
-                    p: ({ children }: any) => (
-                      <Text fontSize="sm" mb={2} color="gray.300">
-                        {children}
-                      </Text>
-                    ),
-                    ul: ({ children }: any) => (
-                      <Box as="ul" pl={4} mb={2}>
-                        {children}
-                      </Box>
-                    ),
-                    li: ({ children }: any) => (
-                      <Text as="li" fontSize="sm" mb={1} color="gray.300">
-                        {children}
-                      </Text>
-                    ),
-                    strong: ({ children }: any) => (
-                      <Text as="strong" fontWeight="bold" color="white">
-                        {children}
-                      </Text>
-                    ),
-                    code: ({ children }: any) => (
-                      <Code colorPalette="purple" fontSize="xs">
-                        {children}
-                      </Code>
-                    ),
-                    hr: () => <Box as="hr" my={3} borderColor="gray.700" />,
-                  }}
-                >
-                  {(() => {
-                    try {
-                      const parsed = JSON.parse(securityReport.report)
-                      return parsed.output || securityReport.report
-                    } catch {
-                      return securityReport.report
-                    }
-                  })()}
-                </ReactMarkdown>
-              </Box>
-            </VStack>
-          )}
-        </Box>
-        */}
       </VStack>
 
       <PasswordModal
@@ -3333,6 +2782,14 @@ const SettingsPage = () => {
         onSubmit={handlePasswordSubmit}
         title={t.settings.createBackupModalTitle}
         description={t.settings.createBackupModalDescription}
+      />
+
+      <PasswordModal
+        isOpen={showSyncPasswordModal}
+        onClose={() => setShowSyncPasswordModal(false)}
+        onSubmit={handleExportForSync}
+        title={t.settings.syncPasswordModalTitle}
+        description={t.settings.syncPasswordModalDescription}
       />
 
       <PasswordModal
