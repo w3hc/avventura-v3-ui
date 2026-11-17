@@ -6,6 +6,7 @@ import { ColorModeProvider } from '@/components/ui/color-mode'
 import { system } from '@/theme/system'
 import Spinner from '@/components/Spinner'
 import dynamic from 'next/dynamic'
+import { LoginFlowProvider } from './LoginFlow'
 
 // Dynamically import W3pkProvider to avoid SSR issues with w3pk dependencies
 const W3pkProvider = dynamic(() => import('./W3PK').then(mod => ({ default: mod.W3pkProvider })), {
@@ -21,7 +22,9 @@ const ContextProvider = memo(function ContextProvider({ children }: { children: 
   return (
     <ColorModeProvider defaultTheme="dark">
       <ChakraProvider value={system}>
-        <W3pkProvider>{children}</W3pkProvider>
+        <W3pkProvider>
+          <LoginFlowProvider>{children}</LoginFlowProvider>
+        </W3pkProvider>
       </ChakraProvider>
     </ColorModeProvider>
   )

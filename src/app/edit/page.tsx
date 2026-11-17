@@ -1,12 +1,13 @@
 'use client'
 
 import { VStack, Box, Text, Textarea, Button } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { brandColors } from '@/theme'
 import Spinner from '@/components/Spinner'
 import { useLanguage } from '@/context/LanguageContext'
 import { useW3PK } from '@/context/W3PK'
+import { useLoginFlow } from '@/context/LoginFlow'
 import { useTranslations } from '@/translations'
 import { siweHeaders } from '@/utils/siwe'
 
@@ -14,10 +15,12 @@ export default function CreateStoryPage() {
   const router = useRouter()
   const { language } = useLanguage()
   const t = useTranslations(language)
-  const { isAuthenticated, login, signSiwe } = useW3PK()
+  const { isAuthenticated, signSiwe } = useW3PK()
+  const { startLogin } = useLoginFlow()
   const [prompt, setPrompt] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [createAfterLogin, setCreateAfterLogin] = useState(false)
 
   const handleCreate = async () => {
     if (!prompt.trim()) {
@@ -27,11 +30,11 @@ export default function CreateStoryPage() {
 
     if (!isAuthenticated) {
       setError(t.createStory.loginRequired)
-      try {
-        await login()
+      if (await startLogin()) {
         setError(null)
-      } catch {
-        // login() already reports what went wrong
+        // signSiwe() in this closure still sees the logged-out user, so the
+        // effect below resumes once the context re-renders authenticated
+        setCreateAfterLogin(true)
       }
       return
     }
@@ -80,6 +83,14 @@ export default function CreateStoryPage() {
       setIsCreating(false)
     }
   }
+
+  useEffect(() => {
+    if (!createAfterLogin || !isAuthenticated) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCreateAfterLogin(false)
+    handleCreate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [createAfterLogin, isAuthenticated])
 
   return (
     <Box minH="100vh" p={8}>
