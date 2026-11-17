@@ -9,7 +9,10 @@ export default function LayoutClient({ children }: { children: React.ReactNode }
 
   // Check if we're on an adventure page (matches /[id] pattern)
   const isAdventurePage =
-    pathname !== '/' && !pathname.startsWith('/api') && pathname.split('/').length === 2
+    pathname !== '/' &&
+    pathname !== '/edit' &&
+    !pathname.startsWith('/api') &&
+    pathname.split('/').length === 2
 
   return (
     <>
