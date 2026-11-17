@@ -12,12 +12,14 @@ import {
   IconButton,
 } from '@chakra-ui/react'
 import { useState, useEffect, use } from 'react'
-import { useRouter } from 'next/navigation'
+import { notFound, useRouter } from 'next/navigation'
 import { brandColors } from '@/theme'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useLanguage } from '@/context/LanguageContext'
+import { useW3PK } from '@/context/W3PK'
 import { toaster } from '@/components/ui/toaster'
 import { useTranslations } from '@/translations'
+import { siweHeaders } from '@/utils/siwe'
 
 interface StoryData {
   slug: string
@@ -29,6 +31,7 @@ interface StoryData {
   updated_at: string
   sessions?: number
   requests?: number
+  creatorAddress?: string
 }
 
 export default function EditStoryPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -36,7 +39,10 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
   const router = useRouter()
   const { language } = useLanguage()
   const t = useTranslations(language)
+  const { isAuthReady, isAuthenticated, getAddress, signSiwe } = useW3PK()
   const [story, setStory] = useState<StoryData | null>(null)
+  const [storyMissing, setStoryMissing] = useState(false)
+  const [signerAddress, setSignerAddress] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -55,6 +61,11 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
     const fetchStory = async () => {
       try {
         const response = await fetch(`/api/stories/${slug}`)
+
+        if (response.status === 404) {
+          setStoryMissing(true)
+          return
+        }
 
         if (!response.ok) {
           setError(t.editStory.storyNotFound)
@@ -88,6 +99,31 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug])
 
+  // The address signSiwe() signs with, which the API compares to creatorAddress
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+    getAddress()
+      .then(address => {
+        if (!cancelled) setSignerAddress(address.toLowerCase())
+      })
+      .catch(() => {
+        if (!cancelled) setSignerAddress('')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, getAddress])
+
+  const isCreator =
+    !story || !isAuthReady
+      ? null
+      : !isAuthenticated || !story.creatorAddress
+        ? false
+        : signerAddress === null
+          ? null
+          : signerAddress === story.creatorAddress.toLowerCase()
+
   const handleSave = async () => {
     setIsSaving(true)
     setError(null)
@@ -112,13 +148,33 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
         is_active: formData.is_active,
       }
 
+      let siwe
+      try {
+        siwe = await signSiwe('POST', '/stories/edit')
+      } catch (err) {
+        console.error('Failed to sign story edit:', err)
+        setError(t.editStory.signatureFailed)
+        return
+      }
+
       const response = await fetch('/api/stories/edit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...siweHeaders(siwe),
         },
         body: JSON.stringify({ slug, updates }),
       })
+
+      if (response.status === 401) {
+        setError(t.editStory.signatureFailed)
+        return
+      }
+
+      if (response.status === 403) {
+        setError(t.editStory.notCreator)
+        return
+      }
 
       if (!response.ok) {
         throw new Error('Failed to save story')
@@ -153,7 +209,11 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
-  if (loading) {
+  if (storyMissing || isCreator === false) {
+    notFound()
+  }
+
+  if (loading || (story && isCreator === null)) {
     return (
       <Box minH="100vh" p={8}>
         <VStack gap={8} align="center" justify="center" minH="100vh">

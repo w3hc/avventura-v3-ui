@@ -133,6 +133,8 @@ type TxResponse = {
 
 interface W3pkType {
   isAuthenticated: boolean
+  /** False until the saved session, if any, has been restored or ruled out */
+  isAuthReady: boolean
   user: W3pkUser | null
   isLoading: boolean
   login: () => Promise<void>
@@ -325,6 +327,7 @@ function hasStoredPersistentSession(): boolean {
 export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthReady, setIsAuthReady] = useState(false)
   const [user, setUser] = useState<W3pkUser | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -428,6 +431,8 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         }
       } catch {
         handleAuthStateChanged(false)
+      } finally {
+        setIsAuthReady(true)
       }
     }
 
@@ -1230,6 +1235,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     <W3PK.Provider
       value={{
         isAuthenticated: isMounted && isAuthenticated,
+        isAuthReady,
         user,
         isLoading,
         login,
