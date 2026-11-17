@@ -21,11 +21,18 @@ import Link from 'next/link'
 import { HiMenu } from 'react-icons/hi'
 import LanguageSelector from './LanguageSelector'
 import Spinner from './Spinner'
+import HomeScreenChoice from './HomeScreenChoice'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useW3PK, isNoPasskeyError } from '@/context/W3PK'
 import { useState, useEffect } from 'react'
 import { toaster } from '@/components/ui/toaster'
 import { brandColors } from '@/theme'
+import {
+  getAuthenticatorCapabilities,
+  getAuthenticatorHint,
+  hasIOSEvictionRisk,
+  type AuthenticatorCapabilities,
+} from '@/utils/browserDetection'
 
 export default function Header() {
   const { isAuthenticated, login, register, logout, hasLocalCredentials } = useW3PK()
@@ -34,6 +41,8 @@ export default function Header() {
   const [username, setUsername] = useState('')
   const [isRegistering, setIsRegistering] = useState(false)
   const [isUsernameInvalid, setIsUsernameInvalid] = useState(false)
+  const [showHomeScreenChoice, setShowHomeScreenChoice] = useState(false)
+  const [capabilities, setCapabilities] = useState<AuthenticatorCapabilities | null>(null)
 
   const [scrollPosition, setScrollPosition] = useState(0)
 
@@ -48,6 +57,10 @@ export default function Header() {
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    getAuthenticatorCapabilities().then(setCapabilities)
   }, [])
 
   const validateUsername = (input: string): boolean => {
@@ -68,6 +81,15 @@ export default function Header() {
     return formatValid
   }
 
+  // On iOS, offer the Home Screen before a wallet is created in the browser
+  const openRegistration = async () => {
+    if (await hasIOSEvictionRisk()) {
+      setShowHomeScreenChoice(true)
+      return
+    }
+    onOpen()
+  }
+
   const handleLogin = async () => {
     /**
      * Login Workflow:
@@ -81,7 +103,7 @@ export default function Header() {
      */
     try {
       if (!(await hasLocalCredentials())) {
-        onOpen()
+        await openRegistration()
         return
       }
       await login()
@@ -93,14 +115,19 @@ export default function Header() {
           type: 'info',
           duration: 4000,
         })
-        onOpen()
+        await openRegistration()
       }
       // Other errors (user cancelled, timeout, etc.) are already handled
       // by the login() function in the W3PK context
     }
   }
 
+  const authenticatorHint = capabilities && getAuthenticatorHint(capabilities)
+  const isWebAuthnUnsupported = capabilities?.tier === 'unsupported'
+
   const handleRegister = async () => {
+    if (isWebAuthnUnsupported) return
+
     if (!username.trim()) {
       toaster.create({
         title: t.header.usernameRequiredTitle,
@@ -209,7 +236,7 @@ export default function Header() {
                 <>
                   {/* <Box>
                     <Text fontSize="sm" color="gray.300">
-                      {user?.displayName || user?.username}
+                      {user?.username}
                     </Text>
                   </Box> */}
                   <Button
@@ -277,6 +304,21 @@ export default function Header() {
                     </ChakraLink>
                     .
                   </Text>
+                  {authenticatorHint && (
+                    <Text
+                      fontSize="sm"
+                      color={isWebAuthnUnsupported ? 'red.300' : 'gray.300'}
+                      alignSelf="flex-start"
+                      role={isWebAuthnUnsupported ? 'alert' : undefined}
+                    >
+                      {t.header[authenticatorHint]}
+                    </Text>
+                  )}
+                  {capabilities?.prf === false && (
+                    <Text fontSize="sm" color="yellow.300" alignSelf="flex-start">
+                      {t.header.prfUnsupportedWarning}
+                    </Text>
+                  )}
                   <Field invalid={isUsernameInvalid} label={t.header.usernameLabel}>
                     <Input
                       id="username-input"
@@ -302,7 +344,7 @@ export default function Header() {
                   </Field>{' '}
                   <ChakraLink
                     as={Link}
-                    href="/settings#restore-backup"
+                    href="/settings#sync-import"
                     onClick={handleModalClose}
                     fontSize="sm"
                     color={brandColors.accent}
@@ -317,7 +359,11 @@ export default function Header() {
                 <Dialog.ActionTrigger asChild>
                   <Button variant="outline">{t.common.cancel}</Button>
                 </Dialog.ActionTrigger>
-                <Button colorPalette="blue" onClick={handleRegister} disabled={!username.trim()}>
+                <Button
+                  colorPalette="blue"
+                  onClick={handleRegister}
+                  disabled={!username.trim() || isWebAuthnUnsupported}
+                >
                   {isRegistering && <Spinner size="50px" />}
                   {!isRegistering && t.header.createAccount}
                 </Button>
@@ -329,6 +375,15 @@ export default function Header() {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
+
+      <HomeScreenChoice
+        isOpen={showHomeScreenChoice}
+        onClose={() => setShowHomeScreenChoice(false)}
+        onBackup={() => {
+          setShowHomeScreenChoice(false)
+          onOpen()
+        }}
+      />
     </>
   )
 }
