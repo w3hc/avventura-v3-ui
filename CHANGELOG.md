@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Passwordless device sync: Settings → Sync exports a sync file locked to the passkey, shown as a QR code link, and imports it on any device where the passkey synced ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- "Browser too old" and "loading failed" screens instead of an endless spinner, from an inline compat script in the root layout ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- A translated root error screen with Try again and Reload buttons for crashes in the root layout (`global-error.tsx`) ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- On iPhone and iPad, a choice between Add to Home Screen and Back up before registration ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- A per-tier authenticator hint and a PRF warning in the registration dialog, with Create Account disabled when the browser has no WebAuthn ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - Project `.claude/CLAUDE.md` describing the production host (Ubuntu VPS on Infomaniak, https://avventura.fun) and the API used in production (`https://api.avventura.fun/`) and locally (`http://localhost:3000`, from `../avventura-v3`) ([#42](https://github.com/w3hc/avventura-v3-ui/pull/42))
 - Safari backup step after registration: when the browser can wipe the wallet, a blocking "Back up your wallet" dialog offers a password-protected backup file ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
 - HTTP security headers on every route: Content-Security-Policy, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` and `Strict-Transport-Security` ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
@@ -20,6 +25,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Bump dependencies to genji 3.4.0, including `next` 16.4.3, which fixes two critical and one high advisory, and `w3pk` 0.12.4, a security release; wallets stored by w3pk 0.10.x must be restored from a backup or a sync file ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- Build on Node.js 24 in CI and require Node.js `>=24.22.1`, for the October 2026 Node.js security releases ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- Allow `https://registry.npmjs.org` instead of `https://unpkg.com` in the CSP, which fixes build verification ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- Follow w3pk's password rules: 15 to 256 characters, not one character repeated, not a common password ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- Show WebAuthn capabilities instead of browser version checks on the Settings page ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- The registration dialog's "already registered" link opens the sync import on the Settings page ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- Set `templateVersion` to `3.4.0` ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - Bump dependencies to genji 3.2.0, including Next.js 16.4.0, which fixes three critical remote code execution advisories, and w3pk 0.10.3 ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
 - Detect "Remember Me" sessions in localStorage, where w3pk 0.10.3 now keeps them ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
 - Translate the Settings page in all 10 supported languages, and disable its AI security inspection as in genji ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
@@ -29,5 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 
+- `react-markdown` and `remark-gfm`, only used by the disabled security report ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
+- The Settings page's wallet-linking QR code and the security inspection console hints ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - The IndexedDB inspector on the Settings page and the IndexedDB copy of linked wallets ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
 - `@neondatabase/serverless`, which nothing imported ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))

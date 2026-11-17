@@ -9,7 +9,7 @@ import { toaster } from '@/components/ui/toaster'
 import PasswordModal from '@/components/PasswordModal'
 import { useW3PK } from '@/context/W3PK'
 import { useTranslation } from '@/hooks/useTranslation'
-import { isIOS } from '@/utils/evictionRisk'
+import { isIOS } from '@/utils/browserDetection'
 import { brandColors } from '@/theme'
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -66,13 +66,10 @@ export default function BackupStep() {
                   <Text>{t.backup.description}</Text>
                   <Alert.Root status="warning">
                     <Alert.Indicator />
-                    <Alert.Title>{t.backup.safariWarning}</Alert.Title>
+                    <Alert.Title>
+                      {isIOS() ? t.backup.iosWarning : t.backup.safariWarning}
+                    </Alert.Title>
                   </Alert.Root>
-                  {isIOS() && (
-                    <Text fontSize="sm" color="gray.400">
-                      {t.backup.homeScreenHint}
-                    </Text>
-                  )}
                 </VStack>
               </Dialog.Body>
               <Dialog.Footer pt={6}>
