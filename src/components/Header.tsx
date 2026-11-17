@@ -1,48 +1,23 @@
 'use client'
 
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  Text,
-  useDisclosure,
-  VStack,
-  Link as ChakraLink,
-  CloseButton,
-} from '@chakra-ui/react'
+import { Box, Container, Flex, Heading } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
-import { Input } from '@/components/ui/input'
-import { Field } from '@/components/ui/field'
 import { MenuRoot, MenuTrigger, MenuPositioner, MenuContent, MenuItem } from '@/components/ui/menu'
-import { Dialog, Portal } from '@/components/ui/dialog'
+import { Portal } from '@/components/ui/dialog'
 import Link from 'next/link'
 import { HiMenu } from 'react-icons/hi'
 import LanguageSelector from './LanguageSelector'
-import Spinner from './Spinner'
-import HomeScreenChoice from './HomeScreenChoice'
 import { useTranslation } from '@/hooks/useTranslation'
-import { useW3PK, isNoPasskeyError } from '@/context/W3PK'
+import { useW3PK } from '@/context/W3PK'
+import { useLoginFlow } from '@/context/LoginFlow'
 import { useState, useEffect } from 'react'
-import { toaster } from '@/components/ui/toaster'
 import { brandColors } from '@/theme'
-import {
-  getAuthenticatorCapabilities,
-  getAuthenticatorHint,
-  hasIOSEvictionRisk,
-  type AuthenticatorCapabilities,
-} from '@/utils/browserDetection'
 
 export default function Header() {
-  const { isAuthenticated, login, register, logout, hasLocalCredentials } = useW3PK()
+  const { isAuthenticated, logout } = useW3PK()
+  const { startLogin } = useLoginFlow()
   const t = useTranslation()
-  const { open: isOpen, onOpen, onClose } = useDisclosure()
-  const [username, setUsername] = useState('')
-  const [isRegistering, setIsRegistering] = useState(false)
-  const [isUsernameInvalid, setIsUsernameInvalid] = useState(false)
-  const [showHomeScreenChoice, setShowHomeScreenChoice] = useState(false)
-  const [capabilities, setCapabilities] = useState<AuthenticatorCapabilities | null>(null)
 
   const [scrollPosition, setScrollPosition] = useState(0)
 
@@ -59,130 +34,8 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  useEffect(() => {
-    getAuthenticatorCapabilities().then(setCapabilities)
-  }, [])
-
-  const validateUsername = (input: string): boolean => {
-    if (!input.trim()) {
-      return true
-    }
-
-    const trimmedInput = input.trim()
-
-    // Check overall format and length (3-50 chars)
-    // Alphanumeric, underscore, and hyphen allowed
-    // Must start and end with alphanumeric
-    const formatValid =
-      /^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(trimmedInput) &&
-      trimmedInput.length >= 3 &&
-      trimmedInput.length <= 50
-
-    return formatValid
-  }
-
-  // On iOS, offer the Home Screen before a wallet is created in the browser
-  const openRegistration = async () => {
-    if (await hasIOSEvictionRisk()) {
-      setShowHomeScreenChoice(true)
-      return
-    }
-    onOpen()
-  }
-
-  const handleLogin = async () => {
-    /**
-     * Login Workflow:
-     * 1. Existing persistent sessions are restored by the W3PK context on mount
-     * 2. If no passkey was ever registered on this device, open the
-     *    registration modal directly — calling login() with no local
-     *    credential would make the browser show its cross-device
-     *    "scan this QR code" dialog instead of failing
-     * 3. Otherwise login() prompts for the passkey; if it turns out to be
-     *    unavailable after all, fall back to the registration modal
-     */
-    try {
-      if (!(await hasLocalCredentials())) {
-        await openRegistration()
-        return
-      }
-      await login()
-    } catch (error) {
-      if (isNoPasskeyError(error)) {
-        toaster.create({
-          title: t.header.noAccountFoundTitle,
-          description: t.header.noAccountFoundDescription,
-          type: 'info',
-          duration: 4000,
-        })
-        await openRegistration()
-      }
-      // Other errors (user cancelled, timeout, etc.) are already handled
-      // by the login() function in the W3PK context
-    }
-  }
-
-  const authenticatorHint = capabilities && getAuthenticatorHint(capabilities)
-  const isWebAuthnUnsupported = capabilities?.tier === 'unsupported'
-
-  const handleRegister = async () => {
-    if (isWebAuthnUnsupported) return
-
-    if (!username.trim()) {
-      toaster.create({
-        title: t.header.usernameRequiredTitle,
-        description: t.header.usernameRequiredDescription,
-        type: 'warning',
-        duration: 3000,
-      })
-      setIsUsernameInvalid(true)
-      return
-    }
-
-    const isValid = validateUsername(username)
-    if (!isValid) {
-      // toast({
-      //   title: 'Invalid Username',
-      //   description:
-      //     'Username must be 3-50 characters long and contain only letters, numbers, underscores, and hyphens. It must start and end with a letter or number.',
-      //   status: 'error',
-      //   duration: 5000,
-      //   isClosable: true,
-      // })
-      setIsUsernameInvalid(true)
-      return
-    }
-
-    setIsUsernameInvalid(false)
-
-    try {
-      setIsRegistering(true)
-      // register() handles its own timeout and error/success toasts
-      await register(username.trim())
-      setUsername('')
-      onClose()
-    } catch (error) {
-      console.error('[Header] Registration failed:', error)
-    } finally {
-      setIsRegistering(false)
-    }
-  }
-
-  const handleUsernameChange = (value: string) => {
-    setUsername(value)
-    if (validateUsername(value)) {
-      setIsUsernameInvalid(false)
-    }
-  }
-
   const handleLogout = async () => {
     await logout()
-  }
-
-  const handleModalClose = () => {
-    setUsername('')
-    setIsUsernameInvalid(false)
-    onClose()
   }
 
   return (
@@ -226,7 +79,7 @@ export default function Header() {
                   _hover={{
                     bg: brandColors.secondary,
                   }}
-                  onClick={handleLogin}
+                  onClick={startLogin}
                   size="xs"
                   px={4}
                 >
@@ -277,113 +130,6 @@ export default function Header() {
           </Flex>
         </Container>
       </Box>
-
-      {/* Registration Modal */}
-      <Dialog.Root
-        open={isOpen}
-        onOpenChange={(e: { open: boolean }) => (e.open ? null : handleModalClose())}
-      >
-        <Portal>
-          <Dialog.Backdrop />
-          <Dialog.Positioner>
-            <Dialog.Content p={6}>
-              <Dialog.Header>
-                <Dialog.Title>{t.header.registerTitle}</Dialog.Title>
-              </Dialog.Header>
-              <Dialog.Body pt={4}>
-                <VStack gap={4}>
-                  <Text fontSize="sm" color="gray.400">
-                    {t.header.walletInfoText}{' '}
-                    <ChakraLink
-                      href={'https://github.com/w3hc/w3pk/blob/main/src/auth/register.ts#L17-L102'}
-                      color={brandColors.accent}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      w3pk
-                    </ChakraLink>
-                    .
-                  </Text>
-                  {authenticatorHint && (
-                    <Text
-                      fontSize="sm"
-                      color={isWebAuthnUnsupported ? 'red.300' : 'gray.300'}
-                      alignSelf="flex-start"
-                      role={isWebAuthnUnsupported ? 'alert' : undefined}
-                    >
-                      {t.header[authenticatorHint]}
-                    </Text>
-                  )}
-                  {capabilities?.prf === false && (
-                    <Text fontSize="sm" color="yellow.300" alignSelf="flex-start">
-                      {t.header.prfUnsupportedWarning}
-                    </Text>
-                  )}
-                  <Field invalid={isUsernameInvalid} label={t.header.usernameLabel}>
-                    <Input
-                      id="username-input"
-                      aria-describedby={
-                        isUsernameInvalid && username.trim() ? 'username-error' : undefined
-                      }
-                      aria-invalid={isUsernameInvalid && username.trim() ? true : undefined}
-                      value={username}
-                      onChange={e => handleUsernameChange(e.target.value)}
-                      placeholder={t.header.usernamePlaceholder}
-                      pl={3}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && username.trim()) {
-                          handleRegister()
-                        }
-                      }}
-                    />
-                    {isUsernameInvalid && username.trim() && (
-                      <Field.ErrorText id="username-error">
-                        {t.header.usernameError}
-                      </Field.ErrorText>
-                    )}
-                  </Field>{' '}
-                  <ChakraLink
-                    as={Link}
-                    href="/settings#sync-import"
-                    onClick={handleModalClose}
-                    fontSize="sm"
-                    color={brandColors.accent}
-                    alignSelf="flex-start"
-                  >
-                    {t.header.alreadyRegisteredLink}
-                  </ChakraLink>
-                </VStack>
-              </Dialog.Body>
-
-              <Dialog.Footer gap={3} pt={6}>
-                <Dialog.ActionTrigger asChild>
-                  <Button variant="outline">{t.common.cancel}</Button>
-                </Dialog.ActionTrigger>
-                <Button
-                  colorPalette="blue"
-                  onClick={handleRegister}
-                  disabled={!username.trim() || isWebAuthnUnsupported}
-                >
-                  {isRegistering && <Spinner size="50px" />}
-                  {!isRegistering && t.header.createAccount}
-                </Button>
-              </Dialog.Footer>
-              <Dialog.CloseTrigger asChild>
-                <CloseButton size="sm" />
-              </Dialog.CloseTrigger>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
-
-      <HomeScreenChoice
-        isOpen={showHomeScreenChoice}
-        onClose={() => setShowHomeScreenChoice(false)}
-        onBackup={() => {
-          setShowHomeScreenChoice(false)
-          onOpen()
-        }}
-      />
     </>
   )
 }
