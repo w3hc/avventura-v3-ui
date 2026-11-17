@@ -401,6 +401,8 @@ type TranslationKeys = {
     invalidJson: string
     savedSuccessfully: string
     failedToSave: string
+    signatureFailed: string
+    notCreator: string
     backToCreate: string
     title: string
     playLabel: string
@@ -420,6 +422,8 @@ type TranslationKeys = {
   createStory: {
     pleaseEnterPrompt: string
     failedToCreate: string
+    loginRequired: string
+    signatureFailed: string
     title: string
     instructions: string
     promptPlaceholder: string
@@ -909,6 +913,8 @@ export const translations: Translations = {
       invalidJson: 'Invalid JSON in homepage_display field',
       savedSuccessfully: 'Story saved successfully!',
       failedToSave: 'Failed to save story. Please try again.',
+      signatureFailed: 'Your signature is needed to save changes. Please try again.',
+      notCreator: 'Only the creator of this story can save changes.',
       backToCreate: 'Back to Create',
       title: 'Edit Story',
       playLabel: 'Play:',
@@ -928,6 +934,8 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: 'Please enter a prompt',
       failedToCreate: 'Failed to create story. Please try again.',
+      loginRequired: 'Please log in to create a story.',
+      signatureFailed: 'Your signature is needed to create a story. Please try again.',
       title: 'Create New Story',
       instructions:
         "In what world does the story take place? What will happen? Any milestones you want players to achieve? Don't worry about being rough—the assistant will edit it cleanly.",
@@ -1391,6 +1399,8 @@ export const translations: Translations = {
       invalidJson: 'homepage_display 字段中的 JSON 无效',
       savedSuccessfully: '故事保存成功！',
       failedToSave: '保存故事失败，请重试。',
+      signatureFailed: '保存更改需要您的签名，请重试。',
+      notCreator: '只有此故事的创建者才能保存更改。',
       backToCreate: '返回创建页面',
       title: '编辑故事',
       playLabel: '游玩：',
@@ -1410,6 +1420,8 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: '请输入提示词',
       failedToCreate: '创建故事失败，请重试。',
+      loginRequired: '请登录以创建故事。',
+      signatureFailed: '创建故事需要您的签名，请重试。',
       title: '创建新故事',
       instructions:
         '故事发生在什么样的世界？将会发生什么？您希望玩家达成哪些里程碑？不必担心内容粗糙——助手会帮您编辑得更清晰。',
@@ -1904,6 +1916,8 @@ export const translations: Translations = {
       invalidJson: 'homepage_display फ़ील्ड में अमान्य JSON',
       savedSuccessfully: 'कहानी सफलतापूर्वक सहेजी गई!',
       failedToSave: 'कहानी सहेजने में विफल। कृपया पुनः प्रयास करें।',
+      signatureFailed: 'बदलाव सहेजने के लिए आपके हस्ताक्षर की आवश्यकता है। कृपया पुनः प्रयास करें।',
+      notCreator: 'केवल इस कहानी का निर्माता ही बदलाव सहेज सकता है।',
       backToCreate: 'बनाने पर वापस जाएं',
       title: 'कहानी संपादित करें',
       playLabel: 'खेलें:',
@@ -1923,6 +1937,8 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: 'कृपया एक प्रॉम्प्ट दर्ज करें',
       failedToCreate: 'कहानी बनाने में विफल। कृपया पुनः प्रयास करें।',
+      loginRequired: 'कहानी बनाने के लिए कृपया लॉग इन करें।',
+      signatureFailed: 'कहानी बनाने के लिए आपके हस्ताक्षर की आवश्यकता है। कृपया पुनः प्रयास करें।',
       title: 'नई कहानी बनाएं',
       instructions:
         'कहानी किस दुनिया में घटित होती है? क्या होगा? क्या आप चाहते हैं कि खिलाड़ी कोई विशेष उपलब्धियां हासिल करें? कच्चे लेखन की चिंता न करें—सहायक इसे साफ-सुथरा संपादित कर देगा।',
@@ -2433,6 +2449,9 @@ export const translations: Translations = {
       invalidJson: 'JSON no válido en el campo homepage_display',
       savedSuccessfully: '¡Historia guardada con éxito!',
       failedToSave: 'No se pudo guardar la historia. Por favor, inténtalo de nuevo.',
+      signatureFailed:
+        'Se necesita tu firma para guardar los cambios. Por favor, inténtalo de nuevo.',
+      notCreator: 'Solo el creador de esta historia puede guardar cambios.',
       backToCreate: 'Volver a crear',
       title: 'Editar historia',
       playLabel: 'Jugar:',
@@ -2452,6 +2471,9 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: 'Por favor introduce una instrucción',
       failedToCreate: 'No se pudo crear la historia. Por favor, inténtalo de nuevo.',
+      loginRequired: 'Inicia sesión para crear una historia.',
+      signatureFailed:
+        'Se necesita tu firma para crear una historia. Por favor, inténtalo de nuevo.',
       title: 'Crear nueva historia',
       instructions:
         '¿En qué mundo transcurre la historia? ¿Qué sucederá? ¿Algún hito que quieras que los jugadores alcancen? No te preocupes por que sea tosco: el asistente lo editará de forma clara.',
@@ -2965,6 +2987,9 @@ export const translations: Translations = {
       invalidJson: 'JSON invalide dans le champ homepage_display',
       savedSuccessfully: 'Histoire enregistrée avec succès !',
       failedToSave: "Échec de l'enregistrement de l'histoire. Veuillez réessayer.",
+      signatureFailed:
+        'Votre signature est nécessaire pour enregistrer les modifications. Veuillez réessayer.',
+      notCreator: 'Seul le créateur de cette histoire peut enregistrer des modifications.',
       backToCreate: 'Retour à la création',
       title: "Modifier l'histoire",
       playLabel: 'Jouer :',
@@ -2984,6 +3009,9 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: 'Veuillez entrer une instruction',
       failedToCreate: "Échec de la création de l'histoire. Veuillez réessayer.",
+      loginRequired: 'Connectez-vous pour créer une histoire.',
+      signatureFailed:
+        'Votre signature est nécessaire pour créer une histoire. Veuillez réessayer.',
       title: 'Créer une nouvelle histoire',
       instructions:
         "Dans quel monde se déroule l'histoire ? Que va-t-il se passer ? Des étapes que vous souhaitez que les joueurs atteignent ? Ne vous inquiétez pas si c'est brouillon, l'assistant le retravaillera proprement.",
@@ -3471,6 +3499,8 @@ export const translations: Translations = {
       invalidJson: 'صيغة JSON غير صالحة في حقل homepage_display',
       savedSuccessfully: 'تم حفظ القصة بنجاح!',
       failedToSave: 'فشل حفظ القصة. يرجى المحاولة مرة أخرى.',
+      signatureFailed: 'توقيعك مطلوب لحفظ التغييرات. يرجى المحاولة مرة أخرى.',
+      notCreator: 'يمكن لمنشئ هذه القصة فقط حفظ التغييرات.',
       backToCreate: 'العودة إلى الإنشاء',
       title: 'تعديل القصة',
       playLabel: 'اللعب:',
@@ -3490,6 +3520,8 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: 'يرجى إدخال موجه',
       failedToCreate: 'فشل إنشاء القصة. يرجى المحاولة مرة أخرى.',
+      loginRequired: 'يرجى تسجيل الدخول لإنشاء قصة.',
+      signatureFailed: 'توقيعك مطلوب لإنشاء قصة. يرجى المحاولة مرة أخرى.',
       title: 'إنشاء قصة جديدة',
       instructions:
         'في أي عالم تدور أحداث القصة؟ ماذا سيحدث؟ هل هناك إنجازات معينة تريد أن يحققها اللاعبون؟ لا تقلق بشأن الخشونة - سيقوم المساعد بتحريرها بشكل واضح.',
@@ -3996,6 +4028,9 @@ export const translations: Translations = {
       invalidJson: 'homepage_display ফিল্ডে অবৈধ JSON',
       savedSuccessfully: 'গল্প সফলভাবে সংরক্ষিত হয়েছে!',
       failedToSave: 'গল্প সংরক্ষণ করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      signatureFailed:
+        'পরিবর্তন সংরক্ষণ করতে আপনার স্বাক্ষর প্রয়োজন। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      notCreator: 'শুধুমাত্র এই গল্পের নির্মাতা পরিবর্তন সংরক্ষণ করতে পারেন।',
       backToCreate: 'তৈরিতে ফিরে যান',
       title: 'গল্প সম্পাদনা করুন',
       playLabel: 'খেলুন:',
@@ -4015,6 +4050,8 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: 'অনুগ্রহ করে একটি প্রম্পট লিখুন',
       failedToCreate: 'গল্প তৈরি করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      loginRequired: 'গল্প তৈরি করতে অনুগ্রহ করে লগ ইন করুন।',
+      signatureFailed: 'গল্প তৈরি করতে আপনার স্বাক্ষর প্রয়োজন। অনুগ্রহ করে আবার চেষ্টা করুন।',
       title: 'নতুন গল্প তৈরি করুন',
       instructions:
         'গল্পটি কোন জগতে ঘটে? কী ঘটবে? খেলোয়াড়দের কোনো মাইলফলক অর্জন করাতে চান? এটি অগোছালো হওয়া নিয়ে চিন্তা করবেন না—সহায়ক এটি সুন্দরভাবে সম্পাদনা করে দেবে।',
@@ -4522,6 +4559,8 @@ export const translations: Translations = {
       invalidJson: 'Недопустимый JSON в поле homepage_display',
       savedSuccessfully: 'История успешно сохранена!',
       failedToSave: 'Не удалось сохранить историю. Попробуйте ещё раз.',
+      signatureFailed: 'Для сохранения изменений нужна ваша подпись. Попробуйте ещё раз.',
+      notCreator: 'Сохранять изменения может только создатель этой истории.',
       backToCreate: 'Назад к созданию',
       title: 'Редактировать историю',
       playLabel: 'Играть:',
@@ -4541,6 +4580,8 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: 'Пожалуйста, введите запрос',
       failedToCreate: 'Не удалось создать историю. Попробуйте ещё раз.',
+      loginRequired: 'Войдите, чтобы создать историю.',
+      signatureFailed: 'Для создания истории нужна ваша подпись. Попробуйте ещё раз.',
       title: 'Создать новую историю',
       instructions:
         'В каком мире происходит история? Что произойдёт? Есть ли этапы, которых должны достичь игроки? Не переживайте, если текст черновой — ассистент аккуратно его отредактирует.',
@@ -5052,6 +5093,9 @@ export const translations: Translations = {
       invalidJson: 'JSON inválido no campo homepage_display',
       savedSuccessfully: 'História salva com sucesso!',
       failedToSave: 'Falha ao salvar a história. Por favor, tente novamente.',
+      signatureFailed:
+        'Sua assinatura é necessária para salvar as alterações. Por favor, tente novamente.',
+      notCreator: 'Somente o criador desta história pode salvar alterações.',
       backToCreate: 'Voltar para criar',
       title: 'Editar história',
       playLabel: 'Jogar:',
@@ -5071,6 +5115,9 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: 'Por favor, digite um prompt',
       failedToCreate: 'Falha ao criar a história. Por favor, tente novamente.',
+      loginRequired: 'Faça login para criar uma história.',
+      signatureFailed:
+        'Sua assinatura é necessária para criar uma história. Por favor, tente novamente.',
       title: 'Criar nova história',
       instructions:
         'Em que mundo a história se passa? O que vai acontecer? Algum marco que você queira que os jogadores alcancem? Não se preocupe em deixar bruto — o assistente vai editar tudo com clareza.',
@@ -5572,6 +5619,9 @@ export const translations: Translations = {
       invalidJson: 'homepage_display فیلڈ میں غلط JSON',
       savedSuccessfully: 'کہانی کامیابی سے محفوظ ہوگئی!',
       failedToSave: 'کہانی محفوظ کرنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔',
+      signatureFailed:
+        'تبدیلیاں محفوظ کرنے کے لیے آپ کے دستخط درکار ہیں۔ براہ کرم دوبارہ کوشش کریں۔',
+      notCreator: 'صرف اس کہانی کا تخلیق کار ہی تبدیلیاں محفوظ کر سکتا ہے۔',
       backToCreate: 'تخلیق پر واپس جائیں',
       title: 'کہانی میں ترمیم کریں',
       playLabel: 'کھیلیں:',
@@ -5591,6 +5641,8 @@ export const translations: Translations = {
     createStory: {
       pleaseEnterPrompt: 'براہ کرم ایک پرامپٹ درج کریں',
       failedToCreate: 'کہانی بنانے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔',
+      loginRequired: 'کہانی بنانے کے لیے براہ کرم لاگ ان کریں۔',
+      signatureFailed: 'کہانی بنانے کے لیے آپ کے دستخط درکار ہیں۔ براہ کرم دوبارہ کوشش کریں۔',
       title: 'نئی کہانی بنائیں',
       instructions:
         'کہانی کس دنیا میں رونما ہوتی ہے؟ کیا ہوگا؟ کیا آپ چاہتے ہیں کہ کھلاڑی کچھ خاص کامیابیاں حاصل کریں؟ کچے مواد کی فکر نہ کریں—اسسٹنٹ اسے صاف ستھرا بنا دے گا۔',

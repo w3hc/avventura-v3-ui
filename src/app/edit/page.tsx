@@ -6,12 +6,15 @@ import { useRouter } from 'next/navigation'
 import { brandColors } from '@/theme'
 import Spinner from '@/components/Spinner'
 import { useLanguage } from '@/context/LanguageContext'
+import { useW3PK } from '@/context/W3PK'
 import { useTranslations } from '@/translations'
+import { siweHeaders } from '@/utils/siwe'
 
 export default function CreateStoryPage() {
   const router = useRouter()
   const { language } = useLanguage()
   const t = useTranslations(language)
+  const { isAuthenticated, login, signSiwe } = useW3PK()
   const [prompt, setPrompt] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,17 +25,44 @@ export default function CreateStoryPage() {
       return
     }
 
-    setIsCreating(true)
+    if (!isAuthenticated) {
+      setError(t.createStory.loginRequired)
+      try {
+        await login()
+        setError(null)
+      } catch {
+        // login() already reports what went wrong
+      }
+      return
+    }
+
     setError(null)
+
+    let siwe
+    try {
+      siwe = await signSiwe('POST', '/stories')
+    } catch (err) {
+      console.error('Failed to sign story creation:', err)
+      setError(t.createStory.signatureFailed)
+      return
+    }
+
+    setIsCreating(true)
 
     try {
       const response = await fetch('/api/stories/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...siweHeaders(siwe),
         },
         body: JSON.stringify({ prompt }),
       })
+
+      if (response.status === 401) {
+        setError(t.createStory.signatureFailed)
+        return
+      }
 
       if (!response.ok) {
         throw new Error('Failed to create story')
