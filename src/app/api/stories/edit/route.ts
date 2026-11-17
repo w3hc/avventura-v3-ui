@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { FORWARDED_STATUSES, forwardedSiweHeaders } from '@/utils/siwe'
 
 export const maxDuration = 600
 
@@ -14,18 +15,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Updates object is required' }, { status: 400 })
     }
 
+    const siwe = forwardedSiweHeaders(request)
+    if (!siwe) {
+      return NextResponse.json({ error: 'SIWE signature is required' }, { status: 401 })
+    }
+
     const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
     const response = await fetch(`${apiUrl}/stories/edit`, {
       method: 'POST',
       headers: {
         accept: '*/*',
         'Content-Type': 'application/json',
+        ...siwe,
       },
       body: JSON.stringify({ slug, updates }),
       signal: AbortSignal.timeout(600000),
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error('API error response:', response.status, errorText)
+      if (FORWARDED_STATUSES.includes(response.status)) {
+        return NextResponse.json({ error: errorText }, { status: response.status })
+      }
       throw new Error('Failed to edit story')
     }
 
