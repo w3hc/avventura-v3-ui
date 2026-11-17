@@ -28,6 +28,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- The story creation page (`/edit`) shows the header ([#52](https://github.com/w3hc/avventura-v3-ui/pull/52))
+- Create, clicked while signed out, runs the header's login flow (passkey prompt, or the registration dialog on a device without one), then continues to story creation with the entered prompt ([#52](https://github.com/w3hc/avventura-v3-ui/pull/52))
+- The login flow and registration dialog move from `Header` to a shared `LoginFlowProvider` exposing `startLogin()` ([#52](https://github.com/w3hc/avventura-v3-ui/pull/52))
 - `/edit/<slug>` shows the 404 page unless the signed-in address is the story's `creatorAddress`, and also when the story doesn't exist ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
 - The story create and edit route handlers pass the API's 400, 401, 403 and 404 statuses through instead of returning 500 ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
 - Bump dependencies to genji 3.4.0, including `next` 16.4.3, which fixes two critical and one high advisory, and `w3pk` 0.12.4, a security release; wallets stored by w3pk 0.10.x must be restored from a backup or a sync file ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
