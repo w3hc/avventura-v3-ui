@@ -10,6 +10,7 @@ interface StoryData {
   updated_at: string
   sessions?: number
   requests?: number
+  creatorAddress?: string
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {

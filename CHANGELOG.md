@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Creating a story asks a signed-out user to log in, then for a SIWE signature authorizing `POST /stories`, sent to the API in the `x-siwe-message` and `x-siwe-signature` headers ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
+- "Save changes" on `/edit/<slug>` asks for a SIWE signature authorizing `POST /stories/edit`, with translated errors for a refused signature and a non-creator save ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
+- `signSiwe(method, path)` and `isAuthReady` in the W3PK context ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
 - Passwordless device sync: Settings → Sync exports a sync file locked to the passkey, shown as a QR code link, and imports it on any device where the passkey synced ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - "Browser too old" and "loading failed" screens instead of an endless spinner, from an inline compat script in the root layout ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - A translated root error screen with Try again and Reload buttons for crashes in the root layout (`global-error.tsx`) ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
@@ -25,6 +28,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `/edit/<slug>` shows the 404 page unless the signed-in address is the story's `creatorAddress`, and also when the story doesn't exist ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
+- The story create and edit route handlers pass the API's 400, 401, 403 and 404 statuses through instead of returning 500 ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
 - Bump dependencies to genji 3.4.0, including `next` 16.4.3, which fixes two critical and one high advisory, and `w3pk` 0.12.4, a security release; wallets stored by w3pk 0.10.x must be restored from a backup or a sync file ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - Build on Node.js 24 in CI and require Node.js `>=24.22.1`, for the October 2026 Node.js security releases ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - Allow `https://registry.npmjs.org` instead of `https://unpkg.com` in the CSP, which fixes build verification ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))

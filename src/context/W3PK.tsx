@@ -26,11 +26,17 @@ import {
   UserVerificationRequiredError,
   WalletMissingError,
   WeakPasswordError,
+  createSiweMessage,
+  generateSiweNonce,
 } from 'w3pk'
 import type { GuardianShare } from 'w3pk'
 import { useRouter } from 'next/navigation'
 import { toaster } from '@/components/ui/toaster'
 import { getAuthenticatorCapabilities } from '@/utils/browserDetection'
+
+// Must match the Avventura API's SIWE_CHAIN_ID / SIWE_MAX_AGE_SECONDS
+const SIWE_CHAIN_ID = 1
+const SIWE_MAX_AGE_SECONDS = 300
 
 declare global {
   interface Window {
@@ -127,12 +133,24 @@ type TxResponse = {
 
 interface W3pkType {
   isAuthenticated: boolean
+  /** False until the saved session, if any, has been restored or ruled out */
+  isAuthReady: boolean
   user: W3pkUser | null
   isLoading: boolean
   login: () => Promise<void>
   register: (username: string) => Promise<void>
   logout: () => Promise<void>
   signMessage: (message: string, options?: SignMessageOptions) => Promise<string | null>
+  /**
+   * Sign a SIWE (EIP-4361) message authorizing one specific Avventura API
+   * request, for the `x-siwe-message` / `x-siwe-signature` headers.
+   * `path` must be the exact API pathname (e.g. `/stories/edit`), matching
+   * what the API checks server-side.
+   */
+  signSiwe: (
+    method: string,
+    path: string
+  ) => Promise<{ message: string; signature: string; address: string }>
   sendTransaction: (tx: Transaction, options?: TxOptions) => Promise<TxResponse>
   deriveWallet: (
     mode?: string,
@@ -309,6 +327,7 @@ function hasStoredPersistentSession(): boolean {
 export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthReady, setIsAuthReady] = useState(false)
   const [user, setUser] = useState<W3pkUser | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -412,6 +431,8 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         }
       } catch {
         handleAuthStateChanged(false)
+      } finally {
+        setIsAuthReady(true)
       }
     }
 
@@ -759,6 +780,42 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
       }),
     [callWithAuthRetry, w3pk]
   )
+
+  const signSiwe = async (
+    method: string,
+    path: string
+  ): Promise<{ message: string; signature: string; address: string }> => {
+    if (!user) {
+      throw new Error('Not authenticated. Please log in first.')
+    }
+
+    // signMessage() signs with the STANDARD+MAIN derived address by default,
+    // which is NOT the same as user.ethereumAddress (that's the root wallet
+    // address). getAddress() resolves the address that will actually sign.
+    const address = await getAddress()
+
+    const issuedAt = new Date()
+    const expirationTime = new Date(issuedAt.getTime() + SIWE_MAX_AGE_SECONDS * 1000)
+
+    const message = createSiweMessage({
+      domain: window.location.host,
+      address,
+      statement: `Authorize ${method.toUpperCase()} ${path}`,
+      uri: window.location.href,
+      version: '1',
+      chainId: SIWE_CHAIN_ID,
+      nonce: generateSiweNonce(),
+      issuedAt: issuedAt.toISOString(),
+      expirationTime: expirationTime.toISOString(),
+    })
+
+    const signature = await signMessage(message, { signingMethod: 'SIWE' })
+    if (!signature) {
+      throw new Error('Signing was cancelled or failed')
+    }
+
+    return { message, signature, address }
+  }
 
   const logout = async (): Promise<void> => {
     // The SDK's logout() clears the in-memory session and ALL persistent
@@ -1178,12 +1235,14 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     <W3PK.Provider
       value={{
         isAuthenticated: isMounted && isAuthenticated,
+        isAuthReady,
         user,
         isLoading,
         login,
         register,
         logout,
         signMessage,
+        signSiwe,
         sendTransaction,
         deriveWallet,
         getAddress,
