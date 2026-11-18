@@ -25,6 +25,7 @@ import {
   type AutoTopup,
 } from './AutoTopup'
 import { MAX_TOPUP, MIN_TOPUP, formatEur, parseEuros } from './euros'
+import { FeeEstimate } from './FeeEstimate'
 
 interface Me {
   address: string
@@ -48,19 +49,23 @@ const TOPUP_BALANCE_KEY = 'avventura.topup.balance'
 const POLL_INTERVAL_MS = 2000
 const POLL_ATTEMPTS = 10
 
-const TOPUP_ALERT_STATUS = {
-  pending: 'info',
+type ReturnToastType = 'loading' | 'success' | 'warning' | 'info'
+
+const TOPUP_TOAST_TYPE = {
+  pending: 'loading',
   credited: 'success',
   delayed: 'warning',
   cancelled: 'info',
-} as const satisfies Record<TopUpReturn, string>
+} as const satisfies Record<TopUpReturn, ReturnToastType>
 
-const CARD_ALERT_STATUS = {
-  pending: 'info',
+const CARD_TOAST_TYPE = {
+  pending: 'loading',
   saved: 'success',
   delayed: 'warning',
   cancelled: 'info',
-} as const satisfies Record<CardReturn, string>
+} as const satisfies Record<CardReturn, ReturnToastType>
+
+const RETURN_TOAST_DURATION_MS = 5000
 
 // A saved card clears a pause, so replacing the card of a paused auto top-up
 // is done once it is unpaused. Replacing a working card can't be observed.
@@ -78,10 +83,31 @@ function removeQueryParam(name: string): void {
   )
 }
 
+// A loading toast stays up until the status settles or the page is left
+function useReturnToast<S extends string>(
+  name: string,
+  status: S | null,
+  types: Record<S, ReturnToastType>,
+  text: Record<S, string>
+) {
+  useEffect(() => {
+    if (!status) return
+    const type = types[status]
+    const id = toaster.create({
+      id: `${name}-${status}`,
+      description: text[status],
+      type,
+      ...(type !== 'loading' && { duration: RETURN_TOAST_DURATION_MS }),
+    })
+    if (type === 'loading') return () => toaster.dismiss(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status])
+}
+
 function DashboardSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Card.Root bg={brandColors.black} borderColor={brandColors.primary} borderWidth="1px">
-      <Card.Body gap={4}>
+      <Card.Body gap={4} p={{ base: 5, md: 8 }}>
         <Heading as="h2" size="md" color={brandColors.white}>
           {title}
         </Heading>
@@ -160,7 +186,6 @@ function TopUpForm({ balance }: { balance: number }) {
         <Field
           invalid={error === 'invalid'}
           label={t.dashboard.topUpAmount}
-          helperText={t.dashboard.topUpLimits(min, max)}
           errorText={error === 'invalid' ? errorText.invalid : undefined}
         >
           <Input
@@ -173,6 +198,7 @@ function TopUpForm({ balance }: { balance: number }) {
             color={brandColors.white}
           />
         </Field>
+        <FeeEstimate amount={parseEuros(value, MIN_TOPUP, MAX_TOPUP)} />
         {error && error !== 'invalid' && <Text color="red.400">{errorText[error]}</Text>}
         <Button
           type="submit"
@@ -336,37 +362,19 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCardPolling, token])
 
-  const renderCardReturn = () => {
-    if (!card) return null
-    const title = {
-      pending: t.dashboard.cardPending,
-      saved: t.dashboard.cardSaved,
-      delayed: t.dashboard.cardDelayed,
-      cancelled: t.dashboard.cardCancelled,
-    }[card]
-    return (
-      <Alert.Root status={CARD_ALERT_STATUS[card]}>
-        <Alert.Indicator />
-        <Alert.Title>{title}</Alert.Title>
-      </Alert.Root>
-    )
-  }
+  useReturnToast('topup', topUp, TOPUP_TOAST_TYPE, {
+    pending: t.dashboard.topUpPending,
+    credited: t.dashboard.topUpCredited,
+    delayed: t.dashboard.topUpDelayed,
+    cancelled: t.dashboard.topUpCancelled,
+  })
 
-  const renderTopUpReturn = () => {
-    if (!topUp) return null
-    const title = {
-      pending: t.dashboard.topUpPending,
-      credited: t.dashboard.topUpCredited,
-      delayed: t.dashboard.topUpDelayed,
-      cancelled: t.dashboard.topUpCancelled,
-    }[topUp]
-    return (
-      <Alert.Root status={TOPUP_ALERT_STATUS[topUp]}>
-        <Alert.Indicator />
-        <Alert.Title>{title}</Alert.Title>
-      </Alert.Root>
-    )
-  }
+  useReturnToast('card', card, CARD_TOAST_TYPE, {
+    pending: t.dashboard.cardPending,
+    saved: t.dashboard.cardSaved,
+    delayed: t.dashboard.cardDelayed,
+    cancelled: t.dashboard.cardCancelled,
+  })
 
   const renderContent = () => {
     if (!isAuthReady || (isAuthenticated && token && !me && !error)) {
@@ -512,18 +520,22 @@ export default function DashboardPage() {
             </VStack>
           )}
         </DashboardSection>
+
+        <DashboardSection title={t.dashboard.wallet}>
+          <Text fontFamily="mono" fontSize="sm" color={brandColors.white} wordBreak="break-all">
+            {me.address}
+          </Text>
+        </DashboardSection>
       </VStack>
     )
   }
 
   return (
-    <Box minH="100vh" py={8}>
+    <Box minH="100vh" py={8} px={4}>
       <VStack gap={6} align="stretch" maxW="800px" mx="auto" pt={24}>
         <Heading as="h1" size="2xl" color={brandColors.white}>
           {t.dashboard.title}
         </Heading>
-        {renderTopUpReturn()}
-        {renderCardReturn()}
         {renderContent()}
       </VStack>
     </Box>
