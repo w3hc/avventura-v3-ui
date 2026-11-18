@@ -446,6 +446,8 @@ type TranslationKeys = {
     spent: string
     play: string
     edit: string
+    signInPrompt: string
+    signIn: string
   }
   backup: {
     title: string
@@ -979,6 +981,9 @@ export const translations: Translations = {
       spent: 'Spent',
       play: 'Play',
       edit: 'Edit',
+      signInPrompt:
+        'Sign in to see your stories and your balance: your passkey will ask you to sign a message.',
+      signIn: 'Sign in',
     },
     backup: {
       title: 'Back up your wallet',
@@ -1484,6 +1489,8 @@ export const translations: Translations = {
       spent: '已花费',
       play: '游玩',
       edit: '编辑',
+      signInPrompt: '登录以查看你的故事和余额：你的通行密钥会请你签署一条消息。',
+      signIn: '登录',
     },
     backup: {
       title: '备份您的钱包',
@@ -2021,6 +2028,9 @@ export const translations: Translations = {
       spent: 'खर्च',
       play: 'खेलें',
       edit: 'संपादित करें',
+      signInPrompt:
+        'अपनी कहानियाँ और अपना बैलेंस देखने के लिए साइन इन करें: आपकी पासकी आपसे एक संदेश पर हस्ताक्षर करने को कहेगी।',
+      signIn: 'साइन इन करें',
     },
     backup: {
       title: 'अपने वॉलेट का बैकअप लें',
@@ -2576,6 +2586,9 @@ export const translations: Translations = {
       spent: 'Gastado',
       play: 'Jugar',
       edit: 'Editar',
+      signInPrompt:
+        'Inicia sesión para ver tus historias y tu saldo: tu clave de acceso te pedirá que firmes un mensaje.',
+      signIn: 'Iniciar sesión',
     },
     backup: {
       title: 'Haz una copia de seguridad de tu billetera',
@@ -3134,6 +3147,9 @@ export const translations: Translations = {
       spent: 'Dépensé',
       play: 'Jouer',
       edit: 'Modifier',
+      signInPrompt:
+        "Connectez-vous pour voir vos histoires et votre solde : votre clé d'accès vous demandera de signer un message.",
+      signIn: 'Se connecter',
     },
     backup: {
       title: 'Sauvegardez votre portefeuille',
@@ -3663,6 +3679,8 @@ export const translations: Translations = {
       spent: 'المُنفق',
       play: 'العب',
       edit: 'تعديل',
+      signInPrompt: 'سجّل الدخول لرؤية قصصك ورصيدك: سيطلب منك مفتاح المرور توقيع رسالة.',
+      signIn: 'تسجيل الدخول',
     },
     backup: {
       title: 'انسخ محفظتك احتياطياً',
@@ -4213,6 +4231,9 @@ export const translations: Translations = {
       spent: 'খরচ',
       play: 'খেলুন',
       edit: 'সম্পাদনা',
+      signInPrompt:
+        'আপনার গল্প ও ব্যালান্স দেখতে সাইন ইন করুন: আপনার পাসকি আপনাকে একটি বার্তায় স্বাক্ষর করতে বলবে।',
+      signIn: 'সাইন ইন করুন',
     },
     backup: {
       title: 'আপনার ওয়ালেটের ব্যাকআপ নিন',
@@ -4763,6 +4784,9 @@ export const translations: Translations = {
       spent: 'Потрачено',
       play: 'Играть',
       edit: 'Изменить',
+      signInPrompt:
+        'Войдите, чтобы увидеть свои истории и баланс: ключ доступа попросит вас подписать сообщение.',
+      signIn: 'Войти',
     },
     backup: {
       title: 'Создайте резервную копию кошелька',
@@ -5319,6 +5343,9 @@ export const translations: Translations = {
       spent: 'Gasto',
       play: 'Jogar',
       edit: 'Editar',
+      signInPrompt:
+        'Entre para ver suas histórias e seu saldo: sua chave de acesso pedirá que você assine uma mensagem.',
+      signIn: 'Entrar',
     },
     backup: {
       title: 'Faça uma cópia de segurança da sua carteira',
@@ -5864,6 +5891,9 @@ export const translations: Translations = {
       spent: 'خرچ',
       play: 'کھیلیں',
       edit: 'ترمیم کریں',
+      signInPrompt:
+        'اپنی کہانیاں اور اپنا بیلنس دیکھنے کے لیے سائن اِن کریں: آپ کی پاس کی آپ سے ایک پیغام پر دستخط کرنے کو کہے گی۔',
+      signIn: 'سائن اِن کریں',
     },
     backup: {
       title: 'اپنے والیٹ کا بیک اپ لیں',

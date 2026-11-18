@@ -9,10 +9,12 @@ import { Card } from '@/components/ui/card'
 import Spinner from '@/components/Spinner'
 import { useLanguage } from '@/context/LanguageContext'
 import { useLoginFlow } from '@/context/LoginFlow'
-import { SignInError, useSession } from '@/context/Session'
+import { useSession } from '@/context/Session'
 import { useW3PK } from '@/context/W3PK'
+import { toaster } from '@/components/ui/toaster'
 import { useTranslation } from '@/hooks/useTranslation'
 import { brandColors } from '@/theme'
+import { bearerHeaders } from '@/utils/siwe'
 
 interface Me {
   address: string
@@ -49,16 +51,28 @@ export default function DashboardPage() {
   const { language } = useLanguage()
   const { isAuthReady, isAuthenticated } = useW3PK()
   const { startLogin } = useLoginFlow()
-  const { authFetch } = useSession()
+  const { session, signIn, signOut } = useSession()
   const [me, setMe] = useState<Me | null>(null)
   const [error, setError] = useState<LoadError | null>(null)
+  const [isSigningIn, setIsSigningIn] = useState(false)
   const latestLoad = useRef(0)
 
-  const load = async () => {
+  const token = session?.token ?? null
+
+  const load = async (sessionToken: string) => {
     const id = ++latestLoad.current
     setError(null)
     try {
-      const response = await authFetch('/api/me', { cache: 'no-store' })
+      const response = await fetch('/api/me', {
+        headers: bearerHeaders(sessionToken),
+        cache: 'no-store',
+      })
+      if (response.status === 401) {
+        if (id !== latestLoad.current) return
+        toaster.create({ description: t.session.expired, type: 'info', duration: 5000 })
+        await signOut()
+        return
+      }
       if (!response.ok) {
         throw new Error(`Failed to load the account: ${response.status}`)
       }
@@ -66,23 +80,35 @@ export default function DashboardPage() {
       if (id === latestLoad.current) setMe(data)
     } catch (err) {
       console.error('Failed to load the dashboard:', err)
-      if (id === latestLoad.current) setError(err instanceof SignInError ? 'signIn' : 'load')
+      if (id === latestLoad.current) setError('load')
+    }
+  }
+
+  const handleSignIn = async () => {
+    setIsSigningIn(true)
+    setError(null)
+    try {
+      await signIn()
+    } catch {
+      setError('signIn')
+    } finally {
+      setIsSigningIn(false)
     }
   }
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !token) {
       latestLoad.current++
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setMe(null)
       return
     }
-    load()
+    load(token)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated])
+  }, [isAuthenticated, token])
 
   const renderContent = () => {
-    if (!isAuthReady || (isAuthenticated && !me && !error)) {
+    if (!isAuthReady || (isAuthenticated && token && !me && !error)) {
       return (
         <Flex justify="center" py={12}>
           <Spinner size="lg" />
@@ -106,17 +132,33 @@ export default function DashboardPage() {
       )
     }
 
-    if (!me) {
+    if (!token) {
       return (
         <VStack gap={4} align="start">
-          <Text color="red.400">
-            {error === 'signIn' ? t.dashboard.signInFailed : t.dashboard.loadFailed}
-          </Text>
+          <Text color={brandColors.white}>{t.dashboard.signInPrompt}</Text>
+          {error === 'signIn' && <Text color="red.400">{t.dashboard.signInFailed}</Text>}
           <Button
             bg={brandColors.primary}
             color={brandColors.white}
             _hover={{ bg: brandColors.secondary }}
-            onClick={load}
+            onClick={handleSignIn}
+            loading={isSigningIn}
+          >
+            {t.dashboard.signIn}
+          </Button>
+        </VStack>
+      )
+    }
+
+    if (!me) {
+      return (
+        <VStack gap={4} align="start">
+          <Text color="red.400">{t.dashboard.loadFailed}</Text>
+          <Button
+            bg={brandColors.primary}
+            color={brandColors.white}
+            _hover={{ bg: brandColors.secondary }}
+            onClick={() => load(token)}
           >
             {t.dashboard.retry}
           </Button>
