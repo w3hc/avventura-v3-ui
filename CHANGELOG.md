@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Automatic top-up on `/dashboard`: the rule "Add €<amount> when my balance hits €<threshold>" (amount €5 to €500, threshold €0 or more, at most 2 decimals, €10 at €5 by default) with an on/off switch, saved with `PUT /billing/auto-topup`; a note when the rule is on without a saved card; "Save card" (or "Replace card") opening a Stripe Checkout in setup mode; a warning when auto top-up is paused, worded for a declined card, a bank asking for authentication, or another failure, with how to resume it. Back from Stripe, `?card=saved` polls `/api/me` every 2 s for up to 20 s until the card shows up, `?card=cancel` says no card was saved, and the query parameter is cleared ([#58](https://github.com/w3hc/avventura-v3-ui/pull/58))
+- `PUT /api/billing/auto-topup` and `POST /api/billing/auto-topup/setup` route handlers forwarding `Authorization: Bearer <token>` to the API's `/billing/auto-topup` routes ([#58](https://github.com/w3hc/avventura-v3-ui/pull/58))
 - Credit top-up on `/dashboard`: an amount in euros (€5 to €500, at most 2 decimals) opens Stripe Checkout, card payments only, with a note that Stripe fees are deducted from the credited amount and a clear message when payments aren't configured (503). Back from Stripe, `?topup=success` says the payment is being credited and polls `/api/me` every 2 s for up to 20 s until the balance changes, `?topup=cancel` says the balance is unchanged, and the query parameter is cleared ([#57](https://github.com/w3hc/avventura-v3-ui/pull/57))
 - `POST /api/billing/checkout` route handler forwarding `Authorization: Bearer <token>` and `{ amount }` to the API's `POST /billing/checkout` and returning `{ url }` ([#57](https://github.com/w3hc/avventura-v3-ui/pull/57))
 - A `/dashboard` page for signed-in creators, in the header menu while logged in: the balance in euros, flagged when it is empty or negative (stories then return 402), and each owned story with its spend and Play / Edit links; signed-out visitors are asked to log in ([#56](https://github.com/w3hc/avventura-v3-ui/pull/56))
@@ -35,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- The dashboard's euro helpers move to `src/app/dashboard/euros.ts`, shared by the top-up and auto top-up forms ([#58](https://github.com/w3hc/avventura-v3-ui/pull/58))
 - Opening `/dashboard` no longer asks for a SIWE signature: without a session token for the tab, it shows a "Sign in" button and the prompt starts from that click; a tab with a valid token loads the dashboard without any prompt ([#57](https://github.com/w3hc/avventura-v3-ui/pull/57))
 - The story create and edit route handlers forward the `Authorization: Bearer <token>` header instead of `x-siwe-message` and `x-siwe-signature`, which the API no longer accepts since [w3hc/avventura-v3#55](https://github.com/w3hc/avventura-v3/pull/55) ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
 - `signSiwe(nonce)` in the W3PK context signs the sign-in message with a nonce from the API, instead of `signSiwe(method, path)` authorizing a single request ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
