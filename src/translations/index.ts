@@ -448,6 +448,13 @@ type TranslationKeys = {
     edit: string
     signInPrompt: string
     signIn: string
+    topUpTitle: string
+    topUpAmount: string
+    topUpLimits: (min: string, max: string) => string
+    topUpButton: string
+    topUpInvalid: (min: string, max: string) => string
+    topUpUnavailable: string
+    topUpFailed: string
   }
   backup: {
     title: string
@@ -984,6 +991,14 @@ export const translations: Translations = {
       signInPrompt:
         'Sign in to see your stories and your balance: your passkey will ask you to sign a message.',
       signIn: 'Sign in',
+      topUpTitle: 'Add credits',
+      topUpAmount: 'Amount in euros',
+      topUpLimits: (min, max) =>
+        `From ${min} to ${max}, by card only, through Stripe. Stripe fees are deducted from the credited amount.`,
+      topUpButton: 'Pay by card',
+      topUpInvalid: (min, max) => `Enter an amount from ${min} to ${max}, with at most 2 decimals.`,
+      topUpUnavailable: 'Payments are not available at the moment. Please try again later.',
+      topUpFailed: 'Could not start the payment. Please try again.',
     },
     backup: {
       title: 'Back up your wallet',
@@ -1491,6 +1506,14 @@ export const translations: Translations = {
       edit: '编辑',
       signInPrompt: '登录以查看你的故事和余额：你的通行密钥会请你签署一条消息。',
       signIn: '登录',
+      topUpTitle: '充值',
+      topUpAmount: '金额（欧元）',
+      topUpLimits: (min, max) =>
+        `${min} 至 ${max}，仅支持通过 Stripe 以银行卡支付。Stripe 手续费将从到账金额中扣除。`,
+      topUpButton: '银行卡支付',
+      topUpInvalid: (min, max) => `请输入 ${min} 至 ${max} 之间的金额，最多保留两位小数。`,
+      topUpUnavailable: '暂时无法付款，请稍后再试。',
+      topUpFailed: '无法发起付款，请重试。',
     },
     backup: {
       title: '备份您的钱包',
@@ -2031,6 +2054,15 @@ export const translations: Translations = {
       signInPrompt:
         'अपनी कहानियाँ और अपना बैलेंस देखने के लिए साइन इन करें: आपकी पासकी आपसे एक संदेश पर हस्ताक्षर करने को कहेगी।',
       signIn: 'साइन इन करें',
+      topUpTitle: 'क्रेडिट जोड़ें',
+      topUpAmount: 'राशि (यूरो में)',
+      topUpLimits: (min, max) =>
+        `${min} से ${max} तक, Stripe के ज़रिए केवल कार्ड से भुगतान। Stripe शुल्क जमा की गई राशि से काट लिया जाता है।`,
+      topUpButton: 'कार्ड से भुगतान करें',
+      topUpInvalid: (min, max) =>
+        `${min} से ${max} तक की राशि दर्ज करें, अधिकतम 2 दशमलव अंकों के साथ।`,
+      topUpUnavailable: 'अभी भुगतान उपलब्ध नहीं है। कृपया बाद में फिर से प्रयास करें।',
+      topUpFailed: 'भुगतान शुरू नहीं हो सका। कृपया फिर से प्रयास करें।',
     },
     backup: {
       title: 'अपने वॉलेट का बैकअप लें',
@@ -2589,6 +2621,16 @@ export const translations: Translations = {
       signInPrompt:
         'Inicia sesión para ver tus historias y tu saldo: tu clave de acceso te pedirá que firmes un mensaje.',
       signIn: 'Iniciar sesión',
+      topUpTitle: 'Añadir créditos',
+      topUpAmount: 'Importe en euros',
+      topUpLimits: (min, max) =>
+        `De ${min} a ${max}, solo con tarjeta, a través de Stripe. Las comisiones de Stripe se descuentan del importe abonado.`,
+      topUpButton: 'Pagar con tarjeta',
+      topUpInvalid: (min, max) =>
+        `Introduce un importe de ${min} a ${max}, con 2 decimales como máximo.`,
+      topUpUnavailable:
+        'Los pagos no están disponibles en este momento. Inténtalo de nuevo más tarde.',
+      topUpFailed: 'No se pudo iniciar el pago. Inténtalo de nuevo.',
     },
     backup: {
       title: 'Haz una copia de seguridad de tu billetera',
@@ -3150,6 +3192,16 @@ export const translations: Translations = {
       signInPrompt:
         "Connectez-vous pour voir vos histoires et votre solde : votre clé d'accès vous demandera de signer un message.",
       signIn: 'Se connecter',
+      topUpTitle: 'Ajouter des crédits',
+      topUpAmount: 'Montant en euros',
+      topUpLimits: (min, max) =>
+        `De ${min} à ${max}, par carte uniquement, via Stripe. Les frais Stripe sont déduits du montant crédité.`,
+      topUpButton: 'Payer par carte',
+      topUpInvalid: (min, max) =>
+        `Saisissez un montant de ${min} à ${max}, avec 2 décimales au plus.`,
+      topUpUnavailable:
+        'Les paiements ne sont pas disponibles pour le moment. Réessayez plus tard.',
+      topUpFailed: 'Impossible de lancer le paiement. Réessayez.',
     },
     backup: {
       title: 'Sauvegardez votre portefeuille',
@@ -3681,6 +3733,14 @@ export const translations: Translations = {
       edit: 'تعديل',
       signInPrompt: 'سجّل الدخول لرؤية قصصك ورصيدك: سيطلب منك مفتاح المرور توقيع رسالة.',
       signIn: 'تسجيل الدخول',
+      topUpTitle: 'أضف رصيدًا',
+      topUpAmount: 'المبلغ باليورو',
+      topUpLimits: (min, max) =>
+        `من ${min} إلى ${max}، بالبطاقة فقط عبر Stripe. تُخصم رسوم Stripe من المبلغ المُضاف إلى رصيدك.`,
+      topUpButton: 'ادفع بالبطاقة',
+      topUpInvalid: (min, max) => `أدخل مبلغًا من ${min} إلى ${max}، بخانتين عشريتين على الأكثر.`,
+      topUpUnavailable: 'الدفع غير متاح حاليًا. حاول مرة أخرى لاحقًا.',
+      topUpFailed: 'تعذّر بدء الدفع. حاول مرة أخرى.',
     },
     backup: {
       title: 'انسخ محفظتك احتياطياً',
@@ -4234,6 +4294,15 @@ export const translations: Translations = {
       signInPrompt:
         'আপনার গল্প ও ব্যালান্স দেখতে সাইন ইন করুন: আপনার পাসকি আপনাকে একটি বার্তায় স্বাক্ষর করতে বলবে।',
       signIn: 'সাইন ইন করুন',
+      topUpTitle: 'ক্রেডিট যোগ করুন',
+      topUpAmount: 'ইউরোতে পরিমাণ',
+      topUpLimits: (min, max) =>
+        `${min} থেকে ${max}, Stripe-এর মাধ্যমে শুধু কার্ডে পেমেন্ট। Stripe-এর ফি জমা হওয়া পরিমাণ থেকে কেটে নেওয়া হয়।`,
+      topUpButton: 'কার্ডে পেমেন্ট করুন',
+      topUpInvalid: (min, max) =>
+        `${min} থেকে ${max}-এর মধ্যে একটি পরিমাণ লিখুন, সর্বোচ্চ ২ দশমিক ঘর পর্যন্ত।`,
+      topUpUnavailable: 'এই মুহূর্তে পেমেন্ট উপলব্ধ নয়। পরে আবার চেষ্টা করুন।',
+      topUpFailed: 'পেমেন্ট শুরু করা যায়নি। আবার চেষ্টা করুন।',
     },
     backup: {
       title: 'আপনার ওয়ালেটের ব্যাকআপ নিন',
@@ -4787,6 +4856,15 @@ export const translations: Translations = {
       signInPrompt:
         'Войдите, чтобы увидеть свои истории и баланс: ключ доступа попросит вас подписать сообщение.',
       signIn: 'Войти',
+      topUpTitle: 'Пополнить баланс',
+      topUpAmount: 'Сумма в евро',
+      topUpLimits: (min, max) =>
+        `От ${min} до ${max}, только картой через Stripe. Комиссия Stripe вычитается из зачисляемой суммы.`,
+      topUpButton: 'Оплатить картой',
+      topUpInvalid: (min, max) =>
+        `Введите сумму от ${min} до ${max}, не более 2 знаков после запятой.`,
+      topUpUnavailable: 'Платежи сейчас недоступны. Повторите попытку позже.',
+      topUpFailed: 'Не удалось начать оплату. Повторите попытку.',
     },
     backup: {
       title: 'Создайте резервную копию кошелька',
@@ -5346,6 +5424,16 @@ export const translations: Translations = {
       signInPrompt:
         'Entre para ver suas histórias e seu saldo: sua chave de acesso pedirá que você assine uma mensagem.',
       signIn: 'Entrar',
+      topUpTitle: 'Adicionar créditos',
+      topUpAmount: 'Valor em euros',
+      topUpLimits: (min, max) =>
+        `De ${min} a ${max}, somente com cartão, pelo Stripe. As taxas do Stripe são descontadas do valor creditado.`,
+      topUpButton: 'Pagar com cartão',
+      topUpInvalid: (min, max) =>
+        `Digite um valor de ${min} a ${max}, com no máximo 2 casas decimais.`,
+      topUpUnavailable:
+        'Os pagamentos não estão disponíveis no momento. Tente novamente mais tarde.',
+      topUpFailed: 'Não foi possível iniciar o pagamento. Tente novamente.',
     },
     backup: {
       title: 'Faça uma cópia de segurança da sua carteira',
@@ -5894,6 +5982,15 @@ export const translations: Translations = {
       signInPrompt:
         'اپنی کہانیاں اور اپنا بیلنس دیکھنے کے لیے سائن اِن کریں: آپ کی پاس کی آپ سے ایک پیغام پر دستخط کرنے کو کہے گی۔',
       signIn: 'سائن اِن کریں',
+      topUpTitle: 'کریڈٹ شامل کریں',
+      topUpAmount: 'رقم یورو میں',
+      topUpLimits: (min, max) =>
+        `${min} سے ${max} تک، صرف کارڈ سے، Stripe کے ذریعے۔ Stripe کی فیس جمع ہونے والی رقم سے کاٹ لی جاتی ہے۔`,
+      topUpButton: 'کارڈ سے ادائیگی کریں',
+      topUpInvalid: (min, max) =>
+        `${min} سے ${max} تک کی رقم درج کریں، زیادہ سے زیادہ 2 اعشاریہ ہندسوں کے ساتھ۔`,
+      topUpUnavailable: 'ادائیگیاں اس وقت دستیاب نہیں ہیں۔ بعد میں دوبارہ کوشش کریں۔',
+      topUpFailed: 'ادائیگی شروع نہیں ہو سکی۔ دوبارہ کوشش کریں۔',
     },
     backup: {
       title: 'اپنے والیٹ کا بیک اپ لیں',

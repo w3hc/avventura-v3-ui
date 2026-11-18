@@ -1,15 +1,17 @@
 'use client'
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import NextLink from 'next/link'
 import { Box, Flex, HStack, Heading, Link as ChakraLink, Text, VStack } from '@chakra-ui/react'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Field } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 import Spinner from '@/components/Spinner'
 import { useLanguage } from '@/context/LanguageContext'
 import { useLoginFlow } from '@/context/LoginFlow'
-import { useSession } from '@/context/Session'
+import { SignInError, useSession } from '@/context/Session'
 import { useW3PK } from '@/context/W3PK'
 import { toaster } from '@/components/ui/toaster'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -23,6 +25,22 @@ interface Me {
 }
 
 type LoadError = 'signIn' | 'load'
+
+type TopUpError = 'invalid' | 'unavailable' | 'signIn' | 'failed'
+
+// Bounds of the API's POST /billing/checkout amount, in euros
+const MIN_TOPUP = 5
+const MAX_TOPUP = 500
+
+// Balance before the redirect to Stripe, read back on the return
+const TOPUP_BALANCE_KEY = 'avventura.topup.balance'
+
+function parseAmount(value: string): number | null {
+  const normalized = value.trim().replace(',', '.')
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null
+  const amount = Number(normalized)
+  return amount >= MIN_TOPUP && amount <= MAX_TOPUP ? amount : null
+}
 
 function formatEur(amount: number, language: string): string {
   const tiny = amount !== 0 && Math.abs(amount) < 0.01
@@ -43,6 +61,95 @@ function DashboardSection({ title, children }: { title: string; children: ReactN
         {children}
       </Card.Body>
     </Card.Root>
+  )
+}
+
+function TopUpForm({ balance }: { balance: number }) {
+  const t = useTranslation()
+  const { language } = useLanguage()
+  const { authFetch } = useSession()
+  const [value, setValue] = useState('')
+  const [error, setError] = useState<TopUpError | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const min = formatEur(MIN_TOPUP, language)
+  const max = formatEur(MAX_TOPUP, language)
+
+  const errorText = {
+    invalid: t.dashboard.topUpInvalid(min, max),
+    unavailable: t.dashboard.topUpUnavailable,
+    signIn: t.dashboard.signInFailed,
+    failed: t.dashboard.topUpFailed,
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const amount = parseAmount(value)
+    if (amount === null) {
+      setError('invalid')
+      return
+    }
+
+    setError(null)
+    setIsSubmitting(true)
+    try {
+      const response = await authFetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount }),
+      })
+      if (response.status === 400 || response.status === 503) {
+        setError(response.status === 400 ? 'invalid' : 'unavailable')
+        setIsSubmitting(false)
+        return
+      }
+      if (!response.ok) {
+        throw new Error(`Failed to start the checkout: ${response.status}`)
+      }
+      const { url }: { url: string } = await response.json()
+      try {
+        sessionStorage.setItem(TOPUP_BALANCE_KEY, String(balance))
+      } catch {}
+      window.location.assign(url)
+    } catch (err) {
+      console.error('Failed to start the top-up:', err)
+      setError(err instanceof SignInError ? 'signIn' : 'failed')
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate>
+      <VStack gap={4} align="stretch">
+        <Field
+          invalid={error === 'invalid'}
+          label={t.dashboard.topUpAmount}
+          helperText={t.dashboard.topUpLimits(min, max)}
+          errorText={error === 'invalid' ? errorText.invalid : undefined}
+        >
+          <Input
+            inputMode="decimal"
+            autoComplete="off"
+            maxW="200px"
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder="20"
+            color={brandColors.white}
+          />
+        </Field>
+        {error && error !== 'invalid' && <Text color="red.400">{errorText[error]}</Text>}
+        <Button
+          type="submit"
+          alignSelf="start"
+          bg={brandColors.primary}
+          color={brandColors.white}
+          _hover={{ bg: brandColors.secondary }}
+          loading={isSubmitting}
+        >
+          {t.dashboard.topUpButton}
+        </Button>
+      </VStack>
+    </form>
   )
 }
 
@@ -184,6 +291,10 @@ export default function DashboardPage() {
               <Alert.Title>{t.dashboard.balanceEmpty}</Alert.Title>
             </Alert.Root>
           )}
+        </DashboardSection>
+
+        <DashboardSection title={t.dashboard.topUpTitle}>
+          <TopUpForm balance={me.balance} />
         </DashboardSection>
 
         <DashboardSection title={t.dashboard.stories}>
