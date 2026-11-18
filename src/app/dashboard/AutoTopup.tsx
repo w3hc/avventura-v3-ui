@@ -29,6 +29,9 @@ type SettingsError = 'amount' | 'threshold' | 'unavailable' | 'signIn' | 'failed
 
 type CardError = 'unavailable' | 'signIn' | 'failed'
 
+// Whether auto top-up was paused before the redirect to Stripe, read back on the return
+export const CARD_PAUSED_KEY = 'avventura.card.paused'
+
 // Stripe codes of a payment that only another card can fix
 const DECLINED_REASONS = new Set([
   'card_declined',
@@ -203,7 +206,7 @@ export function AutoTopupForm({
   )
 }
 
-export function AutoTopupCard({ hasCard }: { hasCard: boolean }) {
+export function AutoTopupCard({ hasCard, paused }: { hasCard: boolean; paused: boolean }) {
   const t = useTranslation()
   const { authFetch } = useSession()
   const [error, setError] = useState<CardError | null>(null)
@@ -238,6 +241,9 @@ export function AutoTopupCard({ hasCard }: { hasCard: boolean }) {
         throw new Error(`Failed to start the card setup: ${response.status}`)
       }
       const { url }: { url: string } = await response.json()
+      try {
+        sessionStorage.setItem(CARD_PAUSED_KEY, String(paused))
+      } catch {}
       window.location.assign(url)
     } catch (err) {
       console.error('Failed to start the card setup:', err)

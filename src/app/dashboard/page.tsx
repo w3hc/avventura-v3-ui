@@ -17,7 +17,13 @@ import { useW3PK } from '@/context/W3PK'
 import { useTranslation } from '@/hooks/useTranslation'
 import { brandColors } from '@/theme'
 import { bearerHeaders } from '@/utils/siwe'
-import { AutoTopupCard, AutoTopupForm, AutoTopupPaused, type AutoTopup } from './AutoTopup'
+import {
+  AutoTopupCard,
+  AutoTopupForm,
+  AutoTopupPaused,
+  CARD_PAUSED_KEY,
+  type AutoTopup,
+} from './AutoTopup'
 import { MAX_TOPUP, MIN_TOPUP, formatEur, parseEuros } from './euros'
 
 interface Me {
@@ -56,8 +62,10 @@ const CARD_ALERT_STATUS = {
   cancelled: 'info',
 } as const satisfies Record<CardReturn, string>
 
-// A saved card clears a pause, so a replaced card shows as an unpaused one
-const isCardReady = (me: Me) => !!me.autoTopup?.hasCard && !me.autoTopup.paused
+// A saved card clears a pause, so replacing the card of a paused auto top-up
+// is done once it is unpaused. Replacing a working card can't be observed.
+const isCardReady = (me: Me, wasPaused: boolean) =>
+  !!me.autoTopup?.hasCard && !(wasPaused && me.autoTopup.paused)
 
 function removeQueryParam(name: string): void {
   const params = new URLSearchParams(window.location.search)
@@ -193,6 +201,7 @@ export default function DashboardPage() {
   const [topUp, setTopUp] = useState<TopUpReturn | null>(null)
   const [card, setCard] = useState<CardReturn | null>(null)
   const topUpBaseline = useRef<number | null>(null)
+  const cardWasPaused = useRef(false)
   const latestLoad = useRef(0)
 
   const token = session?.token ?? null
@@ -267,6 +276,11 @@ export default function DashboardPage() {
   useEffect(() => {
     const result = new URLSearchParams(window.location.search).get('card')
     if (result !== 'saved' && result !== 'cancel') return
+
+    try {
+      cardWasPaused.current = sessionStorage.getItem(CARD_PAUSED_KEY) === 'true'
+      sessionStorage.removeItem(CARD_PAUSED_KEY)
+    } catch {}
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCard(result === 'saved' ? 'pending' : 'cancelled')
     removeQueryParam('card')
@@ -305,13 +319,14 @@ export default function DashboardPage() {
 
     const poll = async () => {
       let current = me
-      for (let attempt = 0; !isCardReady(current) && attempt < POLL_ATTEMPTS; attempt++) {
+      const isReady = (account: Me) => isCardReady(account, cardWasPaused.current)
+      for (let attempt = 0; !isReady(current) && attempt < POLL_ATTEMPTS; attempt++) {
         await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS))
         if (cancelled) return
         current = (await load(token)) ?? current
         if (cancelled) return
       }
-      setCard(isCardReady(current) ? 'saved' : 'delayed')
+      setCard(isReady(current) ? 'saved' : 'delayed')
     }
 
     poll()
@@ -442,7 +457,7 @@ export default function DashboardPage() {
             autoTopup={me.autoTopup}
             onSaved={autoTopup => setMe(current => current && { ...current, autoTopup })}
           />
-          <AutoTopupCard hasCard={!!me.autoTopup?.hasCard} />
+          <AutoTopupCard hasCard={!!me.autoTopup?.hasCard} paused={!!me.autoTopup?.paused} />
         </DashboardSection>
 
         <DashboardSection title={t.dashboard.stories}>
