@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { toaster } from '@/components/ui/toaster'
 import Spinner from '@/components/Spinner'
 import { useLanguage } from '@/context/LanguageContext'
 import { useLoginFlow } from '@/context/LoginFlow'
 import { SignInError, useSession } from '@/context/Session'
 import { useW3PK } from '@/context/W3PK'
-import { toaster } from '@/components/ui/toaster'
 import { useTranslation } from '@/hooks/useTranslation'
 import { brandColors } from '@/theme'
 import { bearerHeaders } from '@/utils/siwe'
@@ -87,6 +87,15 @@ function TopUpForm({ balance }: { balance: number }) {
 
   const min = formatEur(MIN_TOPUP, language)
   const max = formatEur(MAX_TOPUP, language)
+
+  // Back from Stripe with the browser's back button, the page comes from the bfcache
+  useEffect(() => {
+    const reset = (event: PageTransitionEvent) => {
+      if (event.persisted) setIsSubmitting(false)
+    }
+    window.addEventListener('pageshow', reset)
+    return () => window.removeEventListener('pageshow', reset)
+  }, [])
 
   const errorText = {
     invalid: t.dashboard.topUpInvalid(min, max),
