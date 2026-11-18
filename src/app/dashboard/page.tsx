@@ -17,6 +17,7 @@ import { useW3PK } from '@/context/W3PK'
 import { useTranslation } from '@/hooks/useTranslation'
 import { brandColors } from '@/theme'
 import { bearerHeaders } from '@/utils/siwe'
+import { MAX_TOPUP, MIN_TOPUP, formatEur, parseEuros } from './euros'
 
 interface Me {
   address: string
@@ -29,10 +30,6 @@ type LoadError = 'signIn' | 'load'
 type TopUpError = 'invalid' | 'unavailable' | 'signIn' | 'failed'
 
 type TopUpReturn = 'pending' | 'credited' | 'delayed' | 'cancelled'
-
-// Bounds of the API's POST /billing/checkout amount, in euros
-const MIN_TOPUP = 5
-const MAX_TOPUP = 500
 
 // Balance before the redirect to Stripe, read back on the return
 const TOPUP_BALANCE_KEY = 'avventura.topup.balance'
@@ -47,22 +44,6 @@ const TOPUP_ALERT_STATUS = {
   delayed: 'warning',
   cancelled: 'info',
 } as const satisfies Record<TopUpReturn, string>
-
-function parseAmount(value: string): number | null {
-  const normalized = value.trim().replace(',', '.')
-  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null
-  const amount = Number(normalized)
-  return amount >= MIN_TOPUP && amount <= MAX_TOPUP ? amount : null
-}
-
-function formatEur(amount: number, language: string): string {
-  const tiny = amount !== 0 && Math.abs(amount) < 0.01
-  return new Intl.NumberFormat(language, {
-    style: 'currency',
-    currency: 'EUR',
-    ...(tiny ? { maximumSignificantDigits: 2 } : {}),
-  }).format(amount)
-}
 
 function DashboardSection({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -106,7 +87,7 @@ function TopUpForm({ balance }: { balance: number }) {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const amount = parseAmount(value)
+    const amount = parseEuros(value, MIN_TOPUP, MAX_TOPUP)
     if (amount === null) {
       setError('invalid')
       return
