@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import NextLink from 'next/link'
 import { Box, Flex, HStack, Heading, Link as ChakraLink, Text, VStack } from '@chakra-ui/react'
 import { Alert } from '@/components/ui/alert'
@@ -51,28 +51,28 @@ export default function DashboardPage() {
   const { startLogin } = useLoginFlow()
   const { authFetch } = useSession()
   const [me, setMe] = useState<Me | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<LoadError | null>(null)
+  const latestLoad = useRef(0)
 
   const load = async () => {
-    setIsLoading(true)
+    const id = ++latestLoad.current
     setError(null)
     try {
       const response = await authFetch('/api/me', { cache: 'no-store' })
       if (!response.ok) {
         throw new Error(`Failed to load the account: ${response.status}`)
       }
-      setMe(await response.json())
+      const data: Me = await response.json()
+      if (id === latestLoad.current) setMe(data)
     } catch (err) {
       console.error('Failed to load the dashboard:', err)
-      setError(err instanceof SignInError ? 'signIn' : 'load')
-    } finally {
-      setIsLoading(false)
+      if (id === latestLoad.current) setError(err instanceof SignInError ? 'signIn' : 'load')
     }
   }
 
   useEffect(() => {
     if (!isAuthenticated) {
+      latestLoad.current++
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setMe(null)
       return
@@ -82,7 +82,7 @@ export default function DashboardPage() {
   }, [isAuthenticated])
 
   const renderContent = () => {
-    if (!isAuthReady || (isAuthenticated && isLoading && !me)) {
+    if (!isAuthReady || (isAuthenticated && !me && !error)) {
       return (
         <Flex justify="center" py={12}>
           <Spinner size="lg" />
@@ -117,7 +117,6 @@ export default function DashboardPage() {
             color={brandColors.white}
             _hover={{ bg: brandColors.secondary }}
             onClick={load}
-            loading={isLoading}
           >
             {t.dashboard.retry}
           </Button>
