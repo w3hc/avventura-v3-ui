@@ -429,6 +429,9 @@ type TranslationKeys = {
     promptPlaceholder: string
     createButton: string
   }
+  session: {
+    expired: string
+  }
   backup: {
     title: string
     description: string
@@ -942,6 +945,9 @@ export const translations: Translations = {
       promptPlaceholder: 'Enter a prompt for your story...',
       createButton: 'Create',
     },
+    session: {
+      expired: 'Your session has expired. Please sign in again.',
+    },
     backup: {
       title: 'Back up your wallet',
       description:
@@ -1427,6 +1433,9 @@ export const translations: Translations = {
         '故事发生在什么样的世界？将会发生什么？您希望玩家达成哪些里程碑？不必担心内容粗糙——助手会帮您编辑得更清晰。',
       promptPlaceholder: '请输入您故事的提示词...',
       createButton: '创建',
+    },
+    session: {
+      expired: '您的会话已过期，请重新登录。',
     },
     backup: {
       title: '备份您的钱包',
@@ -1944,6 +1953,9 @@ export const translations: Translations = {
         'कहानी किस दुनिया में घटित होती है? क्या होगा? क्या आप चाहते हैं कि खिलाड़ी कोई विशेष उपलब्धियां हासिल करें? कच्चे लेखन की चिंता न करें—सहायक इसे साफ-सुथरा संपादित कर देगा।',
       promptPlaceholder: 'अपनी कहानी के लिए एक प्रॉम्प्ट दर्ज करें...',
       createButton: 'बनाएं',
+    },
+    session: {
+      expired: 'आपका सत्र समाप्त हो गया है। कृपया फिर से साइन इन करें।',
     },
     backup: {
       title: 'अपने वॉलेट का बैकअप लें',
@@ -2479,6 +2491,9 @@ export const translations: Translations = {
         '¿En qué mundo transcurre la historia? ¿Qué sucederá? ¿Algún hito que quieras que los jugadores alcancen? No te preocupes por que sea tosco: el asistente lo editará de forma clara.',
       promptPlaceholder: 'Introduce una instrucción para tu historia...',
       createButton: 'Crear',
+    },
+    session: {
+      expired: 'Tu sesión ha caducado. Vuelve a iniciar sesión.',
     },
     backup: {
       title: 'Haz una copia de seguridad de tu billetera',
@@ -3018,6 +3033,9 @@ export const translations: Translations = {
       promptPlaceholder: 'Entrez une instruction pour votre histoire...',
       createButton: 'Créer',
     },
+    session: {
+      expired: 'Votre session a expiré. Veuillez vous reconnecter.',
+    },
     backup: {
       title: 'Sauvegardez votre portefeuille',
       description:
@@ -3527,6 +3545,9 @@ export const translations: Translations = {
         'في أي عالم تدور أحداث القصة؟ ماذا سيحدث؟ هل هناك إنجازات معينة تريد أن يحققها اللاعبون؟ لا تقلق بشأن الخشونة - سيقوم المساعد بتحريرها بشكل واضح.',
       promptPlaceholder: 'أدخل موجهًا لقصتك...',
       createButton: 'إنشاء',
+    },
+    session: {
+      expired: 'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.',
     },
     backup: {
       title: 'انسخ محفظتك احتياطياً',
@@ -4058,6 +4079,9 @@ export const translations: Translations = {
       promptPlaceholder: 'আপনার গল্পের জন্য একটি প্রম্পট লিখুন...',
       createButton: 'তৈরি করুন',
     },
+    session: {
+      expired: 'আপনার সেশনের মেয়াদ শেষ হয়েছে। অনুগ্রহ করে আবার সাইন ইন করুন।',
+    },
     backup: {
       title: 'আপনার ওয়ালেটের ব্যাকআপ নিন',
       description:
@@ -4587,6 +4611,9 @@ export const translations: Translations = {
         'В каком мире происходит история? Что произойдёт? Есть ли этапы, которых должны достичь игроки? Не переживайте, если текст черновой — ассистент аккуратно его отредактирует.',
       promptPlaceholder: 'Введите запрос для вашей истории...',
       createButton: 'Создать',
+    },
+    session: {
+      expired: 'Ваша сессия истекла. Пожалуйста, войдите снова.',
     },
     backup: {
       title: 'Создайте резервную копию кошелька',
@@ -5124,6 +5151,9 @@ export const translations: Translations = {
       promptPlaceholder: 'Digite um prompt para sua história...',
       createButton: 'Criar',
     },
+    session: {
+      expired: 'Sua sessão expirou. Entre novamente.',
+    },
     backup: {
       title: 'Faça uma cópia de segurança da sua carteira',
       description:
@@ -5648,6 +5678,9 @@ export const translations: Translations = {
         'کہانی کس دنیا میں رونما ہوتی ہے؟ کیا ہوگا؟ کیا آپ چاہتے ہیں کہ کھلاڑی کچھ خاص کامیابیاں حاصل کریں؟ کچے مواد کی فکر نہ کریں—اسسٹنٹ اسے صاف ستھرا بنا دے گا۔',
       promptPlaceholder: 'اپنی کہانی کے لیے ایک پرامپٹ درج کریں...',
       createButton: 'بنائیں',
+    },
+    session: {
+      expired: 'آپ کا سیشن ختم ہو گیا ہے۔ براہ کرم دوبارہ سائن ان کریں۔',
     },
     backup: {
       title: 'اپنے والیٹ کا بیک اپ لیں',
