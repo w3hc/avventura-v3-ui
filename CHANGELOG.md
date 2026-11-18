@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `/edit/<slug>` reads the story's owner from `ownerAddress`, falling back to `creatorAddress` until the API rename deploys, and the refused-save message says "owner" instead of "creator" in every language ([#54](https://github.com/w3hc/avventura-v3-ui/pull/54))
 - The story creation page (`/edit`) shows the header ([#52](https://github.com/w3hc/avventura-v3-ui/pull/52))
 - Create, clicked while signed out, runs the header's login flow (passkey prompt, or the registration dialog on a device without one), then continues to story creation with the entered prompt ([#52](https://github.com/w3hc/avventura-v3-ui/pull/52))
 - The login flow and registration dialog move from `Header` to a shared `LoginFlowProvider` exposing `startLogin()` ([#52](https://github.com/w3hc/avventura-v3-ui/pull/52))

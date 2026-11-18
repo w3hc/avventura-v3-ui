@@ -10,6 +10,8 @@ interface StoryData {
   updated_at: string
   sessions?: number
   requests?: number
+  ownerAddress?: string
+  // Sent by the API before it renamed the field to ownerAddress
   creatorAddress?: string
 }
 
