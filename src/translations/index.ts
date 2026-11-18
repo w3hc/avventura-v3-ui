@@ -441,6 +441,7 @@ type TranslationKeys = {
     balance: string
     balanceEmpty: string
     stories: string
+    wallet: string
     noStories: string
     createStory: string
     spent: string
@@ -1009,6 +1010,7 @@ export const translations: Translations = {
       balanceEmpty:
         "Your balance is empty: your stories can't be played or created until you add credits.",
       stories: 'Your stories',
+      wallet: 'Your wallet',
       noStories: "You haven't created a story yet.",
       createStory: 'Create a story',
       spent: 'Spent',
@@ -1557,6 +1559,7 @@ export const translations: Translations = {
       balance: '余额',
       balanceEmpty: '您的余额已用完：在充值之前，您的故事无法游玩或创建。',
       stories: '您的故事',
+      wallet: '您的钱包',
       noStories: '您还没有创建任何故事。',
       createStory: '创建故事',
       spent: '已花费',
@@ -2131,6 +2134,7 @@ export const translations: Translations = {
       balanceEmpty:
         'आपका बैलेंस खाली है: क्रेडिट जोड़ने तक आपकी कहानियाँ न खेली जा सकती हैं, न बनाई जा सकती हैं।',
       stories: 'आपकी कहानियाँ',
+      wallet: 'आपका वॉलेट',
       noStories: 'आपने अभी तक कोई कहानी नहीं बनाई है।',
       createStory: 'कहानी बनाएं',
       spent: 'खर्च',
@@ -2731,6 +2735,7 @@ export const translations: Translations = {
       balanceEmpty:
         'Tu saldo está vacío: tus historias no se pueden jugar ni crear hasta que añadas créditos.',
       stories: 'Tus historias',
+      wallet: 'Tu billetera',
       noStories: 'Aún no has creado ninguna historia.',
       createStory: 'Crear una historia',
       spent: 'Gastado',
@@ -3334,6 +3339,7 @@ export const translations: Translations = {
       balanceEmpty:
         "Votre solde est épuisé : vos histoires ne peuvent être ni jouées ni créées tant que vous n'ajoutez pas de crédits.",
       stories: 'Vos histoires',
+      wallet: 'Votre portefeuille',
       noStories: "Vous n'avez encore créé aucune histoire.",
       createStory: 'Créer une histoire',
       spent: 'Dépensé',
@@ -3911,6 +3917,7 @@ export const translations: Translations = {
       balance: 'الرصيد',
       balanceEmpty: 'رصيدك فارغ: لا يمكن لعب قصصك أو إنشاؤها حتى تضيف رصيدًا.',
       stories: 'قصصك',
+      wallet: 'محفظتك',
       noStories: 'لم تنشئ أي قصة بعد.',
       createStory: 'أنشئ قصة',
       spent: 'المُنفق',
@@ -4501,6 +4508,7 @@ export const translations: Translations = {
       balanceEmpty:
         'আপনার ব্যালেন্স শূন্য: ক্রেডিট যোগ না করা পর্যন্ত আপনার গল্প খেলা বা তৈরি করা যাবে না।',
       stories: 'আপনার গল্প',
+      wallet: 'আপনার ওয়ালেট',
       noStories: 'আপনি এখনও কোনো গল্প তৈরি করেননি।',
       createStory: 'একটি গল্প তৈরি করুন',
       spent: 'খরচ',
@@ -5097,6 +5105,7 @@ export const translations: Translations = {
       balanceEmpty:
         'Ваш баланс исчерпан: в ваши истории нельзя играть и нельзя создавать новые, пока вы не пополните кредиты.',
       stories: 'Ваши истории',
+      wallet: 'Ваш кошелёк',
       noStories: 'Вы ещё не создали ни одной истории.',
       createStory: 'Создать историю',
       spent: 'Потрачено',
@@ -5698,6 +5707,7 @@ export const translations: Translations = {
       balanceEmpty:
         'Seu saldo está vazio: suas histórias não podem ser jogadas nem criadas até você adicionar créditos.',
       stories: 'Suas histórias',
+      wallet: 'Sua carteira',
       noStories: 'Você ainda não criou nenhuma história.',
       createStory: 'Criar uma história',
       spent: 'Gasto',
@@ -6289,6 +6299,7 @@ export const translations: Translations = {
       balanceEmpty:
         'آپ کا بیلنس ختم ہو گیا ہے: کریڈٹ شامل کرنے تک آپ کی کہانیاں نہ کھیلی جا سکتی ہیں نہ بنائی جا سکتی ہیں۔',
       stories: 'آپ کی کہانیاں',
+      wallet: 'آپ کا والیٹ',
       noStories: 'آپ نے ابھی تک کوئی کہانی نہیں بنائی۔',
       createStory: 'کہانی بنائیں',
       spent: 'خرچ',

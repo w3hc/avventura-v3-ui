@@ -520,6 +520,12 @@ export default function DashboardPage() {
             </VStack>
           )}
         </DashboardSection>
+
+        <DashboardSection title={t.dashboard.wallet}>
+          <Text fontFamily="mono" fontSize="sm" color={brandColors.white} wordBreak="break-all">
+            {me.address}
+          </Text>
+        </DashboardSection>
       </VStack>
     )
   }
