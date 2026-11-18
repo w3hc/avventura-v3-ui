@@ -427,18 +427,25 @@ export default function DashboardPage() {
       )
     }
 
-    const isBalanceEmpty = me.balance <= 0
+    const isCrediting = topUp === 'pending'
+    const isBalanceEmpty = !isCrediting && me.balance <= 0
 
     return (
       <VStack gap={6} align="stretch">
         <DashboardSection title={t.dashboard.balance}>
-          <Text
-            fontSize="3xl"
-            fontWeight="bold"
-            color={isBalanceEmpty ? 'red.400' : brandColors.white}
-          >
-            {formatEur(me.balance, language)}
-          </Text>
+          {isCrediting ? (
+            <Box py={1}>
+              <Spinner size="md" />
+            </Box>
+          ) : (
+            <Text
+              fontSize="3xl"
+              fontWeight="bold"
+              color={isBalanceEmpty ? 'red.400' : brandColors.white}
+            >
+              {formatEur(me.balance, language)}
+            </Text>
+          )}
           {isBalanceEmpty && (
             <Alert.Root status="warning">
               <Alert.Indicator />
