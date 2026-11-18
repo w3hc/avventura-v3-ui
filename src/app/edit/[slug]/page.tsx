@@ -31,6 +31,8 @@ interface StoryData {
   updated_at: string
   sessions?: number
   requests?: number
+  ownerAddress?: string
+  // Sent by the API before it renamed the field to ownerAddress
   creatorAddress?: string
 }
 
@@ -99,7 +101,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug])
 
-  // The address signSiwe() signs with, which the API compares to creatorAddress
+  // The address signSiwe() signs with, which the API compares to the owner
   useEffect(() => {
     if (!isAuthenticated) return
     let cancelled = false
@@ -115,14 +117,16 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
     }
   }, [isAuthenticated, getAddress])
 
-  const isCreator =
+  const ownerAddress = story?.ownerAddress ?? story?.creatorAddress
+
+  const isOwner =
     !story || !isAuthReady
       ? null
-      : !isAuthenticated || !story.creatorAddress
+      : !isAuthenticated || !ownerAddress
         ? false
         : signerAddress === null
           ? null
-          : signerAddress === story.creatorAddress.toLowerCase()
+          : signerAddress === ownerAddress.toLowerCase()
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -172,7 +176,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
       }
 
       if (response.status === 403) {
-        setError(t.editStory.notCreator)
+        setError(t.editStory.notOwner)
         return
       }
 
@@ -209,11 +213,11 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
-  if (storyMissing || isCreator === false) {
+  if (storyMissing || isOwner === false) {
     notFound()
   }
 
-  if (loading || (story && isCreator === null)) {
+  if (loading || (story && isOwner === null)) {
     return (
       <Box minH="100vh" p={8}>
         <VStack gap={8} align="center" justify="center" minH="100vh">

@@ -402,7 +402,7 @@ type TranslationKeys = {
     savedSuccessfully: string
     failedToSave: string
     signatureFailed: string
-    notCreator: string
+    notOwner: string
     backToCreate: string
     title: string
     playLabel: string
@@ -914,7 +914,7 @@ export const translations: Translations = {
       savedSuccessfully: 'Story saved successfully!',
       failedToSave: 'Failed to save story. Please try again.',
       signatureFailed: 'Your signature is needed to save changes. Please try again.',
-      notCreator: 'Only the creator of this story can save changes.',
+      notOwner: 'Only the owner of this story can save changes.',
       backToCreate: 'Back to Create',
       title: 'Edit Story',
       playLabel: 'Play:',
@@ -1400,7 +1400,7 @@ export const translations: Translations = {
       savedSuccessfully: '故事保存成功！',
       failedToSave: '保存故事失败，请重试。',
       signatureFailed: '保存更改需要您的签名，请重试。',
-      notCreator: '只有此故事的创建者才能保存更改。',
+      notOwner: '只有此故事的所有者才能保存更改。',
       backToCreate: '返回创建页面',
       title: '编辑故事',
       playLabel: '游玩：',
@@ -1917,7 +1917,7 @@ export const translations: Translations = {
       savedSuccessfully: 'कहानी सफलतापूर्वक सहेजी गई!',
       failedToSave: 'कहानी सहेजने में विफल। कृपया पुनः प्रयास करें।',
       signatureFailed: 'बदलाव सहेजने के लिए आपके हस्ताक्षर की आवश्यकता है। कृपया पुनः प्रयास करें।',
-      notCreator: 'केवल इस कहानी का निर्माता ही बदलाव सहेज सकता है।',
+      notOwner: 'केवल इस कहानी का स्वामी ही बदलाव सहेज सकता है।',
       backToCreate: 'बनाने पर वापस जाएं',
       title: 'कहानी संपादित करें',
       playLabel: 'खेलें:',
@@ -2451,7 +2451,7 @@ export const translations: Translations = {
       failedToSave: 'No se pudo guardar la historia. Por favor, inténtalo de nuevo.',
       signatureFailed:
         'Se necesita tu firma para guardar los cambios. Por favor, inténtalo de nuevo.',
-      notCreator: 'Solo el creador de esta historia puede guardar cambios.',
+      notOwner: 'Solo el propietario de esta historia puede guardar cambios.',
       backToCreate: 'Volver a crear',
       title: 'Editar historia',
       playLabel: 'Jugar:',
@@ -2989,7 +2989,7 @@ export const translations: Translations = {
       failedToSave: "Échec de l'enregistrement de l'histoire. Veuillez réessayer.",
       signatureFailed:
         'Votre signature est nécessaire pour enregistrer les modifications. Veuillez réessayer.',
-      notCreator: 'Seul le créateur de cette histoire peut enregistrer des modifications.',
+      notOwner: 'Seul le propriétaire de cette histoire peut enregistrer des modifications.',
       backToCreate: 'Retour à la création',
       title: "Modifier l'histoire",
       playLabel: 'Jouer :',
@@ -3500,7 +3500,7 @@ export const translations: Translations = {
       savedSuccessfully: 'تم حفظ القصة بنجاح!',
       failedToSave: 'فشل حفظ القصة. يرجى المحاولة مرة أخرى.',
       signatureFailed: 'توقيعك مطلوب لحفظ التغييرات. يرجى المحاولة مرة أخرى.',
-      notCreator: 'يمكن لمنشئ هذه القصة فقط حفظ التغييرات.',
+      notOwner: 'يمكن لمالك هذه القصة فقط حفظ التغييرات.',
       backToCreate: 'العودة إلى الإنشاء',
       title: 'تعديل القصة',
       playLabel: 'اللعب:',
@@ -4030,7 +4030,7 @@ export const translations: Translations = {
       failedToSave: 'গল্প সংরক্ষণ করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।',
       signatureFailed:
         'পরিবর্তন সংরক্ষণ করতে আপনার স্বাক্ষর প্রয়োজন। অনুগ্রহ করে আবার চেষ্টা করুন।',
-      notCreator: 'শুধুমাত্র এই গল্পের নির্মাতা পরিবর্তন সংরক্ষণ করতে পারেন।',
+      notOwner: 'শুধুমাত্র এই গল্পের মালিক পরিবর্তন সংরক্ষণ করতে পারেন।',
       backToCreate: 'তৈরিতে ফিরে যান',
       title: 'গল্প সম্পাদনা করুন',
       playLabel: 'খেলুন:',
@@ -4560,7 +4560,7 @@ export const translations: Translations = {
       savedSuccessfully: 'История успешно сохранена!',
       failedToSave: 'Не удалось сохранить историю. Попробуйте ещё раз.',
       signatureFailed: 'Для сохранения изменений нужна ваша подпись. Попробуйте ещё раз.',
-      notCreator: 'Сохранять изменения может только создатель этой истории.',
+      notOwner: 'Сохранять изменения может только владелец этой истории.',
       backToCreate: 'Назад к созданию',
       title: 'Редактировать историю',
       playLabel: 'Играть:',
@@ -5095,7 +5095,7 @@ export const translations: Translations = {
       failedToSave: 'Falha ao salvar a história. Por favor, tente novamente.',
       signatureFailed:
         'Sua assinatura é necessária para salvar as alterações. Por favor, tente novamente.',
-      notCreator: 'Somente o criador desta história pode salvar alterações.',
+      notOwner: 'Somente o proprietário desta história pode salvar alterações.',
       backToCreate: 'Voltar para criar',
       title: 'Editar história',
       playLabel: 'Jogar:',
@@ -5621,7 +5621,7 @@ export const translations: Translations = {
       failedToSave: 'کہانی محفوظ کرنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔',
       signatureFailed:
         'تبدیلیاں محفوظ کرنے کے لیے آپ کے دستخط درکار ہیں۔ براہ کرم دوبارہ کوشش کریں۔',
-      notCreator: 'صرف اس کہانی کا تخلیق کار ہی تبدیلیاں محفوظ کر سکتا ہے۔',
+      notOwner: 'صرف اس کہانی کا مالک ہی تبدیلیاں محفوظ کر سکتا ہے۔',
       backToCreate: 'تخلیق پر واپس جائیں',
       title: 'کہانی میں ترمیم کریں',
       playLabel: 'کھیلیں:',
