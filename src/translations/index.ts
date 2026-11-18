@@ -2842,8 +2842,8 @@ export const translations: Translations = {
       messageSignedDescription: signature => `Signature : ${signature.substring(0, 20)}...`,
     },
     navigation: {
-      settings: 'Paramètres',
-      dashboard: 'Tableau de bord',
+      settings: 'Réglages',
+      dashboard: 'Dashboard',
     },
     settings: {
       title: 'Paramètres',
@@ -3330,10 +3330,10 @@ export const translations: Translations = {
       expired: 'Votre session a expiré. Veuillez vous reconnecter.',
     },
     dashboard: {
-      title: 'Tableau de bord',
+      title: 'Dashboard',
       loginRequired: 'Connectez-vous pour voir vos histoires et votre solde.',
       signInFailed: 'La connexion a été refusée ou annulée.',
-      loadFailed: 'Impossible de charger votre tableau de bord.',
+      loadFailed: 'Impossible de charger votre dashboard.',
       retry: 'Réessayer',
       balance: 'Solde',
       balanceEmpty:

@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- A wallet block at the bottom of `/dashboard` showing the creator's Ethereum address ([#62](https://github.com/w3hc/avventura-v3-ui/pull/62))
+- Under both amount fields of `/dashboard` (top-up and automatic top-up), what is paid and an estimate of the Stripe fee and of the amount credited, at the standard EEA card rate (1.5% + €0.25); the balance is still credited the actual fee ([#62](https://github.com/w3hc/avventura-v3-ui/pull/62))
 - Automatic top-up on `/dashboard`: the rule "Add €<amount> when my balance hits €<threshold>" (amount €5 to €500, threshold €0 or more, at most 2 decimals, €10 at €5 by default) with an on/off switch, saved with `PUT /billing/auto-topup`; a note when the rule is on without a saved card; "Save card" (or "Replace card") opening a Stripe Checkout in setup mode; a warning when auto top-up is paused, worded for a declined card, a bank asking for authentication, or another failure, with how to resume it. Back from Stripe, `?card=saved` polls `/api/me` every 2 s for up to 20 s until the card shows up, `?card=cancel` says no card was saved, and the query parameter is cleared ([#58](https://github.com/w3hc/avventura-v3-ui/pull/58))
 - `PUT /api/billing/auto-topup` and `POST /api/billing/auto-topup/setup` route handlers forwarding `Authorization: Bearer <token>` to the API's `/billing/auto-topup` routes ([#58](https://github.com/w3hc/avventura-v3-ui/pull/58))
 - Credit top-up on `/dashboard`: an amount in euros (€5 to €500, at most 2 decimals) opens Stripe Checkout, card payments only, with a note that Stripe fees are deducted from the credited amount and a clear message when payments aren't configured (503). Back from Stripe, `?topup=success` says the payment is being credited and polls `/api/me` every 2 s for up to 20 s until the balance changes, `?topup=cancel` says the balance is unchanged, and the query parameter is cleared ([#57](https://github.com/w3hc/avventura-v3-ui/pull/57))
@@ -37,6 +39,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `/dashboard` sections have more inner padding and a side gutter on mobile ([#62](https://github.com/w3hc/avventura-v3-ui/pull/62))
+- Stripe returns on `/dashboard` (top-up and card) show as toasts instead of inline alerts: a loading toast while the payment or card is pending, then a success, warning or info toast ([#62](https://github.com/w3hc/avventura-v3-ui/pull/62))
 - Back from a paid top-up on `/dashboard`, the Balance section shows the spinner instead of the old balance and its empty-balance warning until the new balance is credited, or until the 20 s poll gives up ([#60](https://github.com/w3hc/avventura-v3-ui/pull/60))
 - The dashboard's euro helpers move to `src/app/dashboard/euros.ts`, shared by the top-up and auto top-up forms ([#58](https://github.com/w3hc/avventura-v3-ui/pull/58))
 - Opening `/dashboard` no longer asks for a SIWE signature: without a session token for the tab, it shows a "Sign in" button and the prompt starts from that click; a tab with a valid token loads the dashboard without any prompt ([#57](https://github.com/w3hc/avventura-v3-ui/pull/57))
@@ -65,6 +69,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 
+- The "From €5.00 to €500.00, by card only, through Stripe" note under both amount fields of `/dashboard`; the limits still show when the amount is invalid ([#62](https://github.com/w3hc/avventura-v3-ui/pull/62))
 - `siweHeaders()` and `forwardedSiweHeaders()`, which sent a SIWE signature with each story create and edit ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
 - `react-markdown` and `remark-gfm`, only used by the disabled security report ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - The Settings page's wallet-linking QR code and the security inspection console hints ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
@@ -73,4 +78,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- The header shows on `/dashboard` and `/settings`, which were treated as story pages (`/[id]`) and rendered without it ([#62](https://github.com/w3hc/avventura-v3-ui/pull/62))
 - Loading any page no longer asks for the passkey when the stored w3pk session has expired: the W3PK context only restores a session that w3pk can restore silently, since `w3pk.login()` falls back to a WebAuthn prompt otherwise ([#57](https://github.com/w3hc/avventura-v3-ui/pull/57))
