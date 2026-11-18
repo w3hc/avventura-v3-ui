@@ -464,7 +464,6 @@ type TranslationKeys = {
     autoTopUpAmount: string
     autoTopUpThreshold: string
     autoTopUpRule: (amount: string, threshold: string) => string
-    autoTopUpFees: string
     autoTopUpInvalidThreshold: string
     autoTopUpSave: string
     autoTopUpSaved: string
@@ -1037,8 +1036,6 @@ export const translations: Translations = {
       autoTopUpAmount: 'Amount to add, in euros',
       autoTopUpThreshold: 'When my balance hits, in euros',
       autoTopUpRule: (amount, threshold) => `Add ${amount} when my balance hits ${threshold}.`,
-      autoTopUpFees:
-        'Charged to your saved card through Stripe. Stripe fees are deducted from the credited amount.',
       autoTopUpInvalidThreshold: 'Enter a balance of 0 or more, with at most 2 decimals.',
       autoTopUpSave: 'Save',
       autoTopUpSaved: 'Automatic top-up saved.',
@@ -1584,7 +1581,6 @@ export const translations: Translations = {
       autoTopUpAmount: '充值金额（欧元）',
       autoTopUpThreshold: '当余额降至（欧元）',
       autoTopUpRule: (amount, threshold) => `当我的余额降至 ${threshold} 时，充值 ${amount}。`,
-      autoTopUpFees: '通过 Stripe 从你保存的银行卡扣款。Stripe 手续费将从到账金额中扣除。',
       autoTopUpInvalidThreshold: '请输入 0 或以上的余额，最多保留两位小数。',
       autoTopUpSave: '保存',
       autoTopUpSaved: '自动充值已保存。',
@@ -2164,8 +2160,6 @@ export const translations: Translations = {
       autoTopUpThreshold: 'जब मेरा बैलेंस इतना हो जाए (यूरो में)',
       autoTopUpRule: (amount, threshold) =>
         `जब मेरा बैलेंस ${threshold} हो जाए, तो ${amount} जोड़ें।`,
-      autoTopUpFees:
-        'Stripe के ज़रिए आपके सहेजे गए कार्ड से लिया जाता है। Stripe शुल्क जमा की गई राशि से काट लिया जाता है।',
       autoTopUpInvalidThreshold: '0 या उससे अधिक का बैलेंस दर्ज करें, अधिकतम 2 दशमलव अंकों के साथ।',
       autoTopUpSave: 'सहेजें',
       autoTopUpSaved: 'स्वचालित टॉप-अप सहेजा गया।',
@@ -2766,8 +2760,6 @@ export const translations: Translations = {
       autoTopUpThreshold: 'Cuando mi saldo llegue a, en euros',
       autoTopUpRule: (amount, threshold) =>
         `Añadir ${amount} cuando mi saldo llegue a ${threshold}.`,
-      autoTopUpFees:
-        'Se cobra en tu tarjeta guardada a través de Stripe. Las comisiones de Stripe se descuentan del importe abonado.',
       autoTopUpInvalidThreshold: 'Introduce un saldo de 0 o más, con 2 decimales como máximo.',
       autoTopUpSave: 'Guardar',
       autoTopUpSaved: 'Recarga automática guardada.',
@@ -3372,8 +3364,6 @@ export const translations: Translations = {
       autoTopUpThreshold: 'Quand mon solde atteint, en euros',
       autoTopUpRule: (amount, threshold) =>
         `Ajouter ${amount} quand mon solde atteint ${threshold}.`,
-      autoTopUpFees:
-        'Débité sur votre carte enregistrée via Stripe. Les frais Stripe sont déduits du montant crédité.',
       autoTopUpInvalidThreshold: 'Saisissez un solde de 0 ou plus, avec 2 décimales au plus.',
       autoTopUpSave: 'Enregistrer',
       autoTopUpSaved: 'Recharge automatique enregistrée.',
@@ -3945,8 +3935,6 @@ export const translations: Translations = {
       autoTopUpAmount: 'المبلغ المُضاف باليورو',
       autoTopUpThreshold: 'عندما يصل رصيدي إلى (باليورو)',
       autoTopUpRule: (amount, threshold) => `أضف ${amount} عندما يصل رصيدي إلى ${threshold}.`,
-      autoTopUpFees:
-        'يُخصم من بطاقتك المحفوظة عبر Stripe. تُخصم رسوم Stripe من المبلغ المُضاف إلى رصيدك.',
       autoTopUpInvalidThreshold: 'أدخل رصيدًا يساوي 0 أو أكثر، بخانتين عشريتين على الأكثر.',
       autoTopUpSave: 'حفظ',
       autoTopUpSaved: 'تم حفظ الشحن التلقائي.',
@@ -4542,8 +4530,6 @@ export const translations: Translations = {
       autoTopUpThreshold: 'যখন আমার ব্যালান্স পৌঁছায়, ইউরোতে',
       autoTopUpRule: (amount, threshold) =>
         `আমার ব্যালান্স ${threshold}-এ পৌঁছালে ${amount} যোগ করুন।`,
-      autoTopUpFees:
-        'Stripe-এর মাধ্যমে আপনার সংরক্ষিত কার্ড থেকে কাটা হয়। Stripe-এর ফি জমা হওয়া পরিমাণ থেকে কেটে নেওয়া হয়।',
       autoTopUpInvalidThreshold: '০ বা তার বেশি ব্যালান্স লিখুন, সর্বোচ্চ ২ দশমিক ঘর পর্যন্ত।',
       autoTopUpSave: 'সংরক্ষণ করুন',
       autoTopUpSaved: 'স্বয়ংক্রিয় টপ-আপ সংরক্ষিত হয়েছে।',
@@ -5140,8 +5126,6 @@ export const translations: Translations = {
       autoTopUpThreshold: 'Когда баланс достигнет, в евро',
       autoTopUpRule: (amount, threshold) =>
         `Пополнять на ${amount}, когда баланс достигнет ${threshold}.`,
-      autoTopUpFees:
-        'Списывается с сохранённой карты через Stripe. Комиссия Stripe вычитается из зачисляемой суммы.',
       autoTopUpInvalidThreshold: 'Введите баланс от 0 и выше, не более 2 знаков после запятой.',
       autoTopUpSave: 'Сохранить',
       autoTopUpSaved: 'Автопополнение сохранено.',
@@ -5744,8 +5728,6 @@ export const translations: Translations = {
       autoTopUpThreshold: 'Quando meu saldo chegar a, em euros',
       autoTopUpRule: (amount, threshold) =>
         `Adicionar ${amount} quando meu saldo chegar a ${threshold}.`,
-      autoTopUpFees:
-        'Cobrado no seu cartão salvo pelo Stripe. As taxas do Stripe são descontadas do valor creditado.',
       autoTopUpInvalidThreshold: 'Digite um saldo de 0 ou mais, com no máximo 2 casas decimais.',
       autoTopUpSave: 'Salvar',
       autoTopUpSaved: 'Recarga automática salva.',
@@ -6336,8 +6318,6 @@ export const translations: Translations = {
       autoTopUpThreshold: 'جب میرا بیلنس اتنا ہو جائے، یورو میں',
       autoTopUpRule: (amount, threshold) =>
         `جب میرا بیلنس ${threshold} ہو جائے تو ${amount} شامل کریں۔`,
-      autoTopUpFees:
-        'Stripe کے ذریعے آپ کے محفوظ کارڈ سے وصول کیا جاتا ہے۔ Stripe کی فیس جمع ہونے والی رقم سے کاٹ لی جاتی ہے۔',
       autoTopUpInvalidThreshold:
         '0 یا اس سے زیادہ بیلنس درج کریں، زیادہ سے زیادہ 2 اعشاریہ ہندسوں کے ساتھ۔',
       autoTopUpSave: 'محفوظ کریں',
