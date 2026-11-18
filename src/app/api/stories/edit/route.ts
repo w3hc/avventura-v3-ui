@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { FORWARDED_STATUSES, forwardedSiweHeaders } from '@/utils/siwe'
+import { FORWARDED_STATUSES, forwardedAuthorization } from '@/utils/siwe'
 
 export const maxDuration = 600
 
@@ -15,9 +15,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Updates object is required' }, { status: 400 })
     }
 
-    const siwe = forwardedSiweHeaders(request)
-    if (!siwe) {
-      return NextResponse.json({ error: 'SIWE signature is required' }, { status: 401 })
+    const authorization = forwardedAuthorization(request)
+    if (!authorization) {
+      return NextResponse.json({ error: 'Bearer token is required' }, { status: 401 })
     }
 
     const apiUrl = process.env.AVVENTURA_API_URL || process.env.NEXT_PUBLIC_AVVENTURA_API_URL
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       headers: {
         accept: '*/*',
         'Content-Type': 'application/json',
-        ...siwe,
+        ...authorization,
       },
       body: JSON.stringify({ slug, updates }),
       signal: AbortSignal.timeout(600000),
