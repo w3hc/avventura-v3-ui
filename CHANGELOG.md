@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Back from a paid top-up on `/dashboard`, the Balance section shows the spinner instead of the old balance and its empty-balance warning until the new balance is credited, or until the 20 s poll gives up ([#60](https://github.com/w3hc/avventura-v3-ui/pull/60))
 - The dashboard's euro helpers move to `src/app/dashboard/euros.ts`, shared by the top-up and auto top-up forms ([#58](https://github.com/w3hc/avventura-v3-ui/pull/58))
 - Opening `/dashboard` no longer asks for a SIWE signature: without a session token for the tab, it shows a "Sign in" button and the prompt starts from that click; a tab with a valid token loads the dashboard without any prompt ([#57](https://github.com/w3hc/avventura-v3-ui/pull/57))
 - The story create and edit route handlers forward the `Authorization: Bearer <token>` header instead of `x-siwe-message` and `x-siwe-signature`, which the API no longer accepts since [w3hc/avventura-v3#55](https://github.com/w3hc/avventura-v3/pull/55) ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
