@@ -459,6 +459,28 @@ type TranslationKeys = {
     topUpCredited: string
     topUpDelayed: string
     topUpCancelled: string
+    autoTopUpTitle: string
+    autoTopUpEnabled: string
+    autoTopUpAmount: string
+    autoTopUpThreshold: string
+    autoTopUpRule: (amount: string, threshold: string) => string
+    autoTopUpInvalidThreshold: string
+    autoTopUpSave: string
+    autoTopUpSaved: string
+    autoTopUpFailed: string
+    autoTopUpNeedsCard: string
+    autoTopUpHasCard: string
+    autoTopUpNoCard: string
+    autoTopUpSaveCard: string
+    autoTopUpReplaceCard: string
+    autoTopUpCardFailed: string
+    autoTopUpPausedDeclined: string
+    autoTopUpPausedAuthentication: string
+    autoTopUpPausedOther: string
+    cardPending: string
+    cardSaved: string
+    cardDelayed: string
+    cardCancelled: string
   }
   backup: {
     title: string
@@ -1009,6 +1031,32 @@ export const translations: Translations = {
       topUpDelayed:
         'Your payment is still being credited. Refresh this page in a moment to see your new balance.',
       topUpCancelled: 'Payment cancelled: your balance is unchanged.',
+      autoTopUpTitle: 'Automatic top-up',
+      autoTopUpEnabled: 'Top up automatically',
+      autoTopUpAmount: 'Amount to add, in euros',
+      autoTopUpThreshold: 'When my balance hits, in euros',
+      autoTopUpRule: (amount, threshold) => `Add ${amount} when my balance hits ${threshold}.`,
+      autoTopUpInvalidThreshold: 'Enter a balance of 0 or more, with at most 2 decimals.',
+      autoTopUpSave: 'Save',
+      autoTopUpSaved: 'Automatic top-up saved.',
+      autoTopUpFailed: 'Could not save your automatic top-up. Please try again.',
+      autoTopUpNeedsCard:
+        'Automatic top-ups need a saved card: save one below. Until then, nothing is charged.',
+      autoTopUpHasCard: 'A card is saved for automatic top-ups.',
+      autoTopUpNoCard: 'No card saved yet. Stripe saves it without charging it.',
+      autoTopUpSaveCard: 'Save card',
+      autoTopUpReplaceCard: 'Replace card',
+      autoTopUpCardFailed: 'Could not open the card form. Please try again.',
+      autoTopUpPausedDeclined:
+        'Automatic top-ups are paused: your card was declined. Save another card to resume them.',
+      autoTopUpPausedAuthentication:
+        'Automatic top-ups are paused: your bank asked to confirm the payment. Save your card again to confirm it with your bank and resume them.',
+      autoTopUpPausedOther:
+        'Automatic top-ups are paused: the last payment failed. Save your card again, or save your settings, to resume them.',
+      cardPending: 'Card saved. It can take a few seconds to show up here.',
+      cardSaved: 'Your card is saved for automatic top-ups.',
+      cardDelayed: 'Your card is still being saved. Refresh this page in a moment.',
+      cardCancelled: 'No card was saved.',
     },
     backup: {
       title: 'Back up your wallet',
@@ -1528,6 +1576,29 @@ export const translations: Translations = {
       topUpCredited: '你的余额已到账。',
       topUpDelayed: '你的付款仍在入账中。请稍后刷新此页面查看新余额。',
       topUpCancelled: '付款已取消：你的余额未变。',
+      autoTopUpTitle: '自动充值',
+      autoTopUpEnabled: '开启自动充值',
+      autoTopUpAmount: '充值金额（欧元）',
+      autoTopUpThreshold: '当余额降至（欧元）',
+      autoTopUpRule: (amount, threshold) => `当我的余额降至 ${threshold} 时，充值 ${amount}。`,
+      autoTopUpInvalidThreshold: '请输入 0 或以上的余额，最多保留两位小数。',
+      autoTopUpSave: '保存',
+      autoTopUpSaved: '自动充值已保存。',
+      autoTopUpFailed: '无法保存自动充值，请重试。',
+      autoTopUpNeedsCard: '自动充值需要已保存的银行卡：请在下方保存一张。在此之前不会扣款。',
+      autoTopUpHasCard: '已保存一张用于自动充值的银行卡。',
+      autoTopUpNoCard: '尚未保存银行卡。Stripe 保存银行卡时不会扣款。',
+      autoTopUpSaveCard: '保存银行卡',
+      autoTopUpReplaceCard: '更换银行卡',
+      autoTopUpCardFailed: '无法打开银行卡表单，请重试。',
+      autoTopUpPausedDeclined: '自动充值已暂停：你的银行卡被拒绝。请保存另一张银行卡以恢复。',
+      autoTopUpPausedAuthentication:
+        '自动充值已暂停：你的银行要求确认付款。请重新保存你的银行卡，向银行完成验证后即可恢复。',
+      autoTopUpPausedOther: '自动充值已暂停：上一次付款失败。请重新保存你的银行卡或设置以恢复。',
+      cardPending: '银行卡已保存，可能需要几秒钟才会显示在这里。',
+      cardSaved: '你的银行卡已保存，可用于自动充值。',
+      cardDelayed: '你的银行卡仍在保存中。请稍后刷新此页面。',
+      cardCancelled: '未保存任何银行卡。',
     },
     backup: {
       title: '备份您的钱包',
@@ -2083,6 +2154,33 @@ export const translations: Translations = {
       topUpDelayed:
         'आपका भुगतान अभी भी जोड़ा जा रहा है। अपना नया बैलेंस देखने के लिए थोड़ी देर में यह पेज रीफ़्रेश करें।',
       topUpCancelled: 'भुगतान रद्द किया गया: आपका बैलेंस नहीं बदला।',
+      autoTopUpTitle: 'स्वचालित टॉप-अप',
+      autoTopUpEnabled: 'अपने आप टॉप-अप करें',
+      autoTopUpAmount: 'जोड़ी जाने वाली राशि (यूरो में)',
+      autoTopUpThreshold: 'जब मेरा बैलेंस इतना हो जाए (यूरो में)',
+      autoTopUpRule: (amount, threshold) =>
+        `जब मेरा बैलेंस ${threshold} हो जाए, तो ${amount} जोड़ें।`,
+      autoTopUpInvalidThreshold: '0 या उससे अधिक का बैलेंस दर्ज करें, अधिकतम 2 दशमलव अंकों के साथ।',
+      autoTopUpSave: 'सहेजें',
+      autoTopUpSaved: 'स्वचालित टॉप-अप सहेजा गया।',
+      autoTopUpFailed: 'आपका स्वचालित टॉप-अप सहेजा नहीं जा सका। कृपया फिर से प्रयास करें।',
+      autoTopUpNeedsCard:
+        'स्वचालित टॉप-अप के लिए एक सहेजा गया कार्ड चाहिए: नीचे एक कार्ड सहेजें। तब तक कोई शुल्क नहीं लिया जाएगा।',
+      autoTopUpHasCard: 'स्वचालित टॉप-अप के लिए एक कार्ड सहेजा गया है।',
+      autoTopUpNoCard: 'अभी तक कोई कार्ड सहेजा नहीं गया है। Stripe बिना शुल्क लिए कार्ड सहेजता है।',
+      autoTopUpSaveCard: 'कार्ड सहेजें',
+      autoTopUpReplaceCard: 'कार्ड बदलें',
+      autoTopUpCardFailed: 'कार्ड फ़ॉर्म नहीं खुल सका। कृपया फिर से प्रयास करें।',
+      autoTopUpPausedDeclined:
+        'स्वचालित टॉप-अप रुका हुआ है: आपका कार्ड अस्वीकार कर दिया गया। इसे फिर से शुरू करने के लिए दूसरा कार्ड सहेजें।',
+      autoTopUpPausedAuthentication:
+        'स्वचालित टॉप-अप रुका हुआ है: आपके बैंक ने भुगतान की पुष्टि माँगी है। अपने बैंक से इसकी पुष्टि करने और टॉप-अप फिर से शुरू करने के लिए अपना कार्ड दोबारा सहेजें।',
+      autoTopUpPausedOther:
+        'स्वचालित टॉप-अप रुका हुआ है: पिछला भुगतान विफल रहा। इसे फिर से शुरू करने के लिए अपना कार्ड या अपनी सेटिंग्स दोबारा सहेजें।',
+      cardPending: 'कार्ड सहेजा गया। इसे यहाँ दिखने में कुछ सेकंड लग सकते हैं।',
+      cardSaved: 'आपका कार्ड स्वचालित टॉप-अप के लिए सहेजा गया है।',
+      cardDelayed: 'आपका कार्ड अभी भी सहेजा जा रहा है। थोड़ी देर में यह पेज रीफ़्रेश करें।',
+      cardCancelled: 'कोई कार्ड सहेजा नहीं गया।',
     },
     backup: {
       title: 'अपने वॉलेट का बैकअप लें',
@@ -2656,6 +2754,33 @@ export const translations: Translations = {
       topUpDelayed:
         'Tu pago aún se está abonando. Actualiza esta página en un momento para ver tu nuevo saldo.',
       topUpCancelled: 'Pago cancelado: tu saldo no ha cambiado.',
+      autoTopUpTitle: 'Recarga automática',
+      autoTopUpEnabled: 'Recargar automáticamente',
+      autoTopUpAmount: 'Importe a añadir, en euros',
+      autoTopUpThreshold: 'Cuando mi saldo llegue a, en euros',
+      autoTopUpRule: (amount, threshold) =>
+        `Añadir ${amount} cuando mi saldo llegue a ${threshold}.`,
+      autoTopUpInvalidThreshold: 'Introduce un saldo de 0 o más, con 2 decimales como máximo.',
+      autoTopUpSave: 'Guardar',
+      autoTopUpSaved: 'Recarga automática guardada.',
+      autoTopUpFailed: 'No se pudo guardar tu recarga automática. Inténtalo de nuevo.',
+      autoTopUpNeedsCard:
+        'Las recargas automáticas necesitan una tarjeta guardada: guarda una abajo. Hasta entonces, no se cobra nada.',
+      autoTopUpHasCard: 'Hay una tarjeta guardada para las recargas automáticas.',
+      autoTopUpNoCard: 'Aún no hay ninguna tarjeta guardada. Stripe la guarda sin cobrarte.',
+      autoTopUpSaveCard: 'Guardar tarjeta',
+      autoTopUpReplaceCard: 'Cambiar tarjeta',
+      autoTopUpCardFailed: 'No se pudo abrir el formulario de la tarjeta. Inténtalo de nuevo.',
+      autoTopUpPausedDeclined:
+        'Las recargas automáticas están en pausa: tu tarjeta fue rechazada. Guarda otra tarjeta para reanudarlas.',
+      autoTopUpPausedAuthentication:
+        'Las recargas automáticas están en pausa: tu banco pidió confirmar el pago. Vuelve a guardar tu tarjeta para confirmarla con tu banco y reanudarlas.',
+      autoTopUpPausedOther:
+        'Las recargas automáticas están en pausa: el último pago falló. Vuelve a guardar tu tarjeta, o tus ajustes, para reanudarlas.',
+      cardPending: 'Tarjeta guardada. Puede tardar unos segundos en aparecer aquí.',
+      cardSaved: 'Tu tarjeta está guardada para las recargas automáticas.',
+      cardDelayed: 'Tu tarjeta aún se está guardando. Actualiza esta página en un momento.',
+      cardCancelled: 'No se guardó ninguna tarjeta.',
     },
     backup: {
       title: 'Haz una copia de seguridad de tu billetera',
@@ -3233,6 +3358,35 @@ export const translations: Translations = {
       topUpDelayed:
         'Votre paiement est toujours en cours de crédit. Actualisez cette page dans un instant pour voir votre nouveau solde.',
       topUpCancelled: 'Paiement annulé : votre solde est inchangé.',
+      autoTopUpTitle: 'Recharge automatique',
+      autoTopUpEnabled: 'Recharger automatiquement',
+      autoTopUpAmount: 'Montant à ajouter, en euros',
+      autoTopUpThreshold: 'Quand mon solde atteint, en euros',
+      autoTopUpRule: (amount, threshold) =>
+        `Ajouter ${amount} quand mon solde atteint ${threshold}.`,
+      autoTopUpInvalidThreshold: 'Saisissez un solde de 0 ou plus, avec 2 décimales au plus.',
+      autoTopUpSave: 'Enregistrer',
+      autoTopUpSaved: 'Recharge automatique enregistrée.',
+      autoTopUpFailed: "Impossible d'enregistrer votre recharge automatique. Réessayez.",
+      autoTopUpNeedsCard:
+        "Les recharges automatiques ont besoin d'une carte enregistrée : enregistrez-en une ci-dessous. D'ici là, rien n'est débité.",
+      autoTopUpHasCard: 'Une carte est enregistrée pour les recharges automatiques.',
+      autoTopUpNoCard:
+        "Aucune carte enregistrée pour l'instant. Stripe l'enregistre sans la débiter.",
+      autoTopUpSaveCard: 'Enregistrer une carte',
+      autoTopUpReplaceCard: 'Remplacer la carte',
+      autoTopUpCardFailed: "Impossible d'ouvrir le formulaire de carte. Réessayez.",
+      autoTopUpPausedDeclined:
+        'Les recharges automatiques sont en pause : votre carte a été refusée. Enregistrez une autre carte pour les reprendre.',
+      autoTopUpPausedAuthentication:
+        'Les recharges automatiques sont en pause : votre banque a demandé de confirmer le paiement. Enregistrez à nouveau votre carte pour la confirmer auprès de votre banque et les reprendre.',
+      autoTopUpPausedOther:
+        'Les recharges automatiques sont en pause : le dernier paiement a échoué. Enregistrez à nouveau votre carte, ou vos réglages, pour les reprendre.',
+      cardPending: 'Carte enregistrée. Elle peut mettre quelques secondes à apparaître ici.',
+      cardSaved: 'Votre carte est enregistrée pour les recharges automatiques.',
+      cardDelayed:
+        "Votre carte est toujours en cours d'enregistrement. Actualisez cette page dans un instant.",
+      cardCancelled: "Aucune carte n'a été enregistrée.",
     },
     backup: {
       title: 'Sauvegardez votre portefeuille',
@@ -3776,6 +3930,32 @@ export const translations: Translations = {
       topUpCredited: 'تمت إضافة المبلغ إلى رصيدك.',
       topUpDelayed: 'لا تزال دفعتك قيد الإضافة. حدّث هذه الصفحة بعد قليل لرؤية رصيدك الجديد.',
       topUpCancelled: 'أُلغي الدفع: رصيدك لم يتغير.',
+      autoTopUpTitle: 'الشحن التلقائي',
+      autoTopUpEnabled: 'اشحن تلقائيًا',
+      autoTopUpAmount: 'المبلغ المُضاف باليورو',
+      autoTopUpThreshold: 'عندما يصل رصيدي إلى (باليورو)',
+      autoTopUpRule: (amount, threshold) => `أضف ${amount} عندما يصل رصيدي إلى ${threshold}.`,
+      autoTopUpInvalidThreshold: 'أدخل رصيدًا يساوي 0 أو أكثر، بخانتين عشريتين على الأكثر.',
+      autoTopUpSave: 'حفظ',
+      autoTopUpSaved: 'تم حفظ الشحن التلقائي.',
+      autoTopUpFailed: 'تعذّر حفظ الشحن التلقائي. حاول مرة أخرى.',
+      autoTopUpNeedsCard:
+        'يحتاج الشحن التلقائي إلى بطاقة محفوظة: احفظ بطاقة أدناه. حتى ذلك الحين، لن يُخصم أي مبلغ.',
+      autoTopUpHasCard: 'هناك بطاقة محفوظة للشحن التلقائي.',
+      autoTopUpNoCard: 'لم تُحفظ أي بطاقة بعد. يحفظ Stripe البطاقة دون خصم أي مبلغ.',
+      autoTopUpSaveCard: 'احفظ بطاقة',
+      autoTopUpReplaceCard: 'استبدل البطاقة',
+      autoTopUpCardFailed: 'تعذّر فتح نموذج البطاقة. حاول مرة أخرى.',
+      autoTopUpPausedDeclined:
+        'الشحن التلقائي متوقف مؤقتًا: رُفضت بطاقتك. احفظ بطاقة أخرى لاستئنافه.',
+      autoTopUpPausedAuthentication:
+        'الشحن التلقائي متوقف مؤقتًا: طلب مصرفك تأكيد الدفع. احفظ بطاقتك مرة أخرى لتأكيدها لدى مصرفك واستئنافه.',
+      autoTopUpPausedOther:
+        'الشحن التلقائي متوقف مؤقتًا: فشلت آخر دفعة. احفظ بطاقتك أو إعداداتك مرة أخرى لاستئنافه.',
+      cardPending: 'تم حفظ البطاقة. قد يستغرق ظهورها هنا بضع ثوانٍ.',
+      cardSaved: 'بطاقتك محفوظة للشحن التلقائي.',
+      cardDelayed: 'لا تزال بطاقتك قيد الحفظ. حدّث هذه الصفحة بعد قليل.',
+      cardCancelled: 'لم تُحفظ أي بطاقة.',
     },
     backup: {
       title: 'انسخ محفظتك احتياطياً',
@@ -4344,6 +4524,34 @@ export const translations: Translations = {
       topUpDelayed:
         'আপনার পেমেন্ট এখনও জমা করা হচ্ছে। নতুন ব্যালান্স দেখতে একটু পরে এই পেজটি রিফ্রেশ করুন।',
       topUpCancelled: 'পেমেন্ট বাতিল হয়েছে: আপনার ব্যালান্স অপরিবর্তিত।',
+      autoTopUpTitle: 'স্বয়ংক্রিয় টপ-আপ',
+      autoTopUpEnabled: 'স্বয়ংক্রিয়ভাবে টপ-আপ করুন',
+      autoTopUpAmount: 'যোগ করার পরিমাণ, ইউরোতে',
+      autoTopUpThreshold: 'যখন আমার ব্যালান্স পৌঁছায়, ইউরোতে',
+      autoTopUpRule: (amount, threshold) =>
+        `আমার ব্যালান্স ${threshold}-এ পৌঁছালে ${amount} যোগ করুন।`,
+      autoTopUpInvalidThreshold: '০ বা তার বেশি ব্যালান্স লিখুন, সর্বোচ্চ ২ দশমিক ঘর পর্যন্ত।',
+      autoTopUpSave: 'সংরক্ষণ করুন',
+      autoTopUpSaved: 'স্বয়ংক্রিয় টপ-আপ সংরক্ষিত হয়েছে।',
+      autoTopUpFailed: 'আপনার স্বয়ংক্রিয় টপ-আপ সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।',
+      autoTopUpNeedsCard:
+        'স্বয়ংক্রিয় টপ-আপের জন্য একটি সংরক্ষিত কার্ড দরকার: নিচে একটি কার্ড সংরক্ষণ করুন। ততক্ষণ কিছুই কাটা হবে না।',
+      autoTopUpHasCard: 'স্বয়ংক্রিয় টপ-আপের জন্য একটি কার্ড সংরক্ষিত আছে।',
+      autoTopUpNoCard:
+        'এখনও কোনো কার্ড সংরক্ষিত হয়নি। Stripe কোনো টাকা না কেটেই কার্ড সংরক্ষণ করে।',
+      autoTopUpSaveCard: 'কার্ড সংরক্ষণ করুন',
+      autoTopUpReplaceCard: 'কার্ড বদলান',
+      autoTopUpCardFailed: 'কার্ডের ফর্ম খোলা যায়নি। আবার চেষ্টা করুন।',
+      autoTopUpPausedDeclined:
+        'স্বয়ংক্রিয় টপ-আপ বিরতিতে আছে: আপনার কার্ড প্রত্যাখ্যাত হয়েছে। আবার চালু করতে অন্য একটি কার্ড সংরক্ষণ করুন।',
+      autoTopUpPausedAuthentication:
+        'স্বয়ংক্রিয় টপ-আপ বিরতিতে আছে: আপনার ব্যাংক পেমেন্ট নিশ্চিত করতে বলেছে। ব্যাংকের সাথে নিশ্চিত করে আবার চালু করতে আপনার কার্ডটি আবার সংরক্ষণ করুন।',
+      autoTopUpPausedOther:
+        'স্বয়ংক্রিয় টপ-আপ বিরতিতে আছে: শেষ পেমেন্টটি ব্যর্থ হয়েছে। আবার চালু করতে আপনার কার্ড বা সেটিংস আবার সংরক্ষণ করুন।',
+      cardPending: 'কার্ড সংরক্ষিত হয়েছে। এখানে দেখা যেতে কয়েক সেকেন্ড লাগতে পারে।',
+      cardSaved: 'আপনার কার্ড স্বয়ংক্রিয় টপ-আপের জন্য সংরক্ষিত হয়েছে।',
+      cardDelayed: 'আপনার কার্ড এখনও সংরক্ষণ করা হচ্ছে। একটু পরে এই পেজটি রিফ্রেশ করুন।',
+      cardCancelled: 'কোনো কার্ড সংরক্ষিত হয়নি।',
     },
     backup: {
       title: 'আপনার ওয়ালেটের ব্যাকআপ নিন',
@@ -4912,6 +5120,33 @@ export const translations: Translations = {
       topUpDelayed:
         'Платёж всё ещё зачисляется. Обновите страницу чуть позже, чтобы увидеть новый баланс.',
       topUpCancelled: 'Оплата отменена: баланс не изменился.',
+      autoTopUpTitle: 'Автопополнение',
+      autoTopUpEnabled: 'Пополнять автоматически',
+      autoTopUpAmount: 'Сумма пополнения в евро',
+      autoTopUpThreshold: 'Когда баланс достигнет, в евро',
+      autoTopUpRule: (amount, threshold) =>
+        `Пополнять на ${amount}, когда баланс достигнет ${threshold}.`,
+      autoTopUpInvalidThreshold: 'Введите баланс от 0 и выше, не более 2 знаков после запятой.',
+      autoTopUpSave: 'Сохранить',
+      autoTopUpSaved: 'Автопополнение сохранено.',
+      autoTopUpFailed: 'Не удалось сохранить автопополнение. Повторите попытку.',
+      autoTopUpNeedsCard:
+        'Для автопополнения нужна сохранённая карта: сохраните её ниже. До этого ничего не списывается.',
+      autoTopUpHasCard: 'Карта для автопополнения сохранена.',
+      autoTopUpNoCard: 'Карта ещё не сохранена. Stripe сохраняет её без списания.',
+      autoTopUpSaveCard: 'Сохранить карту',
+      autoTopUpReplaceCard: 'Заменить карту',
+      autoTopUpCardFailed: 'Не удалось открыть форму карты. Повторите попытку.',
+      autoTopUpPausedDeclined:
+        'Автопополнение приостановлено: ваша карта отклонена. Сохраните другую карту, чтобы возобновить его.',
+      autoTopUpPausedAuthentication:
+        'Автопополнение приостановлено: ваш банк запросил подтверждение платежа. Сохраните карту ещё раз, чтобы подтвердить её в банке и возобновить автопополнение.',
+      autoTopUpPausedOther:
+        'Автопополнение приостановлено: последний платёж не прошёл. Сохраните карту ещё раз или сохраните настройки, чтобы возобновить его.',
+      cardPending: 'Карта сохранена. Она может появиться здесь через несколько секунд.',
+      cardSaved: 'Ваша карта сохранена для автопополнения.',
+      cardDelayed: 'Карта всё ещё сохраняется. Обновите страницу чуть позже.',
+      cardCancelled: 'Карта не сохранена.',
     },
     backup: {
       title: 'Создайте резервную копию кошелька',
@@ -5487,6 +5722,33 @@ export const translations: Translations = {
       topUpDelayed:
         'Seu pagamento ainda está sendo creditado. Atualize esta página em instantes para ver seu novo saldo.',
       topUpCancelled: 'Pagamento cancelado: seu saldo não mudou.',
+      autoTopUpTitle: 'Recarga automática',
+      autoTopUpEnabled: 'Recarregar automaticamente',
+      autoTopUpAmount: 'Valor a adicionar, em euros',
+      autoTopUpThreshold: 'Quando meu saldo chegar a, em euros',
+      autoTopUpRule: (amount, threshold) =>
+        `Adicionar ${amount} quando meu saldo chegar a ${threshold}.`,
+      autoTopUpInvalidThreshold: 'Digite um saldo de 0 ou mais, com no máximo 2 casas decimais.',
+      autoTopUpSave: 'Salvar',
+      autoTopUpSaved: 'Recarga automática salva.',
+      autoTopUpFailed: 'Não foi possível salvar sua recarga automática. Tente novamente.',
+      autoTopUpNeedsCard:
+        'As recargas automáticas precisam de um cartão salvo: salve um abaixo. Até lá, nada é cobrado.',
+      autoTopUpHasCard: 'Há um cartão salvo para as recargas automáticas.',
+      autoTopUpNoCard: 'Nenhum cartão salvo ainda. O Stripe o salva sem cobrar nada.',
+      autoTopUpSaveCard: 'Salvar cartão',
+      autoTopUpReplaceCard: 'Trocar cartão',
+      autoTopUpCardFailed: 'Não foi possível abrir o formulário do cartão. Tente novamente.',
+      autoTopUpPausedDeclined:
+        'As recargas automáticas estão pausadas: seu cartão foi recusado. Salve outro cartão para retomá-las.',
+      autoTopUpPausedAuthentication:
+        'As recargas automáticas estão pausadas: seu banco pediu para confirmar o pagamento. Salve seu cartão novamente para confirmá-lo com seu banco e retomá-las.',
+      autoTopUpPausedOther:
+        'As recargas automáticas estão pausadas: o último pagamento falhou. Salve seu cartão novamente, ou suas configurações, para retomá-las.',
+      cardPending: 'Cartão salvo. Pode levar alguns segundos para aparecer aqui.',
+      cardSaved: 'Seu cartão está salvo para as recargas automáticas.',
+      cardDelayed: 'Seu cartão ainda está sendo salvo. Atualize esta página em instantes.',
+      cardCancelled: 'Nenhum cartão foi salvo.',
     },
     backup: {
       title: 'Faça uma cópia de segurança da sua carteira',
@@ -6050,6 +6312,35 @@ export const translations: Translations = {
       topUpDelayed:
         'آپ کی ادائیگی ابھی جمع کی جا رہی ہے۔ نیا بیلنس دیکھنے کے لیے تھوڑی دیر بعد یہ صفحہ ریفریش کریں۔',
       topUpCancelled: 'ادائیگی منسوخ ہو گئی: آپ کا بیلنس تبدیل نہیں ہوا۔',
+      autoTopUpTitle: 'خودکار ٹاپ اپ',
+      autoTopUpEnabled: 'خودکار طور پر ٹاپ اپ کریں',
+      autoTopUpAmount: 'شامل کی جانے والی رقم، یورو میں',
+      autoTopUpThreshold: 'جب میرا بیلنس اتنا ہو جائے، یورو میں',
+      autoTopUpRule: (amount, threshold) =>
+        `جب میرا بیلنس ${threshold} ہو جائے تو ${amount} شامل کریں۔`,
+      autoTopUpInvalidThreshold:
+        '0 یا اس سے زیادہ بیلنس درج کریں، زیادہ سے زیادہ 2 اعشاریہ ہندسوں کے ساتھ۔',
+      autoTopUpSave: 'محفوظ کریں',
+      autoTopUpSaved: 'خودکار ٹاپ اپ محفوظ ہو گیا۔',
+      autoTopUpFailed: 'آپ کا خودکار ٹاپ اپ محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں۔',
+      autoTopUpNeedsCard:
+        'خودکار ٹاپ اپ کے لیے ایک محفوظ کارڈ ضروری ہے: نیچے ایک کارڈ محفوظ کریں۔ تب تک کچھ وصول نہیں کیا جائے گا۔',
+      autoTopUpHasCard: 'خودکار ٹاپ اپ کے لیے ایک کارڈ محفوظ ہے۔',
+      autoTopUpNoCard:
+        'ابھی تک کوئی کارڈ محفوظ نہیں ہوا۔ Stripe کارڈ کو کچھ وصول کیے بغیر محفوظ کرتا ہے۔',
+      autoTopUpSaveCard: 'کارڈ محفوظ کریں',
+      autoTopUpReplaceCard: 'کارڈ تبدیل کریں',
+      autoTopUpCardFailed: 'کارڈ کا فارم نہیں کھل سکا۔ دوبارہ کوشش کریں۔',
+      autoTopUpPausedDeclined:
+        'خودکار ٹاپ اپ روک دیا گیا ہے: آپ کا کارڈ مسترد ہو گیا۔ اسے دوبارہ شروع کرنے کے لیے کوئی دوسرا کارڈ محفوظ کریں۔',
+      autoTopUpPausedAuthentication:
+        'خودکار ٹاپ اپ روک دیا گیا ہے: آپ کے بینک نے ادائیگی کی تصدیق مانگی ہے۔ اپنے بینک سے تصدیق کرنے اور اسے دوبارہ شروع کرنے کے لیے اپنا کارڈ دوبارہ محفوظ کریں۔',
+      autoTopUpPausedOther:
+        'خودکار ٹاپ اپ روک دیا گیا ہے: پچھلی ادائیگی ناکام ہو گئی۔ اسے دوبارہ شروع کرنے کے لیے اپنا کارڈ یا اپنی ترتیبات دوبارہ محفوظ کریں۔',
+      cardPending: 'کارڈ محفوظ ہو گیا۔ اسے یہاں نظر آنے میں چند سیکنڈ لگ سکتے ہیں۔',
+      cardSaved: 'آپ کا کارڈ خودکار ٹاپ اپ کے لیے محفوظ ہے۔',
+      cardDelayed: 'آپ کا کارڈ ابھی محفوظ کیا جا رہا ہے۔ تھوڑی دیر بعد یہ صفحہ ریفریش کریں۔',
+      cardCancelled: 'کوئی کارڈ محفوظ نہیں ہوا۔',
     },
     backup: {
       title: 'اپنے والیٹ کا بیک اپ لیں',

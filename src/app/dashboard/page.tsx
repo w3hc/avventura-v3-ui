@@ -17,11 +17,20 @@ import { useW3PK } from '@/context/W3PK'
 import { useTranslation } from '@/hooks/useTranslation'
 import { brandColors } from '@/theme'
 import { bearerHeaders } from '@/utils/siwe'
+import {
+  AutoTopupCard,
+  AutoTopupForm,
+  AutoTopupPaused,
+  CARD_PAUSED_KEY,
+  type AutoTopup,
+} from './AutoTopup'
+import { MAX_TOPUP, MIN_TOPUP, formatEur, parseEuros } from './euros'
 
 interface Me {
   address: string
   balance: number
   stories: { slug: string; title: string; spent: number }[]
+  autoTopup: AutoTopup | null
 }
 
 type LoadError = 'signIn' | 'load'
@@ -30,16 +39,14 @@ type TopUpError = 'invalid' | 'unavailable' | 'signIn' | 'failed'
 
 type TopUpReturn = 'pending' | 'credited' | 'delayed' | 'cancelled'
 
-// Bounds of the API's POST /billing/checkout amount, in euros
-const MIN_TOPUP = 5
-const MAX_TOPUP = 500
+type CardReturn = 'pending' | 'saved' | 'delayed' | 'cancelled'
 
 // Balance before the redirect to Stripe, read back on the return
 const TOPUP_BALANCE_KEY = 'avventura.topup.balance'
 
-// The webhook crediting the balance may land after Stripe's redirect
-const TOPUP_POLL_INTERVAL_MS = 2000
-const TOPUP_POLL_ATTEMPTS = 10
+// Stripe's webhook (credited balance, saved card) may land after its redirect
+const POLL_INTERVAL_MS = 2000
+const POLL_ATTEMPTS = 10
 
 const TOPUP_ALERT_STATUS = {
   pending: 'info',
@@ -48,20 +55,27 @@ const TOPUP_ALERT_STATUS = {
   cancelled: 'info',
 } as const satisfies Record<TopUpReturn, string>
 
-function parseAmount(value: string): number | null {
-  const normalized = value.trim().replace(',', '.')
-  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null
-  const amount = Number(normalized)
-  return amount >= MIN_TOPUP && amount <= MAX_TOPUP ? amount : null
-}
+const CARD_ALERT_STATUS = {
+  pending: 'info',
+  saved: 'success',
+  delayed: 'warning',
+  cancelled: 'info',
+} as const satisfies Record<CardReturn, string>
 
-function formatEur(amount: number, language: string): string {
-  const tiny = amount !== 0 && Math.abs(amount) < 0.01
-  return new Intl.NumberFormat(language, {
-    style: 'currency',
-    currency: 'EUR',
-    ...(tiny ? { maximumSignificantDigits: 2 } : {}),
-  }).format(amount)
+// A saved card clears a pause, so replacing the card of a paused auto top-up
+// is done once it is unpaused. Replacing a working card can't be observed.
+const isCardReady = (me: Me, wasPaused: boolean) =>
+  !!me.autoTopup?.hasCard && !(wasPaused && me.autoTopup.paused)
+
+function removeQueryParam(name: string): void {
+  const params = new URLSearchParams(window.location.search)
+  params.delete(name)
+  const query = params.toString()
+  window.history.replaceState(
+    null,
+    '',
+    `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
+  )
 }
 
 function DashboardSection({ title, children }: { title: string; children: ReactNode }) {
@@ -106,7 +120,7 @@ function TopUpForm({ balance }: { balance: number }) {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const amount = parseAmount(value)
+    const amount = parseEuros(value, MIN_TOPUP, MAX_TOPUP)
     if (amount === null) {
       setError('invalid')
       return
@@ -185,7 +199,9 @@ export default function DashboardPage() {
   const [error, setError] = useState<LoadError | null>(null)
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [topUp, setTopUp] = useState<TopUpReturn | null>(null)
+  const [card, setCard] = useState<CardReturn | null>(null)
   const topUpBaseline = useRef<number | null>(null)
+  const cardWasPaused = useRef(false)
   const latestLoad = useRef(0)
 
   const token = session?.token ?? null
@@ -242,8 +258,7 @@ export default function DashboardPage() {
   }, [isAuthenticated, token])
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const result = params.get('topup')
+    const result = new URLSearchParams(window.location.search).get('topup')
     if (result !== 'success' && result !== 'cancel') return
 
     try {
@@ -255,13 +270,20 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTopUp(result === 'success' ? 'pending' : 'cancelled')
 
-    params.delete('topup')
-    const query = params.toString()
-    window.history.replaceState(
-      null,
-      '',
-      `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
-    )
+    removeQueryParam('topup')
+  }, [])
+
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get('card')
+    if (result !== 'saved' && result !== 'cancel') return
+
+    try {
+      cardWasPaused.current = sessionStorage.getItem(CARD_PAUSED_KEY) === 'true'
+      sessionStorage.removeItem(CARD_PAUSED_KEY)
+    } catch {}
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCard(result === 'saved' ? 'pending' : 'cancelled')
+    removeQueryParam('card')
   }, [])
 
   const isPolling = topUp === 'pending' && !!token && !!me
@@ -273,8 +295,8 @@ export default function DashboardPage() {
 
     const poll = async () => {
       let balance = me.balance
-      for (let attempt = 0; balance === start && attempt < TOPUP_POLL_ATTEMPTS; attempt++) {
-        await new Promise(resolve => setTimeout(resolve, TOPUP_POLL_INTERVAL_MS))
+      for (let attempt = 0; balance === start && attempt < POLL_ATTEMPTS; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS))
         if (cancelled) return
         balance = (await load(token))?.balance ?? balance
         if (cancelled) return
@@ -288,6 +310,47 @@ export default function DashboardPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPolling, token])
+
+  const isCardPolling = card === 'pending' && !!token && !!me
+
+  useEffect(() => {
+    if (!isCardPolling || !token || !me) return
+    let cancelled = false
+
+    const poll = async () => {
+      let current = me
+      const isReady = (account: Me) => isCardReady(account, cardWasPaused.current)
+      for (let attempt = 0; !isReady(current) && attempt < POLL_ATTEMPTS; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS))
+        if (cancelled) return
+        current = (await load(token)) ?? current
+        if (cancelled) return
+      }
+      setCard(isReady(current) ? 'saved' : 'delayed')
+    }
+
+    poll()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCardPolling, token])
+
+  const renderCardReturn = () => {
+    if (!card) return null
+    const title = {
+      pending: t.dashboard.cardPending,
+      saved: t.dashboard.cardSaved,
+      delayed: t.dashboard.cardDelayed,
+      cancelled: t.dashboard.cardCancelled,
+    }[card]
+    return (
+      <Alert.Root status={CARD_ALERT_STATUS[card]}>
+        <Alert.Indicator />
+        <Alert.Title>{title}</Alert.Title>
+      </Alert.Root>
+    )
+  }
 
   const renderTopUpReturn = () => {
     if (!topUp) return null
@@ -388,6 +451,15 @@ export default function DashboardPage() {
           <TopUpForm balance={me.balance} />
         </DashboardSection>
 
+        <DashboardSection title={t.dashboard.autoTopUpTitle}>
+          {me.autoTopup?.paused && <AutoTopupPaused reason={me.autoTopup.pausedReason} />}
+          <AutoTopupForm
+            autoTopup={me.autoTopup}
+            onSaved={autoTopup => setMe(current => current && { ...current, autoTopup })}
+          />
+          <AutoTopupCard hasCard={!!me.autoTopup?.hasCard} paused={!!me.autoTopup?.paused} />
+        </DashboardSection>
+
         <DashboardSection title={t.dashboard.stories}>
           {me.stories.length === 0 ? (
             <VStack gap={2} align="start">
@@ -444,6 +516,7 @@ export default function DashboardPage() {
           {t.dashboard.title}
         </Heading>
         {renderTopUpReturn()}
+        {renderCardReturn()}
         {renderContent()}
       </VStack>
     </Box>
