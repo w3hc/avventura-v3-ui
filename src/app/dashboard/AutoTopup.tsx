@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Stack, Switch, Text, VStack } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { Field } from '@/components/ui/field'
@@ -25,6 +25,8 @@ export interface AutoTopup {
 const DEFAULT_SETTINGS = { enabled: false, amount: 10, threshold: 5 }
 
 type SettingsError = 'amount' | 'threshold' | 'unavailable' | 'signIn' | 'failed'
+
+type CardError = 'unavailable' | 'signIn' | 'failed'
 
 export function AutoTopupForm({
   autoTopup,
@@ -158,5 +160,69 @@ export function AutoTopupForm({
         </Button>
       </VStack>
     </form>
+  )
+}
+
+export function AutoTopupCard({ hasCard }: { hasCard: boolean }) {
+  const t = useTranslation()
+  const { authFetch } = useSession()
+  const [error, setError] = useState<CardError | null>(null)
+  const [isRedirecting, setIsRedirecting] = useState(false)
+
+  // Back from Stripe with the browser's back button, the page comes from the bfcache
+  useEffect(() => {
+    const reset = (event: PageTransitionEvent) => {
+      if (event.persisted) setIsRedirecting(false)
+    }
+    window.addEventListener('pageshow', reset)
+    return () => window.removeEventListener('pageshow', reset)
+  }, [])
+
+  const errorText = {
+    unavailable: t.dashboard.topUpUnavailable,
+    signIn: t.dashboard.signInFailed,
+    failed: t.dashboard.autoTopUpCardFailed,
+  }
+
+  const handleClick = async () => {
+    setError(null)
+    setIsRedirecting(true)
+    try {
+      const response = await authFetch('/api/billing/auto-topup/setup', { method: 'POST' })
+      if (response.status === 503) {
+        setError('unavailable')
+        setIsRedirecting(false)
+        return
+      }
+      if (!response.ok) {
+        throw new Error(`Failed to start the card setup: ${response.status}`)
+      }
+      const { url }: { url: string } = await response.json()
+      window.location.assign(url)
+    } catch (err) {
+      console.error('Failed to start the card setup:', err)
+      setError(err instanceof SignInError ? 'signIn' : 'failed')
+      setIsRedirecting(false)
+    }
+  }
+
+  return (
+    <VStack gap={3} align="stretch" pt={4} borderTopWidth="1px" borderColor="whiteAlpha.200">
+      <Text color={brandColors.white} opacity={0.8}>
+        {hasCard ? t.dashboard.autoTopUpHasCard : t.dashboard.autoTopUpNoCard}
+      </Text>
+      {error && <Text color="red.400">{errorText[error]}</Text>}
+      <Button
+        alignSelf="start"
+        variant="outline"
+        borderColor={brandColors.primary}
+        color={brandColors.white}
+        _hover={{ bg: brandColors.secondary }}
+        onClick={handleClick}
+        loading={isRedirecting}
+      >
+        {hasCard ? t.dashboard.autoTopUpReplaceCard : t.dashboard.autoTopUpSaveCard}
+      </Button>
+    </VStack>
   )
 }
