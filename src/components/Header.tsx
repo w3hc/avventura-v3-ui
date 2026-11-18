@@ -11,12 +11,14 @@ import LanguageSelector from './LanguageSelector'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useW3PK } from '@/context/W3PK'
 import { useLoginFlow } from '@/context/LoginFlow'
+import { useSession } from '@/context/Session'
 import { useState, useEffect } from 'react'
 import { brandColors } from '@/theme'
 
 export default function Header() {
   const { isAuthenticated, logout } = useW3PK()
   const { startLogin } = useLoginFlow()
+  const { signOut } = useSession()
   const t = useTranslation()
 
   const [scrollPosition, setScrollPosition] = useState(0)
@@ -35,6 +37,7 @@ export default function Header() {
   }, [])
 
   const handleLogout = async () => {
+    await signOut()
     await logout()
   }
 

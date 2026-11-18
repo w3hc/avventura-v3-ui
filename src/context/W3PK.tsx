@@ -27,12 +27,12 @@ import {
   WalletMissingError,
   WeakPasswordError,
   createSiweMessage,
-  generateSiweNonce,
 } from 'w3pk'
 import type { GuardianShare } from 'w3pk'
 import { useRouter } from 'next/navigation'
 import { toaster } from '@/components/ui/toaster'
 import { getAuthenticatorCapabilities } from '@/utils/browserDetection'
+import { SIGN_IN_STATEMENT } from '@/utils/siwe'
 
 // Must match the Avventura API's SIWE_CHAIN_ID / SIWE_MAX_AGE_SECONDS
 const SIWE_CHAIN_ID = 1
@@ -142,15 +142,10 @@ interface W3pkType {
   logout: () => Promise<void>
   signMessage: (message: string, options?: SignMessageOptions) => Promise<string | null>
   /**
-   * Sign a SIWE (EIP-4361) message authorizing one specific Avventura API
-   * request, for the `x-siwe-message` / `x-siwe-signature` headers.
-   * `path` must be the exact API pathname (e.g. `/stories/edit`), matching
-   * what the API checks server-side.
+   * Sign the SIWE (EIP-4361) sign-in message for `POST /auth/siwe`, with a
+   * nonce from `GET /auth/nonce`
    */
-  signSiwe: (
-    method: string,
-    path: string
-  ) => Promise<{ message: string; signature: string; address: string }>
+  signSiwe: (nonce: string) => Promise<{ message: string; signature: string; address: string }>
   sendTransaction: (tx: Transaction, options?: TxOptions) => Promise<TxResponse>
   deriveWallet: (
     mode?: string,
@@ -782,8 +777,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
   )
 
   const signSiwe = async (
-    method: string,
-    path: string
+    nonce: string
   ): Promise<{ message: string; signature: string; address: string }> => {
     if (!user) {
       throw new Error('Not authenticated. Please log in first.')
@@ -800,11 +794,11 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     const message = createSiweMessage({
       domain: window.location.host,
       address,
-      statement: `Authorize ${method.toUpperCase()} ${path}`,
+      statement: SIGN_IN_STATEMENT,
       uri: window.location.href,
       version: '1',
       chainId: SIWE_CHAIN_ID,
-      nonce: generateSiweNonce(),
+      nonce,
       issuedAt: issuedAt.toISOString(),
       expirationTime: expirationTime.toISOString(),
     })

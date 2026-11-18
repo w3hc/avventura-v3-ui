@@ -8,14 +8,15 @@ import Spinner from '@/components/Spinner'
 import { useLanguage } from '@/context/LanguageContext'
 import { useW3PK } from '@/context/W3PK'
 import { useLoginFlow } from '@/context/LoginFlow'
+import { SignInError, useSession } from '@/context/Session'
 import { useTranslations } from '@/translations'
-import { siweHeaders } from '@/utils/siwe'
 
 export default function CreateStoryPage() {
   const router = useRouter()
   const { language } = useLanguage()
   const t = useTranslations(language)
-  const { isAuthenticated, signSiwe } = useW3PK()
+  const { isAuthenticated } = useW3PK()
+  const { authFetch } = useSession()
   const { startLogin } = useLoginFlow()
   const [prompt, setPrompt] = useState('')
   const [isCreating, setIsCreating] = useState(false)
@@ -32,7 +33,7 @@ export default function CreateStoryPage() {
       setError(t.createStory.loginRequired)
       if (await startLogin()) {
         setError(null)
-        // signSiwe() in this closure still sees the logged-out user, so the
+        // authFetch() in this closure still sees the logged-out user, so the
         // effect below resumes once the context re-renders authenticated
         setCreateAfterLogin(true)
       }
@@ -40,25 +41,12 @@ export default function CreateStoryPage() {
     }
 
     setError(null)
-
-    let siwe
-    try {
-      siwe = await signSiwe('POST', '/stories')
-    } catch (err) {
-      console.error('Failed to sign story creation:', err)
-      setError(t.createStory.signatureFailed)
-      return
-    }
-
     setIsCreating(true)
 
     try {
-      const response = await fetch('/api/stories/create', {
+      const response = await authFetch('/api/stories/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...siweHeaders(siwe),
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
       })
 
@@ -78,7 +66,9 @@ export default function CreateStoryPage() {
       }
     } catch (err) {
       console.error('Failed to create story:', err)
-      setError(t.createStory.failedToCreate)
+      setError(
+        err instanceof SignInError ? t.createStory.signatureFailed : t.createStory.failedToCreate
+      )
     } finally {
       setIsCreating(false)
     }

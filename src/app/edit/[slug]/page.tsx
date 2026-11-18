@@ -19,7 +19,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useW3PK } from '@/context/W3PK'
 import { toaster } from '@/components/ui/toaster'
 import { useTranslations } from '@/translations'
-import { siweHeaders } from '@/utils/siwe'
+import { SignInError, useSession } from '@/context/Session'
 
 interface StoryData {
   slug: string
@@ -41,7 +41,8 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
   const router = useRouter()
   const { language } = useLanguage()
   const t = useTranslations(language)
-  const { isAuthReady, isAuthenticated, getAddress, signSiwe } = useW3PK()
+  const { isAuthReady, isAuthenticated, getAddress } = useW3PK()
+  const { authFetch } = useSession()
   const [story, setStory] = useState<StoryData | null>(null)
   const [storyMissing, setStoryMissing] = useState(false)
   const [signerAddress, setSignerAddress] = useState<string | null>(null)
@@ -101,7 +102,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug])
 
-  // The address signSiwe() signs with, which the API compares to the owner
+  // The address the sign-in signs with, which the API compares to the owner
   useEffect(() => {
     if (!isAuthenticated) return
     let cancelled = false
@@ -152,21 +153,9 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
         is_active: formData.is_active,
       }
 
-      let siwe
-      try {
-        siwe = await signSiwe('POST', '/stories/edit')
-      } catch (err) {
-        console.error('Failed to sign story edit:', err)
-        setError(t.editStory.signatureFailed)
-        return
-      }
-
-      const response = await fetch('/api/stories/edit', {
+      const response = await authFetch('/api/stories/edit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...siweHeaders(siwe),
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug, updates }),
       })
 
@@ -196,7 +185,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ slug: stri
       }
     } catch (err) {
       console.error('Failed to save story:', err)
-      setError(t.editStory.failedToSave)
+      setError(err instanceof SignInError ? t.editStory.signatureFailed : t.editStory.failedToSave)
     } finally {
       setIsSaving(false)
     }

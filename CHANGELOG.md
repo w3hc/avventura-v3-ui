@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Creator sign-in with SIWE: the first story create or save asks for one passkey signature over an EIP-4361 message (statement `Sign in to Avventura`, nonce from `GET /auth/nonce`), exchanged at `POST /auth/siwe` for a session token kept in `sessionStorage` for the tab; players stay anonymous ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
+- `SessionProvider` and `useSession()` with `signIn()`, `signOut()` and `authFetch()`, which sends `Authorization: Bearer <token>` and, on a 401, shows "Your session has expired" in every language, asks for a new sign-in and retries once ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
+- `GET /api/auth/nonce`, `POST /api/auth/siwe` and `POST /api/auth/logout` route handlers proxying the API's `/auth` routes ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
 - Creating a story asks a signed-out user to log in, then for a SIWE signature authorizing `POST /stories`, sent to the API in the `x-siwe-message` and `x-siwe-signature` headers ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
 - "Save changes" on `/edit/<slug>` asks for a SIWE signature authorizing `POST /stories/edit`, with translated errors for a refused signature and a non-creator save ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
 - `signSiwe(method, path)` and `isAuthReady` in the W3PK context ([#50](https://github.com/w3hc/avventura-v3-ui/pull/50))
@@ -28,6 +31,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- The story create and edit route handlers forward the `Authorization: Bearer <token>` header instead of `x-siwe-message` and `x-siwe-signature`, which the API no longer accepts since [w3hc/avventura-v3#55](https://github.com/w3hc/avventura-v3/pull/55) ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
+- `signSiwe(nonce)` in the W3PK context signs the sign-in message with a nonce from the API, instead of `signSiwe(method, path)` authorizing a single request ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
+- Logging out, from the header or anywhere else, also ends the creator session with `POST /auth/logout` and clears the token ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
 - `/edit/<slug>` reads the story's owner from `ownerAddress`, falling back to `creatorAddress` until the API rename deploys, and the refused-save message says "owner" instead of "creator" in every language ([#54](https://github.com/w3hc/avventura-v3-ui/pull/54))
 - The story creation page (`/edit`) shows the header ([#52](https://github.com/w3hc/avventura-v3-ui/pull/52))
 - Create, clicked while signed out, runs the header's login flow (passkey prompt, or the registration dialog on a device without one), then continues to story creation with the entered prompt ([#52](https://github.com/w3hc/avventura-v3-ui/pull/52))
@@ -50,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 
+- `siweHeaders()` and `forwardedSiweHeaders()`, which sent a SIWE signature with each story create and edit ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
 - `react-markdown` and `remark-gfm`, only used by the disabled security report ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - The Settings page's wallet-linking QR code and the security inspection console hints ([#48](https://github.com/w3hc/avventura-v3-ui/pull/48))
 - The IndexedDB inspector on the Settings page and the IndexedDB copy of linked wallets ([#40](https://github.com/w3hc/avventura-v3-ui/pull/40))
