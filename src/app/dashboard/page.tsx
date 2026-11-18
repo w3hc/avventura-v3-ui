@@ -81,7 +81,7 @@ function removeQueryParam(name: string): void {
 function DashboardSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Card.Root bg={brandColors.black} borderColor={brandColors.primary} borderWidth="1px">
-      <Card.Body gap={4}>
+      <Card.Body gap={4} p={{ base: 5, md: 8 }}>
         <Heading as="h2" size="md" color={brandColors.white}>
           {title}
         </Heading>
@@ -517,7 +517,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <Box minH="100vh" py={8}>
+    <Box minH="100vh" py={8} px={4}>
       <VStack gap={6} align="stretch" maxW="800px" mx="auto" pt={24}>
         <Heading as="h1" size="2xl" color={brandColors.white}>
           {t.dashboard.title}
