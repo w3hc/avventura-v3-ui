@@ -28,12 +28,25 @@ type LoadError = 'signIn' | 'load'
 
 type TopUpError = 'invalid' | 'unavailable' | 'signIn' | 'failed'
 
+type TopUpReturn = 'pending' | 'credited' | 'delayed' | 'cancelled'
+
 // Bounds of the API's POST /billing/checkout amount, in euros
 const MIN_TOPUP = 5
 const MAX_TOPUP = 500
 
 // Balance before the redirect to Stripe, read back on the return
 const TOPUP_BALANCE_KEY = 'avventura.topup.balance'
+
+// The webhook crediting the balance may land after Stripe's redirect
+const TOPUP_POLL_INTERVAL_MS = 2000
+const TOPUP_POLL_ATTEMPTS = 10
+
+const TOPUP_ALERT_STATUS = {
+  pending: 'info',
+  credited: 'success',
+  delayed: 'warning',
+  cancelled: 'info',
+} as const satisfies Record<TopUpReturn, string>
 
 function parseAmount(value: string): number | null {
   const normalized = value.trim().replace(',', '.')
@@ -162,11 +175,13 @@ export default function DashboardPage() {
   const [me, setMe] = useState<Me | null>(null)
   const [error, setError] = useState<LoadError | null>(null)
   const [isSigningIn, setIsSigningIn] = useState(false)
+  const [topUp, setTopUp] = useState<TopUpReturn | null>(null)
+  const topUpBaseline = useRef<number | null>(null)
   const latestLoad = useRef(0)
 
   const token = session?.token ?? null
 
-  const load = async (sessionToken: string) => {
+  const load = async (sessionToken: string): Promise<Me | null> => {
     const id = ++latestLoad.current
     setError(null)
     try {
@@ -175,19 +190,22 @@ export default function DashboardPage() {
         cache: 'no-store',
       })
       if (response.status === 401) {
-        if (id !== latestLoad.current) return
+        if (id !== latestLoad.current) return null
         toaster.create({ description: t.session.expired, type: 'info', duration: 5000 })
         await signOut()
-        return
+        return null
       }
       if (!response.ok) {
         throw new Error(`Failed to load the account: ${response.status}`)
       }
       const data: Me = await response.json()
-      if (id === latestLoad.current) setMe(data)
+      if (id !== latestLoad.current) return null
+      setMe(data)
+      return data
     } catch (err) {
       console.error('Failed to load the dashboard:', err)
       if (id === latestLoad.current) setError('load')
+      return null
     }
   }
 
@@ -213,6 +231,70 @@ export default function DashboardPage() {
     load(token)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, token])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const result = params.get('topup')
+    if (result !== 'success' && result !== 'cancel') return
+
+    try {
+      const stored = sessionStorage.getItem(TOPUP_BALANCE_KEY)
+      sessionStorage.removeItem(TOPUP_BALANCE_KEY)
+      const balance = Number(stored)
+      topUpBaseline.current = stored !== null && Number.isFinite(balance) ? balance : null
+    } catch {}
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setTopUp(result === 'success' ? 'pending' : 'cancelled')
+
+    params.delete('topup')
+    const query = params.toString()
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
+    )
+  }, [])
+
+  const isPolling = topUp === 'pending' && !!token && !!me
+
+  useEffect(() => {
+    if (!isPolling || !token || !me) return
+    let cancelled = false
+    const start = topUpBaseline.current ?? me.balance
+
+    const poll = async () => {
+      let balance = me.balance
+      for (let attempt = 0; balance === start && attempt < TOPUP_POLL_ATTEMPTS; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, TOPUP_POLL_INTERVAL_MS))
+        if (cancelled) return
+        balance = (await load(token))?.balance ?? balance
+        if (cancelled) return
+      }
+      setTopUp(balance === start ? 'delayed' : 'credited')
+    }
+
+    poll()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPolling, token])
+
+  const renderTopUpReturn = () => {
+    if (!topUp) return null
+    const title = {
+      pending: t.dashboard.topUpPending,
+      credited: t.dashboard.topUpCredited,
+      delayed: t.dashboard.topUpDelayed,
+      cancelled: t.dashboard.topUpCancelled,
+    }[topUp]
+    return (
+      <Alert.Root status={TOPUP_ALERT_STATUS[topUp]}>
+        <Alert.Indicator />
+        <Alert.Title>{title}</Alert.Title>
+      </Alert.Root>
+    )
+  }
 
   const renderContent = () => {
     if (!isAuthReady || (isAuthenticated && token && !me && !error)) {
@@ -352,6 +434,7 @@ export default function DashboardPage() {
         <Heading as="h1" size="2xl" color={brandColors.white}>
           {t.dashboard.title}
         </Heading>
+        {renderTopUpReturn()}
         {renderContent()}
       </VStack>
     </Box>

@@ -455,6 +455,10 @@ type TranslationKeys = {
     topUpInvalid: (min: string, max: string) => string
     topUpUnavailable: string
     topUpFailed: string
+    topUpPending: string
+    topUpCredited: string
+    topUpDelayed: string
+    topUpCancelled: string
   }
   backup: {
     title: string
@@ -999,6 +1003,12 @@ export const translations: Translations = {
       topUpInvalid: (min, max) => `Enter an amount from ${min} to ${max}, with at most 2 decimals.`,
       topUpUnavailable: 'Payments are not available at the moment. Please try again later.',
       topUpFailed: 'Could not start the payment. Please try again.',
+      topUpPending:
+        'Payment received. Your balance is being credited, this can take a few seconds.',
+      topUpCredited: 'Your balance has been credited.',
+      topUpDelayed:
+        'Your payment is still being credited. Refresh this page in a moment to see your new balance.',
+      topUpCancelled: 'Payment cancelled: your balance is unchanged.',
     },
     backup: {
       title: 'Back up your wallet',
@@ -1514,6 +1524,10 @@ export const translations: Translations = {
       topUpInvalid: (min, max) => `请输入 ${min} 至 ${max} 之间的金额，最多保留两位小数。`,
       topUpUnavailable: '暂时无法付款，请稍后再试。',
       topUpFailed: '无法发起付款，请重试。',
+      topUpPending: '已收到付款，正在为你的余额入账，可能需要几秒钟。',
+      topUpCredited: '你的余额已到账。',
+      topUpDelayed: '你的付款仍在入账中。请稍后刷新此页面查看新余额。',
+      topUpCancelled: '付款已取消：你的余额未变。',
     },
     backup: {
       title: '备份您的钱包',
@@ -2063,6 +2077,12 @@ export const translations: Translations = {
         `${min} से ${max} तक की राशि दर्ज करें, अधिकतम 2 दशमलव अंकों के साथ।`,
       topUpUnavailable: 'अभी भुगतान उपलब्ध नहीं है। कृपया बाद में फिर से प्रयास करें।',
       topUpFailed: 'भुगतान शुरू नहीं हो सका। कृपया फिर से प्रयास करें।',
+      topUpPending:
+        'भुगतान मिल गया। आपके बैलेंस में राशि जोड़ी जा रही है, इसमें कुछ सेकंड लग सकते हैं।',
+      topUpCredited: 'आपके बैलेंस में राशि जोड़ दी गई है।',
+      topUpDelayed:
+        'आपका भुगतान अभी भी जोड़ा जा रहा है। अपना नया बैलेंस देखने के लिए थोड़ी देर में यह पेज रीफ़्रेश करें।',
+      topUpCancelled: 'भुगतान रद्द किया गया: आपका बैलेंस नहीं बदला।',
     },
     backup: {
       title: 'अपने वॉलेट का बैकअप लें',
@@ -2631,6 +2651,11 @@ export const translations: Translations = {
       topUpUnavailable:
         'Los pagos no están disponibles en este momento. Inténtalo de nuevo más tarde.',
       topUpFailed: 'No se pudo iniciar el pago. Inténtalo de nuevo.',
+      topUpPending: 'Pago recibido. Tu saldo se está abonando, puede tardar unos segundos.',
+      topUpCredited: 'Tu saldo se ha abonado.',
+      topUpDelayed:
+        'Tu pago aún se está abonando. Actualiza esta página en un momento para ver tu nuevo saldo.',
+      topUpCancelled: 'Pago cancelado: tu saldo no ha cambiado.',
     },
     backup: {
       title: 'Haz una copia de seguridad de tu billetera',
@@ -3202,6 +3227,12 @@ export const translations: Translations = {
       topUpUnavailable:
         'Les paiements ne sont pas disponibles pour le moment. Réessayez plus tard.',
       topUpFailed: 'Impossible de lancer le paiement. Réessayez.',
+      topUpPending:
+        'Paiement reçu. Votre solde est en cours de crédit, cela peut prendre quelques secondes.',
+      topUpCredited: 'Votre solde a été crédité.',
+      topUpDelayed:
+        'Votre paiement est toujours en cours de crédit. Actualisez cette page dans un instant pour voir votre nouveau solde.',
+      topUpCancelled: 'Paiement annulé : votre solde est inchangé.',
     },
     backup: {
       title: 'Sauvegardez votre portefeuille',
@@ -3741,6 +3772,10 @@ export const translations: Translations = {
       topUpInvalid: (min, max) => `أدخل مبلغًا من ${min} إلى ${max}، بخانتين عشريتين على الأكثر.`,
       topUpUnavailable: 'الدفع غير متاح حاليًا. حاول مرة أخرى لاحقًا.',
       topUpFailed: 'تعذّر بدء الدفع. حاول مرة أخرى.',
+      topUpPending: 'تم استلام الدفعة. تجري إضافة المبلغ إلى رصيدك، وقد يستغرق ذلك بضع ثوانٍ.',
+      topUpCredited: 'تمت إضافة المبلغ إلى رصيدك.',
+      topUpDelayed: 'لا تزال دفعتك قيد الإضافة. حدّث هذه الصفحة بعد قليل لرؤية رصيدك الجديد.',
+      topUpCancelled: 'أُلغي الدفع: رصيدك لم يتغير.',
     },
     backup: {
       title: 'انسخ محفظتك احتياطياً',
@@ -4303,6 +4338,12 @@ export const translations: Translations = {
         `${min} থেকে ${max}-এর মধ্যে একটি পরিমাণ লিখুন, সর্বোচ্চ ২ দশমিক ঘর পর্যন্ত।`,
       topUpUnavailable: 'এই মুহূর্তে পেমেন্ট উপলব্ধ নয়। পরে আবার চেষ্টা করুন।',
       topUpFailed: 'পেমেন্ট শুরু করা যায়নি। আবার চেষ্টা করুন।',
+      topUpPending:
+        'পেমেন্ট পাওয়া গেছে। আপনার ব্যালান্সে জমা করা হচ্ছে, এতে কয়েক সেকেন্ড লাগতে পারে।',
+      topUpCredited: 'আপনার ব্যালান্সে জমা হয়েছে।',
+      topUpDelayed:
+        'আপনার পেমেন্ট এখনও জমা করা হচ্ছে। নতুন ব্যালান্স দেখতে একটু পরে এই পেজটি রিফ্রেশ করুন।',
+      topUpCancelled: 'পেমেন্ট বাতিল হয়েছে: আপনার ব্যালান্স অপরিবর্তিত।',
     },
     backup: {
       title: 'আপনার ওয়ালেটের ব্যাকআপ নিন',
@@ -4865,6 +4906,12 @@ export const translations: Translations = {
         `Введите сумму от ${min} до ${max}, не более 2 знаков после запятой.`,
       topUpUnavailable: 'Платежи сейчас недоступны. Повторите попытку позже.',
       topUpFailed: 'Не удалось начать оплату. Повторите попытку.',
+      topUpPending:
+        'Платёж получен. Средства зачисляются на баланс, это может занять несколько секунд.',
+      topUpCredited: 'Средства зачислены на баланс.',
+      topUpDelayed:
+        'Платёж всё ещё зачисляется. Обновите страницу чуть позже, чтобы увидеть новый баланс.',
+      topUpCancelled: 'Оплата отменена: баланс не изменился.',
     },
     backup: {
       title: 'Создайте резервную копию кошелька',
@@ -5434,6 +5481,12 @@ export const translations: Translations = {
       topUpUnavailable:
         'Os pagamentos não estão disponíveis no momento. Tente novamente mais tarde.',
       topUpFailed: 'Não foi possível iniciar o pagamento. Tente novamente.',
+      topUpPending:
+        'Pagamento recebido. Seu saldo está sendo creditado, isso pode levar alguns segundos.',
+      topUpCredited: 'Seu saldo foi creditado.',
+      topUpDelayed:
+        'Seu pagamento ainda está sendo creditado. Atualize esta página em instantes para ver seu novo saldo.',
+      topUpCancelled: 'Pagamento cancelado: seu saldo não mudou.',
     },
     backup: {
       title: 'Faça uma cópia de segurança da sua carteira',
@@ -5991,6 +6044,12 @@ export const translations: Translations = {
         `${min} سے ${max} تک کی رقم درج کریں، زیادہ سے زیادہ 2 اعشاریہ ہندسوں کے ساتھ۔`,
       topUpUnavailable: 'ادائیگیاں اس وقت دستیاب نہیں ہیں۔ بعد میں دوبارہ کوشش کریں۔',
       topUpFailed: 'ادائیگی شروع نہیں ہو سکی۔ دوبارہ کوشش کریں۔',
+      topUpPending:
+        'ادائیگی موصول ہو گئی۔ آپ کے بیلنس میں رقم جمع کی جا رہی ہے، اس میں چند سیکنڈ لگ سکتے ہیں۔',
+      topUpCredited: 'آپ کے بیلنس میں رقم جمع ہو گئی ہے۔',
+      topUpDelayed:
+        'آپ کی ادائیگی ابھی جمع کی جا رہی ہے۔ نیا بیلنس دیکھنے کے لیے تھوڑی دیر بعد یہ صفحہ ریفریش کریں۔',
+      topUpCancelled: 'ادائیگی منسوخ ہو گئی: آپ کا بیلنس تبدیل نہیں ہوا۔',
     },
     backup: {
       title: 'اپنے والیٹ کا بیک اپ لیں',
