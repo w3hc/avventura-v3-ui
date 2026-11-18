@@ -33,12 +33,14 @@ type TopUpError = 'invalid' | 'unavailable' | 'signIn' | 'failed'
 
 type TopUpReturn = 'pending' | 'credited' | 'delayed' | 'cancelled'
 
+type CardReturn = 'pending' | 'saved' | 'delayed' | 'cancelled'
+
 // Balance before the redirect to Stripe, read back on the return
 const TOPUP_BALANCE_KEY = 'avventura.topup.balance'
 
-// The webhook crediting the balance may land after Stripe's redirect
-const TOPUP_POLL_INTERVAL_MS = 2000
-const TOPUP_POLL_ATTEMPTS = 10
+// Stripe's webhook (credited balance, saved card) may land after its redirect
+const POLL_INTERVAL_MS = 2000
+const POLL_ATTEMPTS = 10
 
 const TOPUP_ALERT_STATUS = {
   pending: 'info',
@@ -46,6 +48,27 @@ const TOPUP_ALERT_STATUS = {
   delayed: 'warning',
   cancelled: 'info',
 } as const satisfies Record<TopUpReturn, string>
+
+const CARD_ALERT_STATUS = {
+  pending: 'info',
+  saved: 'success',
+  delayed: 'warning',
+  cancelled: 'info',
+} as const satisfies Record<CardReturn, string>
+
+// A saved card clears a pause, so a replaced card shows as an unpaused one
+const isCardReady = (me: Me) => !!me.autoTopup?.hasCard && !me.autoTopup.paused
+
+function removeQueryParam(name: string): void {
+  const params = new URLSearchParams(window.location.search)
+  params.delete(name)
+  const query = params.toString()
+  window.history.replaceState(
+    null,
+    '',
+    `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
+  )
+}
 
 function DashboardSection({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -168,6 +191,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<LoadError | null>(null)
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [topUp, setTopUp] = useState<TopUpReturn | null>(null)
+  const [card, setCard] = useState<CardReturn | null>(null)
   const topUpBaseline = useRef<number | null>(null)
   const latestLoad = useRef(0)
 
@@ -225,8 +249,7 @@ export default function DashboardPage() {
   }, [isAuthenticated, token])
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const result = params.get('topup')
+    const result = new URLSearchParams(window.location.search).get('topup')
     if (result !== 'success' && result !== 'cancel') return
 
     try {
@@ -238,13 +261,15 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTopUp(result === 'success' ? 'pending' : 'cancelled')
 
-    params.delete('topup')
-    const query = params.toString()
-    window.history.replaceState(
-      null,
-      '',
-      `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
-    )
+    removeQueryParam('topup')
+  }, [])
+
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get('card')
+    if (result !== 'saved' && result !== 'cancel') return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCard(result === 'saved' ? 'pending' : 'cancelled')
+    removeQueryParam('card')
   }, [])
 
   const isPolling = topUp === 'pending' && !!token && !!me
@@ -256,8 +281,8 @@ export default function DashboardPage() {
 
     const poll = async () => {
       let balance = me.balance
-      for (let attempt = 0; balance === start && attempt < TOPUP_POLL_ATTEMPTS; attempt++) {
-        await new Promise(resolve => setTimeout(resolve, TOPUP_POLL_INTERVAL_MS))
+      for (let attempt = 0; balance === start && attempt < POLL_ATTEMPTS; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS))
         if (cancelled) return
         balance = (await load(token))?.balance ?? balance
         if (cancelled) return
@@ -271,6 +296,46 @@ export default function DashboardPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPolling, token])
+
+  const isCardPolling = card === 'pending' && !!token && !!me
+
+  useEffect(() => {
+    if (!isCardPolling || !token || !me) return
+    let cancelled = false
+
+    const poll = async () => {
+      let current = me
+      for (let attempt = 0; !isCardReady(current) && attempt < POLL_ATTEMPTS; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS))
+        if (cancelled) return
+        current = (await load(token)) ?? current
+        if (cancelled) return
+      }
+      setCard(isCardReady(current) ? 'saved' : 'delayed')
+    }
+
+    poll()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCardPolling, token])
+
+  const renderCardReturn = () => {
+    if (!card) return null
+    const title = {
+      pending: t.dashboard.cardPending,
+      saved: t.dashboard.cardSaved,
+      delayed: t.dashboard.cardDelayed,
+      cancelled: t.dashboard.cardCancelled,
+    }[card]
+    return (
+      <Alert.Root status={CARD_ALERT_STATUS[card]}>
+        <Alert.Indicator />
+        <Alert.Title>{title}</Alert.Title>
+      </Alert.Root>
+    )
+  }
 
   const renderTopUpReturn = () => {
     if (!topUp) return null
@@ -436,6 +501,7 @@ export default function DashboardPage() {
           {t.dashboard.title}
         </Heading>
         {renderTopUpReturn()}
+        {renderCardReturn()}
         {renderContent()}
       </VStack>
     </Box>
