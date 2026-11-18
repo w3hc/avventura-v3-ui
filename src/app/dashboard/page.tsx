@@ -17,7 +17,7 @@ import { useW3PK } from '@/context/W3PK'
 import { useTranslation } from '@/hooks/useTranslation'
 import { brandColors } from '@/theme'
 import { bearerHeaders } from '@/utils/siwe'
-import { AutoTopupCard, AutoTopupForm, type AutoTopup } from './AutoTopup'
+import { AutoTopupCard, AutoTopupForm, AutoTopupPaused, type AutoTopup } from './AutoTopup'
 import { MAX_TOPUP, MIN_TOPUP, formatEur, parseEuros } from './euros'
 
 interface Me {
@@ -372,6 +372,7 @@ export default function DashboardPage() {
         </DashboardSection>
 
         <DashboardSection title={t.dashboard.autoTopUpTitle}>
+          {me.autoTopup?.paused && <AutoTopupPaused reason={me.autoTopup.pausedReason} />}
           <AutoTopupForm
             autoTopup={me.autoTopup}
             onSaved={autoTopup => setMe(current => current && { ...current, autoTopup })}

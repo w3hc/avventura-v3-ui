@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import { Stack, Switch, Text, VStack } from '@chakra-ui/react'
+import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -27,6 +28,39 @@ const DEFAULT_SETTINGS = { enabled: false, amount: 10, threshold: 5 }
 type SettingsError = 'amount' | 'threshold' | 'unavailable' | 'signIn' | 'failed'
 
 type CardError = 'unavailable' | 'signIn' | 'failed'
+
+// Stripe codes of a payment that only another card can fix
+const DECLINED_REASONS = new Set([
+  'card_declined',
+  'card_decline_rate_limit_exceeded',
+  'expired_card',
+  'incorrect_cvc',
+  'incorrect_number',
+  'insufficient_funds',
+  'invalid_cvc',
+  'invalid_expiry_month',
+  'invalid_expiry_year',
+  'invalid_number',
+])
+
+// The bank asked for 3D Secure, which an off-session payment can't do
+const AUTHENTICATION_REASONS = new Set(['authentication_required', 'requires_action'])
+
+export function AutoTopupPaused({ reason }: { reason: string | null }) {
+  const t = useTranslation()
+  const text =
+    reason && DECLINED_REASONS.has(reason)
+      ? t.dashboard.autoTopUpPausedDeclined
+      : reason && AUTHENTICATION_REASONS.has(reason)
+        ? t.dashboard.autoTopUpPausedAuthentication
+        : t.dashboard.autoTopUpPausedOther
+  return (
+    <Alert.Root status="warning">
+      <Alert.Indicator />
+      <Alert.Title>{text}</Alert.Title>
+    </Alert.Root>
+  )
+}
 
 export function AutoTopupForm({
   autoTopup,
@@ -106,6 +140,12 @@ export function AutoTopupForm({
           </Switch.Control>
           <Switch.Label color={brandColors.white}>{t.dashboard.autoTopUpEnabled}</Switch.Label>
         </Switch.Root>
+        {enabled && !autoTopup?.hasCard && (
+          <Alert.Root status="info">
+            <Alert.Indicator />
+            <Alert.Title>{t.dashboard.autoTopUpNeedsCard}</Alert.Title>
+          </Alert.Root>
+        )}
         <Stack direction={{ base: 'column', md: 'row' }} gap={4}>
           <Field
             invalid={error === 'amount'}
