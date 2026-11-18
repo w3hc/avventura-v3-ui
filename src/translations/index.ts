@@ -39,7 +39,7 @@ type TranslationKeys = {
     messageSignedTitle: string
     messageSignedDescription: (signature: string) => string
   }
-  navigation: { settings: string }
+  navigation: { settings: string; dashboard: string }
   settings: {
     title: string
     loginRequired: string
@@ -432,6 +432,21 @@ type TranslationKeys = {
   session: {
     expired: string
   }
+  dashboard: {
+    title: string
+    loginRequired: string
+    signInFailed: string
+    loadFailed: string
+    retry: string
+    balance: string
+    balanceEmpty: string
+    stories: string
+    noStories: string
+    createStory: string
+    spent: string
+    play: string
+    edit: string
+  }
   backup: {
     title: string
     description: string
@@ -489,6 +504,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: 'Settings',
+      dashboard: 'Dashboard',
     },
     settings: {
       title: 'Settings',
@@ -948,6 +964,22 @@ export const translations: Translations = {
     session: {
       expired: 'Your session has expired. Please sign in again.',
     },
+    dashboard: {
+      title: 'Dashboard',
+      loginRequired: 'Log in to see your stories and your balance.',
+      signInFailed: 'The sign-in was refused or cancelled.',
+      loadFailed: 'Could not load your dashboard.',
+      retry: 'Try again',
+      balance: 'Balance',
+      balanceEmpty:
+        "Your balance is empty: your stories can't be played or created until you add credits.",
+      stories: 'Your stories',
+      noStories: "You haven't created a story yet.",
+      createStory: 'Create a story',
+      spent: 'Spent',
+      play: 'Play',
+      edit: 'Edit',
+    },
     backup: {
       title: 'Back up your wallet',
       description:
@@ -1004,6 +1036,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: '设置',
+      dashboard: '控制台',
     },
     settings: {
       title: '设置',
@@ -1437,6 +1470,21 @@ export const translations: Translations = {
     session: {
       expired: '您的会话已过期，请重新登录。',
     },
+    dashboard: {
+      title: '控制台',
+      loginRequired: '登录后即可查看您的故事和余额。',
+      signInFailed: '登录被拒绝或已取消。',
+      loadFailed: '无法加载您的控制台。',
+      retry: '重试',
+      balance: '余额',
+      balanceEmpty: '您的余额已用完：在充值之前，您的故事无法游玩或创建。',
+      stories: '您的故事',
+      noStories: '您还没有创建任何故事。',
+      createStory: '创建故事',
+      spent: '已花费',
+      play: '游玩',
+      edit: '编辑',
+    },
     backup: {
       title: '备份您的钱包',
       description: '您的钱包仅存储在此浏览器中。如果其数据被清除，备份文件是找回钱包的唯一方式。',
@@ -1488,6 +1536,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: 'सेटिंग्स',
+      dashboard: 'डैशबोर्ड',
     },
     settings: {
       title: 'सेटिंग्स',
@@ -1957,6 +2006,22 @@ export const translations: Translations = {
     session: {
       expired: 'आपका सत्र समाप्त हो गया है। कृपया फिर से साइन इन करें।',
     },
+    dashboard: {
+      title: 'डैशबोर्ड',
+      loginRequired: 'अपनी कहानियाँ और अपना बैलेंस देखने के लिए लॉग इन करें।',
+      signInFailed: 'साइन इन अस्वीकार या रद्द कर दिया गया।',
+      loadFailed: 'आपका डैशबोर्ड लोड नहीं हो सका।',
+      retry: 'फिर से कोशिश करें',
+      balance: 'बैलेंस',
+      balanceEmpty:
+        'आपका बैलेंस खाली है: क्रेडिट जोड़ने तक आपकी कहानियाँ न खेली जा सकती हैं, न बनाई जा सकती हैं।',
+      stories: 'आपकी कहानियाँ',
+      noStories: 'आपने अभी तक कोई कहानी नहीं बनाई है।',
+      createStory: 'कहानी बनाएं',
+      spent: 'खर्च',
+      play: 'खेलें',
+      edit: 'संपादित करें',
+    },
     backup: {
       title: 'अपने वॉलेट का बैकअप लें',
       description:
@@ -2012,6 +2077,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: 'Configuración',
+      dashboard: 'Panel',
     },
     settings: {
       title: 'Configuración',
@@ -2495,6 +2561,22 @@ export const translations: Translations = {
     session: {
       expired: 'Tu sesión ha caducado. Vuelve a iniciar sesión.',
     },
+    dashboard: {
+      title: 'Panel',
+      loginRequired: 'Inicia sesión para ver tus historias y tu saldo.',
+      signInFailed: 'El inicio de sesión fue rechazado o cancelado.',
+      loadFailed: 'No se pudo cargar tu panel.',
+      retry: 'Reintentar',
+      balance: 'Saldo',
+      balanceEmpty:
+        'Tu saldo está vacío: tus historias no se pueden jugar ni crear hasta que añadas créditos.',
+      stories: 'Tus historias',
+      noStories: 'Aún no has creado ninguna historia.',
+      createStory: 'Crear una historia',
+      spent: 'Gastado',
+      play: 'Jugar',
+      edit: 'Editar',
+    },
     backup: {
       title: 'Haz una copia de seguridad de tu billetera',
       description:
@@ -2551,6 +2633,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: 'Paramètres',
+      dashboard: 'Tableau de bord',
     },
     settings: {
       title: 'Paramètres',
@@ -3036,6 +3119,22 @@ export const translations: Translations = {
     session: {
       expired: 'Votre session a expiré. Veuillez vous reconnecter.',
     },
+    dashboard: {
+      title: 'Tableau de bord',
+      loginRequired: 'Connectez-vous pour voir vos histoires et votre solde.',
+      signInFailed: 'La connexion a été refusée ou annulée.',
+      loadFailed: 'Impossible de charger votre tableau de bord.',
+      retry: 'Réessayer',
+      balance: 'Solde',
+      balanceEmpty:
+        "Votre solde est épuisé : vos histoires ne peuvent être ni jouées ni créées tant que vous n'ajoutez pas de crédits.",
+      stories: 'Vos histoires',
+      noStories: "Vous n'avez encore créé aucune histoire.",
+      createStory: 'Créer une histoire',
+      spent: 'Dépensé',
+      play: 'Jouer',
+      edit: 'Modifier',
+    },
     backup: {
       title: 'Sauvegardez votre portefeuille',
       description:
@@ -3092,6 +3191,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: 'الإعدادات',
+      dashboard: 'لوحة التحكم',
     },
     settings: {
       title: 'الإعدادات',
@@ -3549,6 +3649,21 @@ export const translations: Translations = {
     session: {
       expired: 'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.',
     },
+    dashboard: {
+      title: 'لوحة التحكم',
+      loginRequired: 'سجّل الدخول لرؤية قصصك ورصيدك.',
+      signInFailed: 'تم رفض تسجيل الدخول أو إلغاؤه.',
+      loadFailed: 'تعذّر تحميل لوحة التحكم.',
+      retry: 'حاول مرة أخرى',
+      balance: 'الرصيد',
+      balanceEmpty: 'رصيدك فارغ: لا يمكن لعب قصصك أو إنشاؤها حتى تضيف رصيدًا.',
+      stories: 'قصصك',
+      noStories: 'لم تنشئ أي قصة بعد.',
+      createStory: 'أنشئ قصة',
+      spent: 'المُنفق',
+      play: 'العب',
+      edit: 'تعديل',
+    },
     backup: {
       title: 'انسخ محفظتك احتياطياً',
       description:
@@ -3603,6 +3718,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: 'সেটিংস',
+      dashboard: 'ড্যাশবোর্ড',
     },
     settings: {
       title: 'সেটিংস',
@@ -4082,6 +4198,22 @@ export const translations: Translations = {
     session: {
       expired: 'আপনার সেশনের মেয়াদ শেষ হয়েছে। অনুগ্রহ করে আবার সাইন ইন করুন।',
     },
+    dashboard: {
+      title: 'ড্যাশবোর্ড',
+      loginRequired: 'আপনার গল্প ও ব্যালেন্স দেখতে লগ ইন করুন।',
+      signInFailed: 'সাইন ইন প্রত্যাখ্যাত বা বাতিল হয়েছে।',
+      loadFailed: 'আপনার ড্যাশবোর্ড লোড করা যায়নি।',
+      retry: 'আবার চেষ্টা করুন',
+      balance: 'ব্যালেন্স',
+      balanceEmpty:
+        'আপনার ব্যালেন্স শূন্য: ক্রেডিট যোগ না করা পর্যন্ত আপনার গল্প খেলা বা তৈরি করা যাবে না।',
+      stories: 'আপনার গল্প',
+      noStories: 'আপনি এখনও কোনো গল্প তৈরি করেননি।',
+      createStory: 'একটি গল্প তৈরি করুন',
+      spent: 'খরচ',
+      play: 'খেলুন',
+      edit: 'সম্পাদনা',
+    },
     backup: {
       title: 'আপনার ওয়ালেটের ব্যাকআপ নিন',
       description:
@@ -4137,6 +4269,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: 'Настройки',
+      dashboard: 'Панель',
     },
     settings: {
       title: 'Настройки',
@@ -4615,6 +4748,22 @@ export const translations: Translations = {
     session: {
       expired: 'Ваша сессия истекла. Пожалуйста, войдите снова.',
     },
+    dashboard: {
+      title: 'Панель',
+      loginRequired: 'Войдите, чтобы увидеть свои истории и баланс.',
+      signInFailed: 'Вход был отклонён или отменён.',
+      loadFailed: 'Не удалось загрузить панель.',
+      retry: 'Повторить',
+      balance: 'Баланс',
+      balanceEmpty:
+        'Ваш баланс исчерпан: в ваши истории нельзя играть и нельзя создавать новые, пока вы не пополните кредиты.',
+      stories: 'Ваши истории',
+      noStories: 'Вы ещё не создали ни одной истории.',
+      createStory: 'Создать историю',
+      spent: 'Потрачено',
+      play: 'Играть',
+      edit: 'Изменить',
+    },
     backup: {
       title: 'Создайте резервную копию кошелька',
       description:
@@ -4671,6 +4820,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: 'Configurações',
+      dashboard: 'Painel',
     },
     settings: {
       title: 'Configurações',
@@ -5154,6 +5304,22 @@ export const translations: Translations = {
     session: {
       expired: 'Sua sessão expirou. Entre novamente.',
     },
+    dashboard: {
+      title: 'Painel',
+      loginRequired: 'Entre para ver suas histórias e seu saldo.',
+      signInFailed: 'O login foi recusado ou cancelado.',
+      loadFailed: 'Não foi possível carregar seu painel.',
+      retry: 'Tentar novamente',
+      balance: 'Saldo',
+      balanceEmpty:
+        'Seu saldo está vazio: suas histórias não podem ser jogadas nem criadas até você adicionar créditos.',
+      stories: 'Suas histórias',
+      noStories: 'Você ainda não criou nenhuma história.',
+      createStory: 'Criar uma história',
+      spent: 'Gasto',
+      play: 'Jogar',
+      edit: 'Editar',
+    },
     backup: {
       title: 'Faça uma cópia de segurança da sua carteira',
       description:
@@ -5210,6 +5376,7 @@ export const translations: Translations = {
     },
     navigation: {
       settings: 'ترتیبات',
+      dashboard: 'ڈیش بورڈ',
     },
     settings: {
       title: 'ترتیبات',
@@ -5681,6 +5848,22 @@ export const translations: Translations = {
     },
     session: {
       expired: 'آپ کا سیشن ختم ہو گیا ہے۔ براہ کرم دوبارہ سائن ان کریں۔',
+    },
+    dashboard: {
+      title: 'ڈیش بورڈ',
+      loginRequired: 'اپنی کہانیاں اور بیلنس دیکھنے کے لیے لاگ ان کریں۔',
+      signInFailed: 'سائن ان مسترد یا منسوخ کر دیا گیا۔',
+      loadFailed: 'آپ کا ڈیش بورڈ لوڈ نہیں ہو سکا۔',
+      retry: 'دوبارہ کوشش کریں',
+      balance: 'بیلنس',
+      balanceEmpty:
+        'آپ کا بیلنس ختم ہو گیا ہے: کریڈٹ شامل کرنے تک آپ کی کہانیاں نہ کھیلی جا سکتی ہیں نہ بنائی جا سکتی ہیں۔',
+      stories: 'آپ کی کہانیاں',
+      noStories: 'آپ نے ابھی تک کوئی کہانی نہیں بنائی۔',
+      createStory: 'کہانی بنائیں',
+      spent: 'خرچ',
+      play: 'کھیلیں',
+      edit: 'ترمیم کریں',
     },
     backup: {
       title: 'اپنے والیٹ کا بیک اپ لیں',

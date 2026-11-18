@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- A `/dashboard` page for signed-in creators, in the header menu while logged in: the balance in euros, flagged when it is empty or negative (stories then return 402), and each owned story with its spend and Play / Edit links; signed-out visitors are asked to log in ([#56](https://github.com/w3hc/avventura-v3-ui/pull/56))
+- `GET /api/me` route handler forwarding `Authorization: Bearer <token>` to the API's `GET /me` ([#56](https://github.com/w3hc/avventura-v3-ui/pull/56))
 - Creator sign-in with SIWE: the first story create or save asks for one passkey signature over an EIP-4361 message (statement `Sign in to Avventura`, nonce from `GET /auth/nonce`), exchanged at `POST /auth/siwe` for a session token kept in `sessionStorage` for the tab; players stay anonymous ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
 - `SessionProvider` and `useSession()` with `signIn()`, `signOut()` and `authFetch()`, which sends `Authorization: Bearer <token>` and, on a 401, shows "Your session has expired" in every language, asks for a new sign-in and retries once ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
 - `GET /api/auth/nonce`, `POST /api/auth/siwe` and `POST /api/auth/logout` route handlers proxying the API's `/auth` routes ([#55](https://github.com/w3hc/avventura-v3-ui/pull/55))
