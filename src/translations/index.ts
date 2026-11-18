@@ -450,7 +450,7 @@ type TranslationKeys = {
     signIn: string
     topUpTitle: string
     topUpAmount: string
-    topUpLimits: (min: string, max: string) => string
+    topUpFeeEstimate: (paid: string, fee: string, credited: string) => string
     topUpButton: string
     topUpInvalid: (min: string, max: string) => string
     topUpUnavailable: string
@@ -1019,8 +1019,8 @@ export const translations: Translations = {
       signIn: 'Sign in',
       topUpTitle: 'Add credits',
       topUpAmount: 'Amount in euros',
-      topUpLimits: (min, max) =>
-        `From ${min} to ${max}, by card only, through Stripe. Stripe fees are deducted from the credited amount.`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `You pay ${paid}, about ${fee} of it in Stripe fees: about ${credited} credited.`,
       topUpButton: 'Pay by card',
       topUpInvalid: (min, max) => `Enter an amount from ${min} to ${max}, with at most 2 decimals.`,
       topUpUnavailable: 'Payments are not available at the moment. Please try again later.',
@@ -1566,8 +1566,8 @@ export const translations: Translations = {
       signIn: '登录',
       topUpTitle: '充值',
       topUpAmount: '金额（欧元）',
-      topUpLimits: (min, max) =>
-        `${min} 至 ${max}，仅支持通过 Stripe 以银行卡支付。Stripe 手续费将从到账金额中扣除。`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `您支付 ${paid}，其中约 ${fee} 为 Stripe 手续费：约 ${credited} 到账。`,
       topUpButton: '银行卡支付',
       topUpInvalid: (min, max) => `请输入 ${min} 至 ${max} 之间的金额，最多保留两位小数。`,
       topUpUnavailable: '暂时无法付款，请稍后再试。',
@@ -2141,8 +2141,8 @@ export const translations: Translations = {
       signIn: 'साइन इन करें',
       topUpTitle: 'क्रेडिट जोड़ें',
       topUpAmount: 'राशि (यूरो में)',
-      topUpLimits: (min, max) =>
-        `${min} से ${max} तक, Stripe के ज़रिए केवल कार्ड से भुगतान। Stripe शुल्क जमा की गई राशि से काट लिया जाता है।`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `आप ${paid} चुकाते हैं, जिसमें से लगभग ${fee} Stripe शुल्क है: लगभग ${credited} जमा होंगे।`,
       topUpButton: 'कार्ड से भुगतान करें',
       topUpInvalid: (min, max) =>
         `${min} से ${max} तक की राशि दर्ज करें, अधिकतम 2 दशमलव अंकों के साथ।`,
@@ -2741,8 +2741,8 @@ export const translations: Translations = {
       signIn: 'Iniciar sesión',
       topUpTitle: 'Añadir créditos',
       topUpAmount: 'Importe en euros',
-      topUpLimits: (min, max) =>
-        `De ${min} a ${max}, solo con tarjeta, a través de Stripe. Las comisiones de Stripe se descuentan del importe abonado.`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `Pagas ${paid}, de los cuales unos ${fee} son comisiones de Stripe: se abonan unos ${credited}.`,
       topUpButton: 'Pagar con tarjeta',
       topUpInvalid: (min, max) =>
         `Introduce un importe de ${min} a ${max}, con 2 decimales como máximo.`,
@@ -3344,8 +3344,8 @@ export const translations: Translations = {
       signIn: 'Se connecter',
       topUpTitle: 'Ajouter des crédits',
       topUpAmount: 'Montant en euros',
-      topUpLimits: (min, max) =>
-        `De ${min} à ${max}, par carte uniquement, via Stripe. Les frais Stripe sont déduits du montant crédité.`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `Vous payez ${paid}, dont environ ${fee} de frais Stripe : environ ${credited} crédités.`,
       topUpButton: 'Payer par carte',
       topUpInvalid: (min, max) =>
         `Saisissez un montant de ${min} à ${max}, avec 2 décimales au plus.`,
@@ -3920,8 +3920,8 @@ export const translations: Translations = {
       signIn: 'تسجيل الدخول',
       topUpTitle: 'أضف رصيدًا',
       topUpAmount: 'المبلغ باليورو',
-      topUpLimits: (min, max) =>
-        `من ${min} إلى ${max}، بالبطاقة فقط عبر Stripe. تُخصم رسوم Stripe من المبلغ المُضاف إلى رصيدك.`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `تدفع ${paid}، منها نحو ${fee} رسوم Stripe: يُضاف إلى رصيدك نحو ${credited}.`,
       topUpButton: 'ادفع بالبطاقة',
       topUpInvalid: (min, max) => `أدخل مبلغًا من ${min} إلى ${max}، بخانتين عشريتين على الأكثر.`,
       topUpUnavailable: 'الدفع غير متاح حاليًا. حاول مرة أخرى لاحقًا.',
@@ -4511,8 +4511,8 @@ export const translations: Translations = {
       signIn: 'সাইন ইন করুন',
       topUpTitle: 'ক্রেডিট যোগ করুন',
       topUpAmount: 'ইউরোতে পরিমাণ',
-      topUpLimits: (min, max) =>
-        `${min} থেকে ${max}, Stripe-এর মাধ্যমে শুধু কার্ডে পেমেন্ট। Stripe-এর ফি জমা হওয়া পরিমাণ থেকে কেটে নেওয়া হয়।`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `আপনি ${paid} দেবেন, যার মধ্যে প্রায় ${fee} Stripe-এর ফি: প্রায় ${credited} জমা হবে।`,
       topUpButton: 'কার্ডে পেমেন্ট করুন',
       topUpInvalid: (min, max) =>
         `${min} থেকে ${max}-এর মধ্যে একটি পরিমাণ লিখুন, সর্বোচ্চ ২ দশমিক ঘর পর্যন্ত।`,
@@ -5107,8 +5107,8 @@ export const translations: Translations = {
       signIn: 'Войти',
       topUpTitle: 'Пополнить баланс',
       topUpAmount: 'Сумма в евро',
-      topUpLimits: (min, max) =>
-        `От ${min} до ${max}, только картой через Stripe. Комиссия Stripe вычитается из зачисляемой суммы.`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `Вы платите ${paid}, из них около ${fee} — комиссия Stripe: будет зачислено около ${credited}.`,
       topUpButton: 'Оплатить картой',
       topUpInvalid: (min, max) =>
         `Введите сумму от ${min} до ${max}, не более 2 знаков после запятой.`,
@@ -5708,8 +5708,8 @@ export const translations: Translations = {
       signIn: 'Entrar',
       topUpTitle: 'Adicionar créditos',
       topUpAmount: 'Valor em euros',
-      topUpLimits: (min, max) =>
-        `De ${min} a ${max}, somente com cartão, pelo Stripe. As taxas do Stripe são descontadas do valor creditado.`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `Você paga ${paid}, dos quais cerca de ${fee} são taxas do Stripe: cerca de ${credited} creditados.`,
       topUpButton: 'Pagar com cartão',
       topUpInvalid: (min, max) =>
         `Digite um valor de ${min} a ${max}, com no máximo 2 casas decimais.`,
@@ -6299,8 +6299,8 @@ export const translations: Translations = {
       signIn: 'سائن اِن کریں',
       topUpTitle: 'کریڈٹ شامل کریں',
       topUpAmount: 'رقم یورو میں',
-      topUpLimits: (min, max) =>
-        `${min} سے ${max} تک، صرف کارڈ سے، Stripe کے ذریعے۔ Stripe کی فیس جمع ہونے والی رقم سے کاٹ لی جاتی ہے۔`,
+      topUpFeeEstimate: (paid, fee, credited) =>
+        `آپ ${paid} ادا کرتے ہیں، جس میں سے تقریباً ${fee} Stripe کی فیس ہے: تقریباً ${credited} جمع ہوں گے۔`,
       topUpButton: 'کارڈ سے ادائیگی کریں',
       topUpInvalid: (min, max) =>
         `${min} سے ${max} تک کی رقم درج کریں، زیادہ سے زیادہ 2 اعشاریہ ہندسوں کے ساتھ۔`,

@@ -12,6 +12,7 @@ import { SignInError, useSession } from '@/context/Session'
 import { useTranslation } from '@/hooks/useTranslation'
 import { brandColors } from '@/theme'
 import { MAX_TOPUP, MIN_TOPUP, formatEur, parseEuros } from './euros'
+import { FeeEstimate } from './FeeEstimate'
 
 export interface AutoTopup {
   enabled: boolean
@@ -153,7 +154,6 @@ export function AutoTopupForm({
           <Field
             invalid={error === 'amount'}
             label={t.dashboard.autoTopUpAmount}
-            helperText={t.dashboard.topUpLimits(min, max)}
             errorText={error === 'amount' ? t.dashboard.topUpInvalid(min, max) : undefined}
           >
             <Input
@@ -180,6 +180,7 @@ export function AutoTopupForm({
             />
           </Field>
         </Stack>
+        <FeeEstimate amount={parsedAmount} />
         {parsedAmount !== null && parsedThreshold !== null && (
           <Text color={brandColors.white} opacity={enabled ? 1 : 0.6}>
             {t.dashboard.autoTopUpRule(

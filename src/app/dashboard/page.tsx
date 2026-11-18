@@ -25,6 +25,7 @@ import {
   type AutoTopup,
 } from './AutoTopup'
 import { MAX_TOPUP, MIN_TOPUP, formatEur, parseEuros } from './euros'
+import { FeeEstimate } from './FeeEstimate'
 
 interface Me {
   address: string
@@ -160,7 +161,6 @@ function TopUpForm({ balance }: { balance: number }) {
         <Field
           invalid={error === 'invalid'}
           label={t.dashboard.topUpAmount}
-          helperText={t.dashboard.topUpLimits(min, max)}
           errorText={error === 'invalid' ? errorText.invalid : undefined}
         >
           <Input
@@ -173,6 +173,7 @@ function TopUpForm({ balance }: { balance: number }) {
             color={brandColors.white}
           />
         </Field>
+        <FeeEstimate amount={parseEuros(value, MIN_TOPUP, MAX_TOPUP)} />
         {error && error !== 'invalid' && <Text color="red.400">{errorText[error]}</Text>}
         <Button
           type="submit"
