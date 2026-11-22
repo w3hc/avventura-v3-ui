@@ -506,6 +506,29 @@ type TranslationKeys = {
     step3: string
     backButton: string
   }
+  landing: {
+    heroStep1: string
+    heroQuestion: string
+    heroStep1Write: string
+    heroStep1Hesitate: string
+    heroStep1Decline: string
+    heroStep2: string
+    heroStep2Write: string
+    heroStep2Refuse: string
+    heroStep3: string
+    heroStep3Write: string
+    featuredTitle: string
+    pitchTitle: string
+    pitchPlayTitle: string
+    pitchPlayText: string
+    pitchEditTitle: string
+    pitchEditText: string
+    pitchApiTitle: string
+    pitchApiText: string
+    pitchApiLink: string
+    ctaTitle: string
+    allStoriesTitle: string
+  }
 }
 
 // Define translations for each supported language
@@ -1088,6 +1111,33 @@ export const translations: Translations = {
       step3: 'Open the app from the new icon and create your wallet there.',
       backButton: 'Back',
     },
+    landing: {
+      heroStep1:
+        'The hacker closes his laptop, pulls back his hoodie, and hands you a black Bic pen, saying, "Now it\'s your turn to write the adventure of your own life."',
+      heroQuestion: 'What do you do?',
+      heroStep1Write: 'I take the pen and start writing.',
+      heroStep1Hesitate: 'I look around, hesitate, and say, "How could I ever live up to that?"',
+      heroStep1Decline: 'I wave the pen away and decline the invitation.',
+      heroStep2: '"You will enjoy it as much as all the players will. I believe in you."',
+      heroStep2Write: 'I close my eyes, take a deep breath, and start writing.',
+      heroStep2Refuse: 'I say, "Sorry, I can\'t."',
+      heroStep3:
+        'The hacker\'s gaze locks onto yours. He reopens his laptop, hovers his middle finger over the Enter key, and says, "Don\'t make me do it."',
+      heroStep3Write: 'I start writing.',
+      featuredTitle: 'Featured stories',
+      pitchTitle: 'The one and only infinite text-based RPG',
+      pitchPlayTitle: 'Nothing to install',
+      pitchPlayText:
+        "Players need nothing to play: no account, no app, no download. Share a link and they're in.",
+      pitchEditTitle: 'Write in minutes',
+      pitchEditText: 'Describe your world in plain words and edit your story whenever you want.',
+      pitchApiTitle: 'Yours to customise',
+      pitchApiText:
+        'Everything runs on simple HTTP requests, so you can plug Avventura into your own app.',
+      pitchApiLink: 'Read the API docs',
+      ctaTitle: 'Create your own story right now',
+      allStoriesTitle: 'All stories',
+    },
   },
 
   // Mandarin Chinese
@@ -1625,6 +1675,32 @@ export const translations: Translations = {
       step2: '点按"添加到主屏幕"。',
       step3: '从新图标打开应用，并在其中创建您的钱包。',
       backButton: '返回',
+    },
+    landing: {
+      heroStep1:
+        '黑客合上笔记本电脑，拉下兜帽，递给你一支黑色比克圆珠笔，说：“现在轮到你来书写你自己人生的冒险了。”',
+      heroQuestion: '你会怎么做？',
+      heroStep1Write: '我接过笔，开始写作。',
+      heroStep1Hesitate: '我环顾四周，犹豫了一下，说：“我怎么可能做得到那么好？”',
+      heroStep1Decline: '我摆手推开笔，拒绝了邀请。',
+      heroStep2: '“你会和所有玩家一样乐在其中。我相信你。”',
+      heroStep2Write: '我闭上眼睛，深吸一口气，开始写作。',
+      heroStep2Refuse: '我说：“抱歉，我做不到。”',
+      heroStep3:
+        '黑客的目光紧紧锁住你。他重新打开笔记本电脑，把中指悬在回车键上方，说：“别逼我这么做。”',
+      heroStep3Write: '我开始写作。',
+      featuredTitle: '精选故事',
+      pitchTitle: '独一无二的无限文字角色扮演游戏',
+      pitchPlayTitle: '无需安装',
+      pitchPlayText:
+        '玩家无需任何准备即可开玩：不用账号、不用应用、不用下载。分享一个链接就能开始。',
+      pitchEditTitle: '几分钟即可写成',
+      pitchEditText: '用简单的文字描述你的世界，随时编辑你的故事。',
+      pitchApiTitle: '随心定制',
+      pitchApiText: '一切都基于简单的 HTTP 请求，你可以把 Avventura 接入你自己的应用。',
+      pitchApiLink: '阅读 API 文档',
+      ctaTitle: '立即创建你自己的故事',
+      allStoriesTitle: '全部故事',
     },
   },
 
@@ -2212,6 +2288,35 @@ export const translations: Translations = {
       step2: '"होम स्क्रीन पर जोड़ें" पर टैप करें।',
       step3: 'नए आइकन से ऐप खोलें और वहीं अपना वॉलेट बनाएं।',
       backButton: 'वापस',
+    },
+    landing: {
+      heroStep1:
+        'हैकर अपना लैपटॉप बंद करता है, अपनी हुडी पीछे करता है और आपको एक काला बिक पेन थमाते हुए कहता है, "अब आपकी बारी है अपनी ज़िंदगी का रोमांच लिखने की।"',
+      heroQuestion: 'आप क्या करेंगे?',
+      heroStep1Write: 'मैं पेन लेता हूँ और लिखना शुरू करता हूँ।',
+      heroStep1Hesitate:
+        'मैं इधर-उधर देखता हूँ, झिझकता हूँ और कहता हूँ, "मैं इसकी बराबरी कैसे कर पाऊँगा?"',
+      heroStep1Decline: 'मैं पेन को हाथ से हटा देता हूँ और न्योता ठुकरा देता हूँ।',
+      heroStep2:
+        '"आपको इसमें उतना ही मज़ा आएगा जितना सभी खिलाड़ियों को आएगा। मुझे आप पर भरोसा है।"',
+      heroStep2Write: 'मैं आँखें बंद करता हूँ, गहरी साँस लेता हूँ और लिखना शुरू करता हूँ।',
+      heroStep2Refuse: 'मैं कहता हूँ, "माफ़ कीजिए, मुझसे नहीं होगा।"',
+      heroStep3:
+        'हैकर की नज़रें आपकी नज़रों पर टिक जाती हैं। वह फिर से अपना लैपटॉप खोलता है, अपनी बीच वाली उँगली एंटर की के ऊपर रखता है और कहता है, "मुझे ऐसा करने पर मजबूर मत कीजिए।"',
+      heroStep3Write: 'मैं लिखना शुरू करता हूँ।',
+      featuredTitle: 'चुनिंदा कहानियाँ',
+      pitchTitle: 'एकमात्र अनंत टेक्स्ट-आधारित RPG',
+      pitchPlayTitle: 'कुछ भी इंस्टॉल नहीं करना',
+      pitchPlayText:
+        'खिलाड़ियों को खेलने के लिए कुछ नहीं चाहिए: न अकाउंट, न ऐप, न डाउनलोड। बस एक लिंक शेयर करें।',
+      pitchEditTitle: 'मिनटों में लिखें',
+      pitchEditText: 'अपनी दुनिया को सरल शब्दों में बताएँ और जब चाहें अपनी कहानी संपादित करें।',
+      pitchApiTitle: 'अपने हिसाब से बदलें',
+      pitchApiText:
+        'सब कुछ सरल HTTP अनुरोधों पर चलता है, इसलिए आप Avventura को अपने ऐप से जोड़ सकते हैं।',
+      pitchApiLink: 'API दस्तावेज़ पढ़ें',
+      ctaTitle: 'अभी अपनी कहानी बनाएँ',
+      allStoriesTitle: 'सभी कहानियाँ',
     },
   },
 
@@ -2814,6 +2919,33 @@ export const translations: Translations = {
       step2: 'Toca "Añadir a pantalla de inicio".',
       step3: 'Abre la app desde el nuevo icono y crea tu monedero allí.',
       backButton: 'Volver',
+    },
+    landing: {
+      heroStep1:
+        'El hacker cierra su portátil, se baja la capucha y te tiende un bolígrafo Bic negro: «Ahora te toca a ti escribir la aventura de tu propia vida».',
+      heroQuestion: '¿Qué haces?',
+      heroStep1Write: 'Tomo el bolígrafo y empiezo a escribir.',
+      heroStep1Hesitate: 'Miro a mi alrededor, dudo y digo: «¿Cómo podría yo estar a la altura?».',
+      heroStep1Decline: 'Aparto el bolígrafo con la mano y rechazo la invitación.',
+      heroStep2: '«Lo disfrutarás tanto como todos los jugadores. Creo en ti».',
+      heroStep2Write: 'Cierro los ojos, respiro hondo y empiezo a escribir.',
+      heroStep2Refuse: 'Digo: «Lo siento, no puedo».',
+      heroStep3:
+        'La mirada del hacker se clava en la tuya. Vuelve a abrir su portátil, deja el dedo corazón suspendido sobre la tecla Intro y dice: «No me obligues a hacerlo».',
+      heroStep3Write: 'Empiezo a escribir.',
+      featuredTitle: 'Historias destacadas',
+      pitchTitle: 'El único juego de rol de texto infinito',
+      pitchPlayTitle: 'Nada que instalar',
+      pitchPlayText:
+        'Los jugadores no necesitan nada para jugar: ni cuenta, ni app, ni descarga. Comparte un enlace y listo.',
+      pitchEditTitle: 'Escribe en minutos',
+      pitchEditText: 'Describe tu mundo con palabras sencillas y edita tu historia cuando quieras.',
+      pitchApiTitle: 'Personalízalo a tu manera',
+      pitchApiText:
+        'Todo funciona con simples peticiones HTTP, así que puedes integrar Avventura en tu propia app.',
+      pitchApiLink: 'Leer la documentación de la API',
+      ctaTitle: 'Crea tu propia historia ahora mismo',
+      allStoriesTitle: 'Todas las historias',
     },
   },
 
@@ -3422,6 +3554,36 @@ export const translations: Translations = {
       step3: "Ouvrez l'app depuis la nouvelle icône et créez-y votre portefeuille.",
       backButton: 'Retour',
     },
+    landing: {
+      heroStep1:
+        "Le hacker referme son ordinateur portable, rabat sa capuche et vous tend un stylo Bic noir en disant : « À vous maintenant d'écrire l'aventure de votre propre vie. »",
+      heroQuestion: 'Que faites-vous ?',
+      heroStep1Write: 'Je prends le stylo et je commence à écrire.',
+      heroStep1Hesitate:
+        "Je regarde autour de moi, j'hésite et je dis : « Comment pourrais-je être à la hauteur ? »",
+      heroStep1Decline: "J'écarte le stylo d'un geste et je décline l'invitation.",
+      heroStep2: '« Vous allez adorer, autant que tous les joueurs. Je crois en vous. »',
+      heroStep2Write:
+        'Je ferme les yeux, je prends une grande inspiration et je commence à écrire.',
+      heroStep2Refuse: 'Je dis : « Désolé, je ne peux pas. »',
+      heroStep3:
+        "Le regard du hacker se verrouille sur le vôtre. Il rouvre son ordinateur, laisse planer son majeur au-dessus de la touche Entrée et dit : « Ne m'obligez pas à le faire. »",
+      heroStep3Write: 'Je commence à écrire.',
+      featuredTitle: 'Histoires à la une',
+      pitchTitle: 'Le seul et unique RPG textuel infini',
+      pitchPlayTitle: 'Rien à installer',
+      pitchPlayText:
+        "Les joueurs n'ont besoin de rien pour jouer : ni compte, ni application, ni téléchargement. Partagez un lien, c'est parti.",
+      pitchEditTitle: 'Écrivez en quelques minutes',
+      pitchEditText:
+        'Décrivez votre monde avec des mots simples et modifiez votre histoire quand vous voulez.',
+      pitchApiTitle: 'Personnalisable à souhait',
+      pitchApiText:
+        'Tout repose sur de simples requêtes HTTP : branchez Avventura sur votre propre application.',
+      pitchApiLink: "Lire la documentation de l'API",
+      ctaTitle: 'Créez votre propre histoire dès maintenant',
+      allStoriesTitle: 'Toutes les histoires',
+    },
   },
 
   // Arabic
@@ -3989,6 +4151,32 @@ export const translations: Translations = {
       step2: 'اضغط على "إضافة إلى الشاشة الرئيسية".',
       step3: 'افتح التطبيق من الأيقونة الجديدة وأنشئ محفظتك هناك.',
       backButton: 'رجوع',
+    },
+    landing: {
+      heroStep1:
+        'يغلق المخترق حاسوبه المحمول، ويُرجع قلنسوته إلى الخلف، ويناولك قلم بيك أسود قائلاً: «الآن جاء دورك لتكتب مغامرة حياتك.»',
+      heroQuestion: 'ماذا ستفعل؟',
+      heroStep1Write: 'آخذ القلم وأبدأ الكتابة.',
+      heroStep1Hesitate: 'أتلفّت حولي، وأتردد، وأقول: «كيف لي أن أرقى إلى ذلك؟»',
+      heroStep1Decline: 'أُبعد القلم بيدي وأرفض الدعوة.',
+      heroStep2: '«ستستمتع بها بقدر ما سيستمتع بها كل اللاعبين. أنا أؤمن بك.»',
+      heroStep2Write: 'أغمض عينيّ، وآخذ نفساً عميقاً، وأبدأ الكتابة.',
+      heroStep2Refuse: 'أقول: «آسف، لا أستطيع.»',
+      heroStep3:
+        'تتسمّر نظرة المخترق في عينيك. يعيد فتح حاسوبه، ويُبقي إصبعه الأوسط معلقاً فوق مفتاح الإدخال، ويقول: «لا تجبرني على فعلها.»',
+      heroStep3Write: 'أبدأ الكتابة.',
+      featuredTitle: 'قصص مختارة',
+      pitchTitle: 'لعبة تقمّص الأدوار النصية اللانهائية الوحيدة',
+      pitchPlayTitle: 'لا شيء لتثبيته',
+      pitchPlayText:
+        'لا يحتاج اللاعبون إلى أي شيء للعب: لا حساب ولا تطبيق ولا تنزيل. شارك رابطاً وابدأ.',
+      pitchEditTitle: 'اكتب في دقائق',
+      pitchEditText: 'صِف عالمك بكلمات بسيطة وعدّل قصتك متى شئت.',
+      pitchApiTitle: 'خصّصها كما تريد',
+      pitchApiText: 'كل شيء يعمل عبر طلبات HTTP بسيطة، لذا يمكنك دمج Avventura في تطبيقك.',
+      pitchApiLink: 'اقرأ توثيق واجهة البرمجة',
+      ctaTitle: 'أنشئ قصتك الآن',
+      allStoriesTitle: 'كل القصص',
     },
   },
 
@@ -4588,6 +4776,33 @@ export const translations: Translations = {
       step3: 'নতুন আইকন থেকে অ্যাপটি খুলুন এবং সেখানে আপনার ওয়ালেট তৈরি করুন।',
       backButton: 'ফিরে যান',
     },
+    landing: {
+      heroStep1:
+        'হ্যাকার তার ল্যাপটপ বন্ধ করে, হুডিটা পেছনে সরিয়ে দেয় এবং আপনার হাতে একটি কালো বিক কলম তুলে দিয়ে বলে, "এবার আপনার পালা, নিজের জীবনের অভিযান লেখার।"',
+      heroQuestion: 'আপনি কী করবেন?',
+      heroStep1Write: 'আমি কলমটি নিই এবং লিখতে শুরু করি।',
+      heroStep1Hesitate: 'আমি চারপাশে তাকাই, দ্বিধা করি এবং বলি, "আমি কীভাবে এর যোগ্য হয়ে উঠব?"',
+      heroStep1Decline: 'আমি হাত নেড়ে কলমটি সরিয়ে দিই এবং আমন্ত্রণ প্রত্যাখ্যান করি।',
+      heroStep2: '"সব খেলোয়াড়ের মতোই আপনিও এটা উপভোগ করবেন। আমি আপনার ওপর বিশ্বাস রাখি।"',
+      heroStep2Write: 'আমি চোখ বন্ধ করি, গভীর শ্বাস নিই এবং লিখতে শুরু করি।',
+      heroStep2Refuse: 'আমি বলি, "দুঃখিত, আমি পারব না।"',
+      heroStep3:
+        'হ্যাকারের দৃষ্টি আপনার চোখে আটকে যায়। সে আবার ল্যাপটপ খোলে, মধ্যমাটি এন্টার কী-এর ওপর ধরে রেখে বলে, "আমাকে এটা করতে বাধ্য করবেন না।"',
+      heroStep3Write: 'আমি লিখতে শুরু করি।',
+      featuredTitle: 'বাছাই করা গল্প',
+      pitchTitle: 'একমাত্র অসীম টেক্সট-ভিত্তিক RPG',
+      pitchPlayTitle: 'কিছুই ইনস্টল করতে হবে না',
+      pitchPlayText:
+        'খেলোয়াড়দের খেলার জন্য কিছুই লাগে না: অ্যাকাউন্ট, অ্যাপ বা ডাউনলোড কিছুই না। শুধু একটি লিংক শেয়ার করুন।',
+      pitchEditTitle: 'কয়েক মিনিটে লিখুন',
+      pitchEditText: 'সহজ ভাষায় আপনার জগতের বর্ণনা দিন এবং যখন খুশি আপনার গল্প সম্পাদনা করুন।',
+      pitchApiTitle: 'নিজের মতো সাজান',
+      pitchApiText:
+        'সবকিছু সহজ HTTP অনুরোধে চলে, তাই আপনি Avventura-কে নিজের অ্যাপে যুক্ত করতে পারেন।',
+      pitchApiLink: 'API ডকুমেন্টেশন পড়ুন',
+      ctaTitle: 'এখনই নিজের গল্প তৈরি করুন',
+      allStoriesTitle: 'সব গল্প',
+    },
   },
 
   // Russian
@@ -5184,6 +5399,33 @@ export const translations: Translations = {
       step2: 'Нажмите «На экран „Домой“».',
       step3: 'Откройте приложение с нового значка и создайте кошелёк там.',
       backButton: 'Назад',
+    },
+    landing: {
+      heroStep1:
+        'Хакер закрывает ноутбук, откидывает капюшон и протягивает вам чёрную ручку Bic со словами: «Теперь ваша очередь написать приключение собственной жизни».',
+      heroQuestion: 'Что вы делаете?',
+      heroStep1Write: 'Я беру ручку и начинаю писать.',
+      heroStep1Hesitate: 'Я оглядываюсь, колеблюсь и говорю: «Как мне вообще с этим справиться?»',
+      heroStep1Decline: 'Я отстраняю ручку и отказываюсь от приглашения.',
+      heroStep2: '«Вам понравится не меньше, чем всем игрокам. Я в вас верю».',
+      heroStep2Write: 'Я закрываю глаза, делаю глубокий вдох и начинаю писать.',
+      heroStep2Refuse: 'Я говорю: «Простите, я не могу».',
+      heroStep3:
+        'Взгляд хакера впивается в ваш. Он снова открывает ноутбук, заносит средний палец над клавишей Enter и говорит: «Не заставляйте меня это делать».',
+      heroStep3Write: 'Я начинаю писать.',
+      featuredTitle: 'Избранные истории',
+      pitchTitle: 'Единственная бесконечная текстовая RPG',
+      pitchPlayTitle: 'Ничего не нужно устанавливать',
+      pitchPlayText:
+        'Игрокам ничего не нужно для игры: ни аккаунта, ни приложения, ни загрузки. Просто поделитесь ссылкой.',
+      pitchEditTitle: 'Пишите за минуты',
+      pitchEditText: 'Опишите свой мир простыми словами и редактируйте историю когда угодно.',
+      pitchApiTitle: 'Настраивайте под себя',
+      pitchApiText:
+        'Всё работает на простых HTTP-запросах, так что вы можете встроить Avventura в своё приложение.',
+      pitchApiLink: 'Документация API',
+      ctaTitle: 'Создайте свою историю прямо сейчас',
+      allStoriesTitle: 'Все истории',
     },
   },
 
@@ -5788,6 +6030,35 @@ export const translations: Translations = {
       step3: 'Abra a app a partir do novo ícone e crie lá a sua carteira.',
       backButton: 'Voltar',
     },
+    landing: {
+      heroStep1:
+        'O hacker fecha o portátil, puxa o capuz para trás e estende-lhe uma caneta Bic preta, dizendo: «Agora é a sua vez de escrever a aventura da sua própria vida.»',
+      heroQuestion: 'O que faz?',
+      heroStep1Write: 'Pego na caneta e começo a escrever.',
+      heroStep1Hesitate:
+        'Olho em volta, hesito e digo: «Como é que eu poderia estar à altura disso?»',
+      heroStep1Decline: 'Afasto a caneta com a mão e recuso o convite.',
+      heroStep2: '«Vai gostar tanto quanto todos os jogadores. Eu acredito em si.»',
+      heroStep2Write: 'Fecho os olhos, respiro fundo e começo a escrever.',
+      heroStep2Refuse: 'Digo: «Desculpe, não consigo.»',
+      heroStep3:
+        'O olhar do hacker crava-se no seu. Ele volta a abrir o portátil, deixa o dedo do meio suspenso sobre a tecla Enter e diz: «Não me obrigue a fazê-lo.»',
+      heroStep3Write: 'Começo a escrever.',
+      featuredTitle: 'Histórias em destaque',
+      pitchTitle: 'O único RPG de texto infinito',
+      pitchPlayTitle: 'Nada para instalar',
+      pitchPlayText:
+        'Os jogadores não precisam de nada para jogar: nem conta, nem aplicação, nem download. Partilhe um link e pronto.',
+      pitchEditTitle: 'Escreva em minutos',
+      pitchEditText:
+        'Descreva o seu mundo em palavras simples e edite a sua história quando quiser.',
+      pitchApiTitle: 'Personalize à sua maneira',
+      pitchApiText:
+        'Tudo funciona com simples pedidos HTTP, por isso pode integrar o Avventura na sua própria aplicação.',
+      pitchApiLink: 'Ler a documentação da API',
+      ctaTitle: 'Crie a sua própria história agora mesmo',
+      allStoriesTitle: 'Todas as histórias',
+    },
   },
 
   // Urdu
@@ -6379,6 +6650,36 @@ export const translations: Translations = {
       step2: '"ہوم اسکرین پر شامل کریں" پر ٹیپ کریں۔',
       step3: 'نئے آئیکن سے ایپ کھولیں اور وہیں اپنا والیٹ بنائیں۔',
       backButton: 'واپس',
+    },
+    landing: {
+      heroStep1:
+        'ہیکر اپنا لیپ ٹاپ بند کرتا ہے، اپنی ہوڈی پیچھے کرتا ہے اور آپ کو ایک کالا بک پین تھماتے ہوئے کہتا ہے، "اب آپ کی باری ہے اپنی زندگی کی مہم لکھنے کی۔"',
+      heroQuestion: 'آپ کیا کریں گے؟',
+      heroStep1Write: 'میں قلم لیتا ہوں اور لکھنا شروع کرتا ہوں۔',
+      heroStep1Hesitate:
+        'میں ادھر ادھر دیکھتا ہوں، ہچکچاتا ہوں اور کہتا ہوں، "میں اس کے قابل کیسے بن پاؤں گا؟"',
+      heroStep1Decline: 'میں ہاتھ سے قلم پرے کرتا ہوں اور دعوت ٹھکرا دیتا ہوں۔',
+      heroStep2:
+        '"آپ کو اس میں اتنا ہی مزہ آئے گا جتنا سب کھلاڑیوں کو آئے گا۔ مجھے آپ پر یقین ہے۔"',
+      heroStep2Write: 'میں آنکھیں بند کرتا ہوں، گہری سانس لیتا ہوں اور لکھنا شروع کرتا ہوں۔',
+      heroStep2Refuse: 'میں کہتا ہوں، "معاف کیجیے، مجھ سے نہیں ہوگا۔"',
+      heroStep3:
+        'ہیکر کی نظریں آپ کی نظروں پر جم جاتی ہیں۔ وہ دوبارہ لیپ ٹاپ کھولتا ہے، اپنی درمیانی انگلی انٹر کی کے اوپر روکے رکھتا ہے اور کہتا ہے، "مجھے ایسا کرنے پر مجبور مت کیجیے۔"',
+      heroStep3Write: 'میں لکھنا شروع کرتا ہوں۔',
+      featuredTitle: 'منتخب کہانیاں',
+      pitchTitle: 'واحد لامحدود متن پر مبنی RPG',
+      pitchPlayTitle: 'کچھ انسٹال نہیں کرنا',
+      pitchPlayText:
+        'کھلاڑیوں کو کھیلنے کے لیے کچھ نہیں چاہیے: نہ اکاؤنٹ، نہ ایپ، نہ ڈاؤن لوڈ۔ بس ایک لنک شیئر کریں۔',
+      pitchEditTitle: 'منٹوں میں لکھیں',
+      pitchEditText:
+        'اپنی دنیا کو سادہ الفاظ میں بیان کریں اور جب چاہیں اپنی کہانی میں ترمیم کریں۔',
+      pitchApiTitle: 'اپنی مرضی سے ڈھالیں',
+      pitchApiText:
+        'سب کچھ سادہ HTTP درخواستوں پر چلتا ہے، اس لیے آپ Avventura کو اپنی ایپ سے جوڑ سکتے ہیں۔',
+      pitchApiLink: 'API دستاویزات پڑھیں',
+      ctaTitle: 'ابھی اپنی کہانی بنائیں',
+      allStoriesTitle: 'تمام کہانیاں',
     },
   },
 }
