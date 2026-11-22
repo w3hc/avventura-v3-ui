@@ -77,37 +77,59 @@ export default function FakeGame() {
       px={{ base: 4, md: 8 }}
       py={{ base: 8, md: 16 }}
     >
-      <Box width="100%">
-        <Text fontSize={{ base: 'xl', md: '2xl' }} mb={8} whiteSpace="pre-wrap" textAlign="left">
-          <TypingEffect text={step.desc} speed={12} onComplete={() => setTyped(true)} />
-        </Text>
-
-        {typed && (
-          <VStack gap={4} align="stretch">
-            {step.question && (
-              <Text fontSize={{ base: 'xl', md: '2xl' }} mb={2}>
-                {t.landing.heroQuestion}
-              </Text>
-            )}
-            {step.choices.map(choice =>
-              choice.next === 'edit' ? (
-                <Link key={choice.label} asChild {...choiceStyle}>
-                  <NextLink href="/edit">{choice.label}</NextLink>
-                </Link>
-              ) : (
-                <Link
-                  key={choice.label}
-                  as="button"
-                  cursor="pointer"
-                  {...choiceStyle}
-                  onClick={() => goTo(choice.next as number)}
-                >
+      <Box display="grid" width="100%">
+        {steps.map((ghost, index) => (
+          <Box key={index} gridArea="1 / 1" visibility="hidden" aria-hidden="true">
+            <Text fontSize={{ base: 'xl', md: '2xl' }} mb={8} whiteSpace="pre-wrap">
+              {ghost.desc}
+            </Text>
+            <VStack gap={4} align="stretch">
+              {ghost.question && (
+                <Text fontSize={{ base: 'xl', md: '2xl' }} mb={2}>
+                  {t.landing.heroQuestion}
+                </Text>
+              )}
+              {ghost.choices.map(choice => (
+                <Text key={choice.label} {...choiceStyle}>
                   {choice.label}
-                </Link>
-              )
-            )}
-          </VStack>
-        )}
+                </Text>
+              ))}
+            </VStack>
+          </Box>
+        ))}
+
+        <Box gridArea="1 / 1" alignSelf="start">
+          <Text fontSize={{ base: 'xl', md: '2xl' }} mb={8} whiteSpace="pre-wrap" textAlign="left">
+            <TypingEffect text={step.desc} speed={12} onComplete={() => setTyped(true)} />
+          </Text>
+
+          {typed && (
+            <VStack gap={4} align="stretch">
+              {step.question && (
+                <Text fontSize={{ base: 'xl', md: '2xl' }} mb={2}>
+                  {t.landing.heroQuestion}
+                </Text>
+              )}
+              {step.choices.map(choice =>
+                choice.next === 'edit' ? (
+                  <Link key={choice.label} asChild {...choiceStyle}>
+                    <NextLink href="/edit">{choice.label}</NextLink>
+                  </Link>
+                ) : (
+                  <Link
+                    key={choice.label}
+                    as="button"
+                    cursor="pointer"
+                    {...choiceStyle}
+                    onClick={() => goTo(choice.next as number)}
+                  >
+                    {choice.label}
+                  </Link>
+                )
+              )}
+            </VStack>
+          )}
+        </Box>
       </Box>
     </Box>
   )
