@@ -79,5 +79,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Creating a story on `/edit` no longer asks a user with a saved w3pk session to log in again, and no longer fails with "signature failed" right after registering: `signIn()` waits for the saved session to be restored, logs in or registers only when there is no w3pk user, then signs the SIWE message without a prompt; a cancelled login shows "Please log in to create a story." ([#66](https://github.com/w3hc/avventura-v3-ui/pull/66))
 - The header shows on `/dashboard` and `/settings`, which were treated as story pages (`/[id]`) and rendered without it ([#62](https://github.com/w3hc/avventura-v3-ui/pull/62))
 - Loading any page no longer asks for the passkey when the stored w3pk session has expired: the W3PK context only restores a session that w3pk can restore silently, since `w3pk.login()` falls back to a WebAuthn prompt otherwise ([#57](https://github.com/w3hc/avventura-v3-ui/pull/57))

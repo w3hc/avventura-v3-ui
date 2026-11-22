@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useW3PK } from './W3PK'
+import { useLoginFlow } from './LoginFlow'
 import { toaster } from '@/components/ui/toaster'
 import { useTranslation } from '@/hooks/useTranslation'
 import { bearerHeaders, type Session } from '@/utils/siwe'
@@ -21,16 +22,25 @@ export class SignInError extends Error {
   name = 'SignInError'
 }
 
+export class LoginCancelledError extends SignInError {
+  name = 'LoginCancelledError'
+}
+
 interface SessionType {
   session: Session | null
-  /** Sign in with the w3pk wallet and keep the session token for this tab */
+  /**
+   * Sign in with the w3pk wallet and keep the session token for this tab,
+   * logging in or registering first if there is no w3pk user. Throws a
+   * `LoginCancelledError` if that login is cancelled.
+   */
   signIn: () => Promise<Session>
   /** End the session on the API and forget the token */
   signOut: () => Promise<void>
   /**
-   * `fetch` with the session token, signing in first if there is none. On a
-   * 401 the token is dropped, a new sign-in is asked and the request is sent
-   * once more. Throws a `SignInError` if the sign-in fails or is cancelled.
+   * `fetch` with the session token, signing in first if there is none (see
+   * `signIn`). On a 401 the token is dropped, a new sign-in is asked and the
+   * request is sent once more. Throws a `SignInError` if the sign-in fails or
+   * is cancelled.
    */
   authFetch: (input: string, init?: RequestInit) => Promise<Response>
 }
@@ -72,10 +82,33 @@ export const useSession = (): SessionType => {
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const { isAuthReady, isAuthenticated, signSiwe } = useW3PK()
+  const { startLogin } = useLoginFlow()
   const t = useTranslation()
   const [session, setSession] = useState<Session | null>(readStoredSession)
   const sessionRef = useRef(session)
   const pendingSignIn = useRef<Promise<Session> | null>(null)
+  const authState = useRef({ isAuthReady, isAuthenticated })
+  const authReadyWaiters = useRef<(() => void)[]>([])
+
+  useEffect(() => {
+    authState.current = { isAuthReady, isAuthenticated }
+    if (isAuthReady) {
+      authReadyWaiters.current.forEach(resolve => resolve())
+      authReadyWaiters.current = []
+    }
+  }, [isAuthReady, isAuthenticated])
+
+  // Waits for the saved w3pk session to be restored, so that a user who has
+  // one isn't asked to log in again
+  const ensureLoggedIn = useCallback(async (): Promise<void> => {
+    if (!authState.current.isAuthReady) {
+      await new Promise<void>(resolve => authReadyWaiters.current.push(resolve))
+    }
+    if (authState.current.isAuthenticated) return
+    if (!(await startLogin())) {
+      throw new LoginCancelledError('Login cancelled')
+    }
+  }, [startLogin])
 
   const update = useCallback((next: Session | null) => {
     sessionRef.current = next
@@ -86,6 +119,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback((): Promise<Session> => {
     pendingSignIn.current ??= (async () => {
       try {
+        await ensureLoggedIn()
         const nonceResponse = await fetch('/api/auth/nonce', { cache: 'no-store' })
         if (!nonceResponse.ok) {
           throw new Error(`Failed to get a sign-in nonce: ${nonceResponse.status}`)
@@ -106,6 +140,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         update(next)
         return next
       } catch (error) {
+        if (error instanceof LoginCancelledError) throw error
         console.error('[Session] Sign-in failed:', error)
         throw new SignInError(error instanceof Error ? error.message : 'Sign-in failed')
       } finally {
@@ -113,7 +148,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
     })()
     return pendingSignIn.current
-  }, [signSiwe, update])
+  }, [ensureLoggedIn, signSiwe, update])
 
   const signOut = useCallback(async (): Promise<void> => {
     const current = sessionRef.current
