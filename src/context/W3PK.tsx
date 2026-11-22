@@ -649,7 +649,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         fallbackMessage,
       }: { retryOn: string; authPrompt: string; errorTitle: string; fallbackMessage: string }
     ): Promise<T> => {
-      if (!user) {
+      if (!w3pk.user) {
         throw new Error('Not authenticated. Please log in first.')
       }
 
@@ -695,14 +695,14 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         throw error
       }
     },
-    [user, w3pk, ensureAuthentication]
+    [w3pk, ensureAuthentication]
   )
 
   const signMessage = async (
     message: string,
     options?: SignMessageOptions
   ): Promise<string | null> => {
-    if (!user) {
+    if (!w3pk.user) {
       toaster.create({
         title: 'Not Authenticated',
         description: 'Please log in first.',
@@ -737,7 +737,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
   }
 
   const sendTransaction = async (tx: Transaction, options?: TxOptions): Promise<TxResponse> => {
-    if (!user) {
+    if (!w3pk.user) {
       throw new Error('Not authenticated. Please log in first.')
     }
 
@@ -796,7 +796,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
   const signSiwe = async (
     nonce: string
   ): Promise<{ message: string; signature: string; address: string }> => {
-    if (!user) {
+    if (!w3pk.user) {
       throw new Error('Not authenticated. Please log in first.')
     }
 
