@@ -1,25 +1,27 @@
 'use client'
 
-import { VStack, Box, Text, HStack, IconButton } from '@chakra-ui/react'
+import { VStack, Box } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { brandColors } from '@/theme'
 import { useLanguage } from '@/context/LanguageContext'
 import Spinner from '@/components/Spinner'
 import { toaster } from '@/components/ui/toaster'
 import StorySetupModal, { StorySetupData } from '@/components/StorySetupModal'
 import { useTranslations } from '@/translations'
+import FakeGame from '@/components/home/FakeGame'
+import StoryGrid from '@/components/home/StoryGrid'
+import Pitch from '@/components/home/Pitch'
+import CreateCta from '@/components/home/CreateCta'
+import { Story } from '@/components/home/StoryCard'
 
-interface Story {
-  slug: string
-  title: string
-  homepage_display: {
-    [key: string]: {
-      title: string
-      description: string
-    }
-  }
-}
+const FEATURED_SLUGS = [
+  'aquaterra-2150',
+  'port-royal-1692',
+  'steam-powered-gta-blackout',
+  'post-apocalyptic-survival-music',
+  'kingston',
+  'heart-of-the-earth',
+]
 
 export default function Home() {
   const router = useRouter()
@@ -28,20 +30,23 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState<string | null>(null)
   const [stories, setStories] = useState<Story[]>([])
   const [pendingScenario, setPendingScenario] = useState<string | null>(null)
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
   useEffect(() => {
     const fetchStories = async () => {
       try {
         const response = await fetch('/api/stories')
         const data = await response.json()
-        setStories(data)
+        if (Array.isArray(data)) setStories(data)
       } catch (error) {
         console.error('Failed to fetch stories:', error)
       }
     }
     fetchStories()
   }, [])
+
+  const featured = FEATURED_SLUGS.map(slug => stories.find(s => s.slug === slug)).filter(
+    (s): s is Story => s !== undefined
+  )
 
   const handleStart = async (
     scenario: string,
@@ -105,101 +110,37 @@ export default function Home() {
     setPendingScenario(null)
   }
 
-  const handleCopyUrl = (e: React.MouseEvent, slug: string) => {
-    e.stopPropagation()
-    const url = `${baseUrl}/${slug}`
-    navigator.clipboard.writeText(url)
-    toaster.create({
-      description: t.common.urlCopied,
-      type: 'success',
-      duration: 2000,
-    })
+  if (isLoading) {
+    return (
+      <VStack align="center" justify="center" minH="100vh">
+        <Spinner size={200} />
+      </VStack>
+    )
   }
 
   return (
     <Box minH="100vh">
-      <VStack gap={8} align="center" justify="center" minH="100vh" p={8}>
-        {isLoading ? (
-          <Spinner size={200} />
-        ) : (
-          <VStack gap={4} width="100%" maxW="800px">
-            {stories.map(story => (
-              <Box
-                key={story.slug}
-                onClick={() => setPendingScenario(story.slug)}
-                cursor="pointer"
-                position="relative"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  borderColor: brandColors.secondary,
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                }}
-                transition="all 0.2s ease-in-out"
-                bg={brandColors.black}
-                color={brandColors.white}
-                border="2px solid"
-                borderColor={brandColors.primary}
-                px={6}
-                py={5}
-                borderRadius="lg"
-                width="100%"
-              >
-                <VStack align="start" gap={2} width="100%">
-                  <Text fontSize="lg" fontWeight="semibold">
-                    {story.homepage_display[language]?.title || story.title}
-                  </Text>
-                  <Text fontSize="sm" opacity={0.8} lineHeight="1.5">
-                    {story.homepage_display[language]?.description || ''}
-                  </Text>
-                  <HStack width="100%" mt={2} gap={2}>
-                    <Text
-                      as="button"
-                      fontSize="xs"
-                      fontFamily="monospace"
-                      flex={1}
-                      overflow="hidden"
-                      textOverflow="ellipsis"
-                      whiteSpace="nowrap"
-                      color={brandColors.accent}
-                      textAlign="left"
-                      cursor="pointer"
-                      onClick={e => handleCopyUrl(e, story.slug)}
-                      _hover={{
-                        textDecoration: 'underline',
-                      }}
-                    >
-                      {baseUrl}/{story.slug}
-                    </Text>
-                    <IconButton
-                      aria-label={t.common.copyUrlAriaLabel}
-                      size="sm"
-                      variant="ghost"
-                      colorScheme="whiteAlpha"
-                      onClick={e => handleCopyUrl(e, story.slug)}
-                      _hover={{
-                        bg: brandColors.secondary,
-                      }}
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                      </svg>
-                    </IconButton>
-                  </HStack>
-                </VStack>
-              </Box>
-            ))}
-          </VStack>
-        )}
+      <FakeGame />
+      <VStack
+        gap={{ base: 16, md: 24 }}
+        width="100%"
+        maxW="1200px"
+        mx="auto"
+        px={{ base: 4, md: 8 }}
+        pb={{ base: 16, md: 24 }}
+      >
+        <StoryGrid
+          title={t.landing.featuredTitle}
+          stories={featured}
+          onSelect={setPendingScenario}
+        />
+        <Pitch />
+        <CreateCta />
+        <StoryGrid
+          title={t.landing.allStoriesTitle}
+          stories={stories}
+          onSelect={setPendingScenario}
+        />
       </VStack>
       <StorySetupModal
         isOpen={pendingScenario !== null}
